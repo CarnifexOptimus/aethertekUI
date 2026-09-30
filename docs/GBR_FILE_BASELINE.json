@@ -1,0 +1,1726 @@
+[
+  {
+    "Path": "GatherBuddy/Crafting/CraftingTraceReader.cs",
+    "Hash": "72C0618342E8CE8B162F30FC2A2A6A771E93D093F860AC2BF04934921FE6157A"
+  },
+  {
+    "Path": "GatherBuddy/Crafting/CraftingTraceRecorder.cs",
+    "Hash": "77BE2E844DB9DA68FEDC36E15753BFD5F7093F884222360A7F361683FD6742B3"
+  },
+  {
+    "Path": "GatherBuddy/Vulcan/Search/Diagnostics/CraftEventDecoder.cs",
+    "Hash": "69AE5FB56AC2184119AE52205FDD3559CCCE7F46563C0A1C9CB1AB6704FFA52F"
+  },
+  {
+    "Path": "GatherBuddy/Vulcan/Search/Diagnostics/CraftTrace.cs",
+    "Hash": "BD0DC093536651192A192998FD1A96E33F9C794E5A34A1BF75F65D453AE64F0D"
+  },
+  {
+    "Path": "GatherBuddy/Vulcan/Search/Diagnostics/CraftTraceWriter.cs",
+    "Hash": "2097463F23848D94EADF722DE0457578B7FE5753B3366022CB1588541515096E"
+  },
+  {
+    "Path": "GatherBuddy/Vulcan/Search/Diagnostics/TraceConditionTransition.cs",
+    "Hash": "8A616D99A72328113778CB377298B1575079B53E681E825588D351E2EF2FEA9F"
+  },
+  {
+    "Path": "GatherBuddy/Vulcan/Search/Mechanics/ActionSemantics.cs",
+    "Hash": "218487B157DF87825637F907D7357AD0A983C2B984BA44B7690FB1CEEB4ABFC9"
+  },
+  {
+    "Path": "GatherBuddy/Vulcan/Search/Mechanics/ConditionProfile.cs",
+    "Hash": "00818C9A1DAB313AE5C08689D27578EECE55D54D9187434AA26B0AB294B9CF62"
+  },
+  {
+    "Path": "GatherBuddy/Vulcan/Search/Mechanics/ConditionProfileIdentity.cs",
+    "Hash": "FC89A7C388283FC59FB03CB9005A42B2DA7E7B164566E0E80D2098C660F4E90F"
+  },
+  {
+    "Path": "GatherBuddy/Vulcan/Search/Mechanics/ConditionTransitionProvider.cs",
+    "Hash": "46D305BA502357ACCABA0D44583E83E1F91C325A40CE0AA1AFE1F4A1C839ACAB"
+  },
+  {
+    "Path": "GatherBuddy/Vulcan/Search/Mechanics/LiveStateReconciler.cs",
+    "Hash": "07B3D5A5373BBC1411939804F31E1CCD5C1F4E534F063B4307AFE3B1135D006D"
+  },
+  {
+    "Path": "GatherBuddy/Vulcan/Search/Mechanics/MechanicsSupport.cs",
+    "Hash": "DB5EC94ED561E7FE11F9B47384F55EE6903EB10602B8337C5C637DD3144A12BD"
+  },
+  {
+    "Path": "GatherBuddy/Vulcan/Search/Mechanics/SearchModelValidation.cs",
+    "Hash": "E309D4A8F6E42BA7FDE5EC26C2763DCBD55C35CA8D0B8EFDC2C54AD7C816260E"
+  },
+  {
+    "Path": "GatherBuddy/Vulcan/Search/Mechanics/SearchTransitionEnumerator.cs",
+    "Hash": "95138F66A3ECF1AD76893DE0B30E9B943459C843CB547D84AE0CB446F1954E2B"
+  },
+  {
+    "Path": "GatherBuddy/Vulcan/Search/Model/SearchActionSet.cs",
+    "Hash": "C2F09518C0C7F7208D98834F27512F0ED56B435AC3503170C65B22BCE7D5D66B"
+  },
+  {
+    "Path": "GatherBuddy/Vulcan/Search/Model/SearchCraftKey.cs",
+    "Hash": "EB735B149E49124749D20007F947A29827C8980AECFA47D65E1B67E875BE100D"
+  },
+  {
+    "Path": "GatherBuddy/Vulcan/Search/Model/SearchOutcome.cs",
+    "Hash": "9215EF8F2ED2A0C6A2CA9A97908F47405EE4A18387C8372A3EF77571149A11BF"
+  },
+  {
+    "Path": "GatherBuddy/Vulcan/Search/Model/SearchStateKey.cs",
+    "Hash": "2945B217DD721F2CEF43F3E784EA7554363FF2013AB7F7D735AFC137C227D969"
+  },
+  {
+    "Path": "Tools/VulcanSolverBench/Program.cs",
+    "Hash": "3A44502B97DFD44D1F18B028D5461AC326D82CD371B0AFDA5AB65DDA1D6C25C0"
+  },
+  {
+    "Path": "Tools/VulcanSolverBench/README.md",
+    "Hash": "354819C6191FF108166E47566F193F788DA0C75AA16EBC319F46BB9C2A9020A8"
+  },
+  {
+    "Path": "Tools/VulcanSolverBench/TraceChecks.cs",
+    "Hash": "E814ACEE66F61447BFE6AF47753A29AE8780E8EE6D1DC188C76D074629052C8B"
+  },
+  {
+    "Path": "Tools/VulcanSolverBench/TraceInspector.cs",
+    "Hash": "8B391ADF6AFEAE68BDDC5FB697805DF591CC81B5DB35F6F88039AB8278B55335"
+  },
+  {
+    "Path": "Tools/VulcanSolverBench/TraceMetadataChecks.cs",
+    "Hash": "0EFE346FE7EA7BD67D32F920F27FB1CC9AF753CD00CF58446CAFB3BF527EB29C"
+  },
+  {
+    "Path": "Tools/VulcanSolverBench/TraceSmokeChecks.cs",
+    "Hash": "7C48FFF8EF9A462DB364E0DFFF9371604AD5709F9A9ED622075F3183CF78D0AB"
+  },
+  {
+    "Path": "Tools/VulcanSolverBench/VulcanSolverBench.csproj",
+    "Hash": "BD891A5BB56561EEA7ACD00EA6C69C6899BCFC856D0593194174E3AD7DFC41B0"
+  },
+  {
+    "Path": ".editorconfig",
+    "Hash": "79FC0A4AFE7FA0DCAC7E4945EDA4F4FAE706E50B054377DF3A347F743EE79E3B"
+  },
+  {
+    "Path": ".github/workflows/pr-test-build.yaml",
+    "Hash": "56412784118DB61689823C0DDE8DC52282C07995C0B91F498328FF479B1995B3"
+  },
+  {
+    "Path": ".github/workflows/publish.yaml",
+    "Hash": "00A3D537F22BA66AFB51A365B3AB1C1ED8FECEBED16552864BE152BED7C7F368"
+  },
+  {
+    "Path": ".gitignore",
+    "Hash": "5890F5EF46F2582966F782C9B3CB8AE0408F32B75BDB11789FFA414451E72DD2"
+  },
+  {
+    "Path": ".gitmodules",
+    "Hash": "95A202B6953FC74CEF1433BA291AB8A59C7397BC549799CE9A7A646FB766642D"
+  },
+  {
+    "Path": ".vscode/settings.json",
+    "Hash": "44136FA355B3678A1146AD16F7E8649E94FB4FC21FE77E8310C060F61CAAFF8A"
+  },
+  {
+    "Path": "GatherBuddy.DataImport/GatherBuddy.DataImport.csproj",
+    "Hash": "1E8A33AB44870358B7CE9639A2DD6F312D2B6A4EF6AA81BE1F25235C1A2C3E82"
+  },
+  {
+    "Path": "GatherBuddy.DataImport/GatherBuddy.DataImport.json",
+    "Hash": "9CB93051186F021BD632DAA87CC7A39FA607498436DEEEC16814F6F5AEF5A40C"
+  },
+  {
+    "Path": "GatherBuddy.DataImport/Program.cs",
+    "Hash": "9568731ECA6ECEB59184BE1F03305CC08D072F61312D5E349B2A0C4C62CC675C"
+  },
+  {
+    "Path": "GatherBuddy.DataImport/packages.lock.json",
+    "Hash": "4F8A77ECB49216065C43D98A94201BA20A82FCD4B4B7FA6349889AD5AEABA3BB"
+  },
+  {
+    "Path": "GatherBuddy.GameData/Classes/Aetheryte.cs",
+    "Hash": "4EB89701A65BA7C8B4F2D2F977592C847B4AF655F238600EC6AC09FDCF4918F2"
+  },
+  {
+    "Path": "GatherBuddy.GameData/Classes/CosmicMission.cs",
+    "Hash": "2FA82E6243F8523A12F7C34B0255BA9E257734FAE123E6EDE13933C17E7C45D3"
+  },
+  {
+    "Path": "GatherBuddy.GameData/Classes/Fish.CatchData.cs",
+    "Hash": "D4BFEDC7482A62E73FCDE46265E44F71332C03AA3D70F8071DF7E423FB41BE97"
+  },
+  {
+    "Path": "GatherBuddy.GameData/Classes/Fish.cs",
+    "Hash": "366CF43F499D88662F10AEB47C18765333073AD7D07440AFC7CEC5C33E97F792"
+  },
+  {
+    "Path": "GatherBuddy.GameData/Classes/FishingSpot.cs",
+    "Hash": "E00583C99AE43181F4A1643D5F4E4B0990C88A08849E93E621E61185CFD58967"
+  },
+  {
+    "Path": "GatherBuddy.GameData/Classes/Gatherable.cs",
+    "Hash": "DEB1ABEF72E44758481BA387739A72C4542F71F2A02FA29E54C1F4A6CE240F23"
+  },
+  {
+    "Path": "GatherBuddy.GameData/Classes/GatheringIcons.cs",
+    "Hash": "ADC59F80E87E4747769AB86699418BCFC66EA407B61446A17457C5090B41A263"
+  },
+  {
+    "Path": "GatherBuddy.GameData/Classes/Node.Base.cs",
+    "Hash": "F5F1A8687FF349406EECF4DAEF37AE1FC11F5D8904E03FD8B79EE6B5C0EFFA09"
+  },
+  {
+    "Path": "GatherBuddy.GameData/Classes/Node.Items.cs",
+    "Hash": "1DC58E3ACF6A20DF256122728ED4E1BADA716304ED02DED5B20F75B90BA9B9D7"
+  },
+  {
+    "Path": "GatherBuddy.GameData/Classes/Node.Location.cs",
+    "Hash": "41357C3A8F1F13F3E67CC0E9BE6FD75049C0589D2CCE1CAD5A17DFE8958EE178"
+  },
+  {
+    "Path": "GatherBuddy.GameData/Classes/OceanRoute.cs",
+    "Hash": "F8155710DE13DBC30DD1CC85F46C70CB2127CA81BDC735694FA03645BF67962F"
+  },
+  {
+    "Path": "GatherBuddy.GameData/Classes/Territory.cs",
+    "Hash": "C210F6F3A7BC6A8792A82CC8506590978DF6779B5BAB3B157BAB8E418FB56F98"
+  },
+  {
+    "Path": "GatherBuddy.GameData/Data/Fish/Data2.0.cs",
+    "Hash": "3C3C61C7024B96049B2AC39E60B110BF684FE9BB3B389C6AD560654CA55D4F81"
+  },
+  {
+    "Path": "GatherBuddy.GameData/Data/Fish/Data2.1.cs",
+    "Hash": "9331BA2D5941F5B4CD92285057847A866C17835ED3101286C07B24BF6664248E"
+  },
+  {
+    "Path": "GatherBuddy.GameData/Data/Fish/Data2.2.cs",
+    "Hash": "88E5F987F4FF881363E061A6F9A82D9228B4BAD8C9F57C46C86B21ED890CD570"
+  },
+  {
+    "Path": "GatherBuddy.GameData/Data/Fish/Data2.3.cs",
+    "Hash": "0F0A5A503BE02F4F540829B7E1A80F1DDEC2CFD67A48400D39A365968EB3EF17"
+  },
+  {
+    "Path": "GatherBuddy.GameData/Data/Fish/Data2.4.cs",
+    "Hash": "05F0162B05C832BA8125E7282C7B344ABF851410651E25BAEC5AC10A71367C7E"
+  },
+  {
+    "Path": "GatherBuddy.GameData/Data/Fish/Data2.5.cs",
+    "Hash": "69CA67E88406B73D4A9E8598AA6A59B4B906827C628CB10EBF23C6EA3B3DCA25"
+  },
+  {
+    "Path": "GatherBuddy.GameData/Data/Fish/Data3.0.cs",
+    "Hash": "05E9F5879CECB667F4E773BD0A1957933607F59233EAD6A227AD97DD43424807"
+  },
+  {
+    "Path": "GatherBuddy.GameData/Data/Fish/Data3.1.cs",
+    "Hash": "4C25BB123E93434F63DC6CE82C010C2D67E9B80FC8401D6BEC2CCA755CA90AEF"
+  },
+  {
+    "Path": "GatherBuddy.GameData/Data/Fish/Data3.3.cs",
+    "Hash": "CCE3D55448D34C44BC13D7CF7DD69B055565D99812CF47D68DD05C9831004722"
+  },
+  {
+    "Path": "GatherBuddy.GameData/Data/Fish/Data3.4.cs",
+    "Hash": "AF7B197F0C0AC0352C49D9492B811B57E49E3E15A444164263C99D9A1C7EB46A"
+  },
+  {
+    "Path": "GatherBuddy.GameData/Data/Fish/Data3.5.cs",
+    "Hash": "0AF54485C3B5F685CA499D17A593DE52CCCAB011CDE7A130B010D8BA1B9CF8F2"
+  },
+  {
+    "Path": "GatherBuddy.GameData/Data/Fish/Data4.0.cs",
+    "Hash": "EE37CADA19BCD370E8C81A33B311DC26704426F6A0768921E706EB57EA472B24"
+  },
+  {
+    "Path": "GatherBuddy.GameData/Data/Fish/Data4.1.cs",
+    "Hash": "21076F0E432CAB65B8F162F3A5F272842B12C40D7E79BFB39CC5C893A1301801"
+  },
+  {
+    "Path": "GatherBuddy.GameData/Data/Fish/Data4.2.cs",
+    "Hash": "DD42D042E392AE96D2C983284E6673DDA569B2EF90EBF7E0A5889E5695791E80"
+  },
+  {
+    "Path": "GatherBuddy.GameData/Data/Fish/Data4.3.cs",
+    "Hash": "30D488A4DE7B0F2DB455228E94851FEF08833362EF2AF1DACD2966B5BC35CD3F"
+  },
+  {
+    "Path": "GatherBuddy.GameData/Data/Fish/Data4.4.cs",
+    "Hash": "8EBC3C0074978B3738DDAAA1FAB2646CA6453A4648C02C449E6728D216EC0F5C"
+  },
+  {
+    "Path": "GatherBuddy.GameData/Data/Fish/Data4.5.cs",
+    "Hash": "0071303A649EBDE0E1FB3A5B03C84537D1DC14F4D11C45ACF817220290E1ACB4"
+  },
+  {
+    "Path": "GatherBuddy.GameData/Data/Fish/Data5.0.cs",
+    "Hash": "5A7D0BD7E5FC799AA69EE881A0B64F5CE5ECE360B36226882AE7077905EA94CB"
+  },
+  {
+    "Path": "GatherBuddy.GameData/Data/Fish/Data5.1.cs",
+    "Hash": "EC92F2879798C05B833849F364009EDD400731D85DD8AD298FE0D839C6BF2D3A"
+  },
+  {
+    "Path": "GatherBuddy.GameData/Data/Fish/Data5.2.cs",
+    "Hash": "AB6CE04B5EFF05B6DA3EB78A181BA311EF549735CA89F4E9084231670F0166C9"
+  },
+  {
+    "Path": "GatherBuddy.GameData/Data/Fish/Data5.3.cs",
+    "Hash": "E4935A3D66E627AE6365D9B963CAEB56A048E7C6C8FA876887B61BA63EB593F6"
+  },
+  {
+    "Path": "GatherBuddy.GameData/Data/Fish/Data5.4.cs",
+    "Hash": "F48E03B01386CE454D96798AD940A8222AE0AEFAE28178E3BF7F88D2A0445071"
+  },
+  {
+    "Path": "GatherBuddy.GameData/Data/Fish/Data5.5.cs",
+    "Hash": "4E241D2691E86DC0CC90AE6648FD25213393799CF3BB2E47D1BA2C82805FBBD5"
+  },
+  {
+    "Path": "GatherBuddy.GameData/Data/Fish/Data6.0.cs",
+    "Hash": "431D83007C10B99FDEF53CCEDE994D630957F3E002F6C2E6D29005CA948FFA35"
+  },
+  {
+    "Path": "GatherBuddy.GameData/Data/Fish/Data6.1.cs",
+    "Hash": "548EDD10455B1BD1DBD9E50E8CB35E602EE29D240B7AF3B8B2F45BD9EC0CC2B7"
+  },
+  {
+    "Path": "GatherBuddy.GameData/Data/Fish/Data6.2.cs",
+    "Hash": "BCC06A202A0AC24F1C06BEC8CC706862982C528901579995BB12A2DE6BEAF176"
+  },
+  {
+    "Path": "GatherBuddy.GameData/Data/Fish/Data6.3.cs",
+    "Hash": "05C964B2955C98A489E13B0E946C80E34A4C17A92FCABA4894412125040CB348"
+  },
+  {
+    "Path": "GatherBuddy.GameData/Data/Fish/Data6.4.cs",
+    "Hash": "AFAA1180B955E938CD463D6BC3F5CCAFEF074C027EB524BFDD1A70577151152F"
+  },
+  {
+    "Path": "GatherBuddy.GameData/Data/Fish/Data6.5.cs",
+    "Hash": "BDAB4039B245CE156296CFD102740EF1D0448569D25044F5CB26B05FA5D039FF"
+  },
+  {
+    "Path": "GatherBuddy.GameData/Data/Fish/Data7.0.cs",
+    "Hash": "A798296114D812E691E710C59EBDD42768961DA35F736C561458D47898FBF164"
+  },
+  {
+    "Path": "GatherBuddy.GameData/Data/Fish/Data7.1.cs",
+    "Hash": "FF07983CA9A2E4B3DA9C4327E346E85D2DDD81DAE205873E2D88BD2BAFA36D76"
+  },
+  {
+    "Path": "GatherBuddy.GameData/Data/Fish/Data7.2.cs",
+    "Hash": "7A9C08279A51942C76BD0AD0E7295AC1EE3F950EFBD036EDA1F5A3B943153966"
+  },
+  {
+    "Path": "GatherBuddy.GameData/Data/Fish/Data7.3.cs",
+    "Hash": "C1B9310371F9C5C341D4273CEB5FDE7347FF3C926929F718146068763D0A152C"
+  },
+  {
+    "Path": "GatherBuddy.GameData/Data/Fish/Data7.4.cs",
+    "Hash": "19542CFEE696F3578AA180368429753A8B8065792829815044C76FDF99E743DB"
+  },
+  {
+    "Path": "GatherBuddy.GameData/Data/Fish/Data7.5.cs",
+    "Hash": "138D216EBBAA30A5063FC5ECA9638FDA1DACFEEA924D9F214BFDB9EC3542EA18"
+  },
+  {
+    "Path": "GatherBuddy.GameData/Data/Fish/DataBase.cs",
+    "Hash": "846F6AB042DE9A2A50BE7170AA9BC57D3A4C366FD2762820850FD63C28FD2A57"
+  },
+  {
+    "Path": "GatherBuddy.GameData/Data/ForcedAetherytes.cs",
+    "Hash": "9983E9AB29E86A5947AFF8F13FEC35D5E7DE99F1D868B4ECC20DF1E361221800"
+  },
+  {
+    "Path": "GatherBuddy.GameData/Data/HiddenMaps.cs",
+    "Hash": "F7F394513D27E634FF992309992E89D2A916B147FE6543C450ED5D3CE306CE26"
+  },
+  {
+    "Path": "GatherBuddy.GameData/Data/SpearfishingData.cs",
+    "Hash": "D1EB7FA57DB2BDA3DFD1B56C603CB09FB6B11D100F4A094FC73E20621406D1F8"
+  },
+  {
+    "Path": "GatherBuddy.GameData/Data/UmbralNodes.cs",
+    "Hash": "0B41EC659D0F06BFB6ED9F0C88154ECDFF856AA25C1DD7BD16B5A7BB7A0E0BE8"
+  },
+  {
+    "Path": "GatherBuddy.GameData/Enums/BiteType.cs",
+    "Hash": "A44A955D6D37E55282E565B7103E2D2EFB3B97F6D1DD364DEB6F102259D12525"
+  },
+  {
+    "Path": "GatherBuddy.GameData/Enums/FishRestrictions.cs",
+    "Hash": "95A52117C67568D8F608E5DD1593810B903A8B2F3F153426082229103082AA11"
+  },
+  {
+    "Path": "GatherBuddy.GameData/Enums/FishType.cs",
+    "Hash": "5D4DBA3156FD89EC01975B849756B39A6645E7249BE7A3B27C9504F499DD2B50"
+  },
+  {
+    "Path": "GatherBuddy.GameData/Enums/GatheringType.cs",
+    "Hash": "286C0B104BF3E7BE425BBCB000907F3184C2BF8DC4166050F23CABD04CBEFBDE"
+  },
+  {
+    "Path": "GatherBuddy.GameData/Enums/HookSet.cs",
+    "Hash": "0BE2FB24732F2A3CB26B8F86BDE7325E87898AEFDA807128D4D568CE8AB88D87"
+  },
+  {
+    "Path": "GatherBuddy.GameData/Enums/NodeType.cs",
+    "Hash": "715BF660B3C14A9B06F6D1E77B6FD1598863EC1F7E6159113F5527168D09F4D0"
+  },
+  {
+    "Path": "GatherBuddy.GameData/Enums/OceanSpecies.cs",
+    "Hash": "E4DBEB026AC85239C15FFC4F2577EED463664FF1B48C6FD0404DF5798FC0F56C"
+  },
+  {
+    "Path": "GatherBuddy.GameData/Enums/OceanTime.cs",
+    "Hash": "A19B7E75376C699A688CEFF0DE1A7E1B532389CA703A08A260CDDEF5EF317651"
+  },
+  {
+    "Path": "GatherBuddy.GameData/Enums/Patch.cs",
+    "Hash": "8C2AC94F9901D016DAFD4B1EE32028B98034976EE804F2C086F618368BA9D5EC"
+  },
+  {
+    "Path": "GatherBuddy.GameData/Enums/Snagging.cs",
+    "Hash": "A3F684E622AE667992B248C189A9CFC3B159E6CE3602D27E27B96180178AE214"
+  },
+  {
+    "Path": "GatherBuddy.GameData/Enums/SpearfishSize.cs",
+    "Hash": "A3F0B479249D86390F5E7D80E0D83A04780D86BDA321644DF0EBC47167E0F0BF"
+  },
+  {
+    "Path": "GatherBuddy.GameData/Enums/SpearfishSpeed.cs",
+    "Hash": "80FC457CFA94526626E877909F74C19D28C572F616DAC8E61317810ABF609BBB"
+  },
+  {
+    "Path": "GatherBuddy.GameData/GameData.cs",
+    "Hash": "AC8876C1B37A53C4ADBF898B189935F358DE8DCC30043766E3C946695E89A094"
+  },
+  {
+    "Path": "GatherBuddy.GameData/GatherBuddy.GameData.csproj",
+    "Hash": "5B5BD7CFCC6BD10CDB5E328872BDEFC5DCED476406FAD23EEEC677510FD18089"
+  },
+  {
+    "Path": "GatherBuddy.GameData/Interfaces/IGatherable.cs",
+    "Hash": "34102B594E341E02CA752385BBEE6AD95FB3B6363792FCDF73E3072145E74E0A"
+  },
+  {
+    "Path": "GatherBuddy.GameData/Interfaces/ILocation.cs",
+    "Hash": "616E511B6105951636CC5DFCD685C0AD5FF6BD51435305F7CBF7FAD08AADE8E3"
+  },
+  {
+    "Path": "GatherBuddy.GameData/Interfaces/IMarkable.cs",
+    "Hash": "27177BCF675785557FC5A4182E8BAAB8FFB0590F716EAC272C2978D5D0269055"
+  },
+  {
+    "Path": "GatherBuddy.GameData/Interfaces/ITeleportable.cs",
+    "Hash": "0C1186A5A80F2FEB77CAB2F43DE2D0AA0446F287BB1269580666575D20F36D6E"
+  },
+  {
+    "Path": "GatherBuddy.GameData/OceanTimeline.cs",
+    "Hash": "444A1CCB6E2112119383F9E4C5895BFD1F64BA67078C4800C0B03DADD076D952"
+  },
+  {
+    "Path": "GatherBuddy.GameData/Structs/Bait.cs",
+    "Hash": "6FE7D9B1E9CA56566EC2CE7C3C71C9C43A35DA1CC8F2D4F4371C49251F0BEF85"
+  },
+  {
+    "Path": "GatherBuddy.GameData/Structs/CumulativeWeatherRates.cs",
+    "Hash": "234A79E0790D85C2B3C06C12C4844A795E253F48280590C04343D5FF2203ECA7"
+  },
+  {
+    "Path": "GatherBuddy.GameData/Structs/FishOverrideData.cs",
+    "Hash": "859FC0E1203D3196EC246095B03E59C567754CB994BD06328358195AA08EF2D1"
+  },
+  {
+    "Path": "GatherBuddy.GameData/Structs/WaymarkSet.cs",
+    "Hash": "946E4D34CAF8BCF6A0566ED5DD256828605B3DBFA3608871427F509B075F4BFF"
+  },
+  {
+    "Path": "GatherBuddy.GameData/Structs/Weather.cs",
+    "Hash": "6DF04E37814D3A31123F3A2CA129AB2CDF304A346B9441E3BE3FDCE230EC8AA4"
+  },
+  {
+    "Path": "GatherBuddy.GameData/Time/BitfieldUptime.cs",
+    "Hash": "67CA9191D2ECBB54F57E82CD1EEFBE9E861C5EF7ABD1D0FE51E1DB2CD4584258"
+  },
+  {
+    "Path": "GatherBuddy.GameData/Time/RealTime.cs",
+    "Hash": "B09660DEF73EC0448CD420D8893C4918E90D4A572A749F9015925E864E313FBC"
+  },
+  {
+    "Path": "GatherBuddy.GameData/Time/RepeatingInterval.cs",
+    "Hash": "FAB2A08DC93EE5069D62EB51A3D4E4DE52C5846C8AA72B6F8FA4F1774FD6FF0A"
+  },
+  {
+    "Path": "GatherBuddy.GameData/Time/TimeInterval.cs",
+    "Hash": "E54FC5E9C6BDBE9430185B332411B2295A4542A82F84B7580C6DCA28ACCE26A2"
+  },
+  {
+    "Path": "GatherBuddy.GameData/Time/TimeStamp.Eorzea.cs",
+    "Hash": "05F4D0EC94E99C5EF0F3D5CACA1585CC0FDF10CA7FF1B0E15B9A17FB44A8E5C0"
+  },
+  {
+    "Path": "GatherBuddy.GameData/Time/TimeStamp.cs",
+    "Hash": "7F16A2C71AB6C50FF1FF6EFAB1D9530B221EBE4A54D846F1CB7FC840B6769E39"
+  },
+  {
+    "Path": "GatherBuddy.GameData/Utility/ArgMinLinqExtension.cs",
+    "Hash": "21F886BD089D8D896D8877DE9D84CD07D33B4B59B7918A4DA9663C771FB21683"
+  },
+  {
+    "Path": "GatherBuddy.GameData/Utility/Bits.cs",
+    "Hash": "188A3D308F04DF3386E269BF930CF4EF5C061491BDD014400BB795F2676E8BA8"
+  },
+  {
+    "Path": "GatherBuddy.GameData/Utility/Maps.cs",
+    "Hash": "BE29FD6FFC221F0FC56DB1B93CD891727B3EEBB362845DAF12CA2AED5B6CEDEF"
+  },
+  {
+    "Path": "GatherBuddy.GameData/Utility/Math.cs",
+    "Hash": "F99CE21B617865F876D9ADC145DB4C9D890C7879F52E19A7A01CA86EA4F35E38"
+  },
+  {
+    "Path": "GatherBuddy.GameData/Utility/MultiString.cs",
+    "Hash": "0CD94640DAC25E1D53B67D2754E2740FA1342A1F1C9014F708A76D575572BC6E"
+  },
+  {
+    "Path": "GatherBuddy.GameData/packages.lock.json",
+    "Hash": "9E47D04FF08851708C9EFA481A40168F1FC110D7B22D815AD5E1D440B37543C6"
+  },
+  {
+    "Path": "GatherBuddy.Levenshtein/GatherBuddy.Levenshtein.csproj",
+    "Hash": "34BED8EA8767811B38E8788287B6DE8EE756BD538DFC661F9970CB38F5736887"
+  },
+  {
+    "Path": "GatherBuddy.Levenshtein/PatriciaTrie.Node.cs",
+    "Hash": "5406F3B11B5EEFCF6068906A424442E5714D883BAD6C1015AD64BF2CCF356064"
+  },
+  {
+    "Path": "GatherBuddy.Levenshtein/PatriciaTrie.cs",
+    "Hash": "C0E4FB06E18257D315CCB8CAD4CC10F225C180E91EC39C4EA44E9EEAE1AF9503"
+  },
+  {
+    "Path": "GatherBuddy.Levenshtein/StringView.cs",
+    "Hash": "75717A81C0F34F503D946F46676C87849DFF5519A5EEA627F46C010EEE7A508C"
+  },
+  {
+    "Path": "GatherBuddy.Levenshtein/packages.lock.json",
+    "Hash": "89CF0621D2922793AA3729DA1705786BFF99A022C35C28D30E8024B3D77D95CA"
+  },
+  {
+    "Path": "GatherBuddy.Models/Effects.cs",
+    "Hash": "E646E47D04EE238637C0AA0578463B42CE26E2FCABDD529AF0BF5E2627213B44"
+  },
+  {
+    "Path": "GatherBuddy.Models/GatherBuddy.Models.csproj",
+    "Hash": "D93F00BD182790E29355D00A66B1D1F25F52F8DF99243FC1695172550D75065C"
+  },
+  {
+    "Path": "GatherBuddy.Models/SimpleFishRecord.cs",
+    "Hash": "3D528FDEF367F5AD5AC59FCD793BEB71A751623D2E3D3DB3BBB818F7FBD8E2D7"
+  },
+  {
+    "Path": "GatherBuddy.sln",
+    "Hash": "F76F3F9FBEE4C03572474F1DF873BF29CB319A3846B913F9E33D1AA3E2906BDB"
+  },
+  {
+    "Path": "GatherBuddy.sln.DotSettings.user",
+    "Hash": "D63AA423959969A71319F74134C4E667518505709E07D9DDFFFA60B691ADEC4B"
+  },
+  {
+    "Path": "GatherBuddy/Alarms/Alarm.cs",
+    "Hash": "BED0184BDED687F0C639B73634B433CB4F248437E4F493782B7F258E8C84FB31"
+  },
+  {
+    "Path": "GatherBuddy/Alarms/AlarmGroup.cs",
+    "Hash": "5343821C5836C339E275D2117425DD4BDD9A8C17882C85D9644133CC0D883A34"
+  },
+  {
+    "Path": "GatherBuddy/Alarms/AlarmManager.AlarmEdit.cs",
+    "Hash": "89EABC192B58C53D09823D669348F1F30B53E4114D8EBC764247E486F797E26C"
+  },
+  {
+    "Path": "GatherBuddy/Alarms/AlarmManager.GroupEdit.cs",
+    "Hash": "3A44DD4BD49DB31A44A3562DF39E0D8A67A02C4F82B8A62369ECE8E306CDD853"
+  },
+  {
+    "Path": "GatherBuddy/Alarms/AlarmManager.cs",
+    "Hash": "F72001CAF2470C311E919276BD53D3B3013D43B9062D6BF1F28B1C460DEEA38C"
+  },
+  {
+    "Path": "GatherBuddy/Alarms/Sounds.cs",
+    "Hash": "F4C453F2E6F461FD8869DF9B1DEFE20959099CCB9DD25D284A34B816822FF170"
+  },
+  {
+    "Path": "GatherBuddy/AutoGather/AtkReaders/GatheringMasterpieceReader.cs",
+    "Hash": "F8E2BBB9158AF6837F424B2ECABF51E94C916774FC8CCE749A8FD0ECE455BEED"
+  },
+  {
+    "Path": "GatherBuddy/AutoGather/AtkReaders/GatheringReader.cs",
+    "Hash": "96FBD62046151AFDCC77CFEC9D4E50F5B49253FFAF8340D58BAFC3C127E498E5"
+  },
+  {
+    "Path": "GatherBuddy/AutoGather/AtkReaders/ItemSlot.cs",
+    "Hash": "33263E4E040D5FD495B967500CD98FA6B1B63C773BD94D6133EA6C9EE9198F95"
+  },
+  {
+    "Path": "GatherBuddy/AutoGather/AtkReaders/ItemSlotReader.cs",
+    "Hash": "58C3837B5C88828CABF80E0CFC3D447A6DD49EDE6B32A948F51CA03CCB4293AA"
+  },
+  {
+    "Path": "GatherBuddy/AutoGather/AutoGather.ActionIDs.cs",
+    "Hash": "BE886A79BDFF48C180A6231FF8D7D61CBBE06131DBA8C4B2D886ACEE3EF9B5E8"
+  },
+  {
+    "Path": "GatherBuddy/AutoGather/AutoGather.Actions.cs",
+    "Hash": "4F2C7E792C0FBF64E3AAD93E7D76F2D18FD5A59AFFE5B156917470BDF3CDED4A"
+  },
+  {
+    "Path": "GatherBuddy/AutoGather/AutoGather.AutoHook.cs",
+    "Hash": "7324349F15619EEE288D864049A8ACBA7BC5B58922C3667A35D5B6254CAECF64"
+  },
+  {
+    "Path": "GatherBuddy/AutoGather/AutoGather.Collectables.cs",
+    "Hash": "CE5BF785544931E06EB6E2800F056017251DEF121EBD6058E81CDF455BBAF24E"
+  },
+  {
+    "Path": "GatherBuddy/AutoGather/AutoGather.Config.cs",
+    "Hash": "BF137BF39CFD2386F2B34D966BAC0D131B22DEDD66694D3D17C29813754A1761"
+  },
+  {
+    "Path": "GatherBuddy/AutoGather/AutoGather.Consumables.cs",
+    "Hash": "832DB9EEFA3240A654F30C063E37DFB67760121CCCE1AE4414E68247E06C2EDB"
+  },
+  {
+    "Path": "GatherBuddy/AutoGather/AutoGather.DiademAether.cs",
+    "Hash": "230C72BD1C6288CD8E172A7F30A0BC03D064EDC9EAD8970AF2DCCD0BA3342D5E"
+  },
+  {
+    "Path": "GatherBuddy/AutoGather/AutoGather.FishingBuffs.cs",
+    "Hash": "4609CEEB2A39A1EF95E6F8234C4F69E542D4C5D407C757BF795145030851E8EC"
+  },
+  {
+    "Path": "GatherBuddy/AutoGather/AutoGather.FishingCollectable.cs",
+    "Hash": "58A2E3C80934B4FC358BE167763000336E1D1649CEC478213BE81D5D5461DD39"
+  },
+  {
+    "Path": "GatherBuddy/AutoGather/AutoGather.Gather.cs",
+    "Hash": "2BE3DDC168C60B05FA3E0365C42A3327E302B225DDDF5E7A15BF7AF82190A1D7"
+  },
+  {
+    "Path": "GatherBuddy/AutoGather/AutoGather.Movement.cs",
+    "Hash": "B536EA03F28AA95621514293217EE6E0C37B08DC3C621BF3F548EC0887126153"
+  },
+  {
+    "Path": "GatherBuddy/AutoGather/AutoGather.Purify.cs",
+    "Hash": "4657D98D3A1B6C59979FD195EA33A4AA73C5866BAB193E74CB46050103AECC48"
+  },
+  {
+    "Path": "GatherBuddy/AutoGather/AutoGather.Repair.cs",
+    "Hash": "75E4C9095513E80B7D7BAFA2BED9468C338660339AAFE2CC91243CC97B7B79C4"
+  },
+  {
+    "Path": "GatherBuddy/AutoGather/AutoGather.Spearfishing.cs",
+    "Hash": "FA75E317B5662A909DCD94AB57DD3A929204B3ADCEAE319472C3E54D53F6D080"
+  },
+  {
+    "Path": "GatherBuddy/AutoGather/AutoGather.Spiritbond.cs",
+    "Hash": "D80C80048DF66EA7BCFA49535604F3C759C541E71537C3BAE1ADE1DE5297A64C"
+  },
+  {
+    "Path": "GatherBuddy/AutoGather/AutoGather.Ui.cs",
+    "Hash": "4AB03102505988B9A4896836AE9E5B934A27441CFEB11D12F0DDBE1A3EB7F415"
+  },
+  {
+    "Path": "GatherBuddy/AutoGather/AutoGather.Var.cs",
+    "Hash": "9A4AF8D79255DC2D4668BB61E57FEAFB8B544DC559B120F981670DB66F8395C0"
+  },
+  {
+    "Path": "GatherBuddy/AutoGather/AutoGather.cs",
+    "Hash": "58705AF69827677574A641F4232B93C4C54C6B4C6B3006EBF65986615177DF7F"
+  },
+  {
+    "Path": "GatherBuddy/AutoGather/Collectables/CollectableInventoryHelper.cs",
+    "Hash": "BB26D568DB85B3B10A9A7B844C72436E00A85F5D5E54DF6FC2C0653EAC2EEA61"
+  },
+  {
+    "Path": "GatherBuddy/AutoGather/Collectables/CollectableManager.cs",
+    "Hash": "1393C61D09A91C0E51A10813BFFFDF86DB5C042157452A3F533F2EA18653CC16"
+  },
+  {
+    "Path": "GatherBuddy/AutoGather/Collectables/CollectableTurnInRequirements.cs",
+    "Hash": "E67E66A18EE1AA3CC91D4E72CBDDC7844B3B290624E8742EB190F133BA492131"
+  },
+  {
+    "Path": "GatherBuddy/AutoGather/Collectables/CollectableTurnInRouteResolver.cs",
+    "Hash": "2ED92C8FBFB3997AC9E7AC369BEB951425D63433AB37CA963E1F6F1D0D84267E"
+  },
+  {
+    "Path": "GatherBuddy/AutoGather/Collectables/CollectableWindowHandler.cs",
+    "Hash": "EF4B4E98270B6108AB9C19A9C0EAC877F132F816DC2E13CDB63CEA3F8C754A7A"
+  },
+  {
+    "Path": "GatherBuddy/AutoGather/Collectables/CollectableWindowValues.cs",
+    "Hash": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855"
+  },
+  {
+    "Path": "GatherBuddy/AutoGather/Collectables/Data/CollectableTurnInRoute.cs",
+    "Hash": "6C32C9AE7B9EAB3606C4E08933EDE8E0AC91EBC01DE711E5716935DBCDE07B70"
+  },
+  {
+    "Path": "GatherBuddy/AutoGather/Collectables/ItemHelper.cs",
+    "Hash": "13BF1CB002C4B5FE522D3F68C2EBA16FA38995FF3EE7CD3A145094B598E8CBF1"
+  },
+  {
+    "Path": "GatherBuddy/AutoGather/Collectables/ItemJobResolver.cs",
+    "Hash": "5FBFA8B6DCFA2EF36AFD049F58FEDA367237E243D9387758918B975D284C101F"
+  },
+  {
+    "Path": "GatherBuddy/AutoGather/Collectables/TreeListWindowBase.cs",
+    "Hash": "6A3E0D4638195832299155B4A95546762C72ED328DDCF23DB7C59FE81ED59DE4"
+  },
+  {
+    "Path": "GatherBuddy/AutoGather/Collectables/TurninWindow.cs",
+    "Hash": "01EDE5A89C8E3E420F05282639FF50BBD1F5DFAC1AC69B32D53F9A0FB05FE420"
+  },
+  {
+    "Path": "GatherBuddy/AutoGather/ConfigPreset.cs",
+    "Hash": "F38BF1B9D2CD2A15F1A6CCC3D774D955C0D97939B5547E8DA7B5259CE588F9CC"
+  },
+  {
+    "Path": "GatherBuddy/AutoGather/Extensions/GatherableExtensions.cs",
+    "Hash": "CEA72186279107F6A67E034B210582175758A8BCE6A91F27C392E1E54EB76912"
+  },
+  {
+    "Path": "GatherBuddy/AutoGather/GatheringTracker.cs",
+    "Hash": "70891E27909726FCCF2F9357C52E421F8E6F619A13429D602144AF8EA99B603C"
+  },
+  {
+    "Path": "GatherBuddy/AutoGather/Helpers/AdvancedUnstuck.cs",
+    "Hash": "AE9AC6BF20F8C8046964F4A4FEB18BB45AA2D80118827A59096B752BAAE20958"
+  },
+  {
+    "Path": "GatherBuddy/AutoGather/Helpers/Diadem.cs",
+    "Hash": "6947CE984821ED842470C4898FBB53878DB05AF3FF3E97B2FBD7CD17687ACE7C"
+  },
+  {
+    "Path": "GatherBuddy/AutoGather/Helpers/DiscipleOfLand.cs",
+    "Hash": "D5BCFD6BA1A0AF043647BACE5A8AF2F9A82EE5FC595CBD97A2F26EFBAB3743AC"
+  },
+  {
+    "Path": "GatherBuddy/AutoGather/Helpers/OverrideMovement.cs",
+    "Hash": "3B493ACFDC759492EDCB4EEE9D29ED2060FEA0BE4343A86E431660D9B45C57D9"
+  },
+  {
+    "Path": "GatherBuddy/AutoGather/Helpers/Reflection.cs",
+    "Hash": "A4CC7750480F0EACD38774FBF1D20E305DB6DDEC3E21E82B8161F31A187546C2"
+  },
+  {
+    "Path": "GatherBuddy/AutoGather/Helpers/RotationSolver.cs",
+    "Hash": "0D644684D4B48F36A09B18396307A36DB25C7B7BCC2D4368C998E4F712418231"
+  },
+  {
+    "Path": "GatherBuddy/AutoGather/Helpers/SoundHelper.cs",
+    "Hash": "307D594FC7ED26940EE3A8FB467156FCB314FF3E1220BD32720F74B96085FFA0"
+  },
+  {
+    "Path": "GatherBuddy/AutoGather/Lists/ActiveItemList.cs",
+    "Hash": "6A3A81547F0DD993E4FFFDF4FC7376BEBF959B610CB8C4E447C74EC0CDF7576A"
+  },
+  {
+    "Path": "GatherBuddy/AutoGather/Lists/AutoGatherList.cs",
+    "Hash": "1E75F56C9643EF4F767C9570235BFD008C14CC7D0258631B9327A271D7950D48"
+  },
+  {
+    "Path": "GatherBuddy/AutoGather/Lists/AutoGatherListsManager.ManipPreset.cs",
+    "Hash": "F6252A6BE6ABF4AD0A8D09066760447273169FE94D58E474A44030CB41746B1D"
+  },
+  {
+    "Path": "GatherBuddy/AutoGather/Lists/AutoGatherListsManager.cs",
+    "Hash": "CFFC6E7B5863D0397E6354093730619BE686FE1F840FC3FD6076440FC485014E"
+  },
+  {
+    "Path": "GatherBuddy/AutoGather/TaskManager.cs",
+    "Hash": "A8D90CDE59F2F68A403A348A9A74DFF42F794D0FBF35E7E6BDC870A540E9BF5C"
+  },
+  {
+    "Path": "GatherBuddy/AutoHookIntegration/AutoHookExporter.cs",
+    "Hash": "042C26A412939F161E9FBA5F190E65DF0FB5A36314F4E6717F4D56BF5485BE73"
+  },
+  {
+    "Path": "GatherBuddy/AutoHookIntegration/AutoHookPresetBuilder.cs",
+    "Hash": "8374F4BB041E1C1C3DB3176BFF1666B5D5623C1EF2F2D1AE1CDE8F07E0313061"
+  },
+  {
+    "Path": "GatherBuddy/AutoHookIntegration/AutoHookService.cs",
+    "Hash": "62B3ADFB7857F6425420B2F7BFA5DE59BECF01158BC8EBBC81544D36159888BE"
+  },
+  {
+    "Path": "GatherBuddy/AutoHookIntegration/AutoHookSpearfishingExporter.cs",
+    "Hash": "EF16D9A5F72AB0270572DAFFFD526DC3119B4C8BDE7A5679CC8F30B24481B20A"
+  },
+  {
+    "Path": "GatherBuddy/AutoHookIntegration/AutoHookSpearfishingPresetBuilder.cs",
+    "Hash": "41087775393FEF2EC56201A8934F1567427F446AC810C08EA22DDAA53EB0E7B9"
+  },
+  {
+    "Path": "GatherBuddy/AutoHookIntegration/BiteTimerService.cs",
+    "Hash": "21ED829BE9D238FF70F77950B94979E3D078A6B0789B8BA277677972450487E2"
+  },
+  {
+    "Path": "GatherBuddy/AutoHookIntegration/Models/AHAutoCastsConfig.cs",
+    "Hash": "160A0190E2A373430A35D1BE2C65ECBC8D7B6A157323EC8A666EE1032554F39C"
+  },
+  {
+    "Path": "GatherBuddy/AutoHookIntegration/Models/AHAutoGigConfig.cs",
+    "Hash": "2930FE3B0D4788175B55DBC028F5A346278C0474058F4FEF14569BE32CDC9FC7"
+  },
+  {
+    "Path": "GatherBuddy/AutoHookIntegration/Models/AHBaitFishClass.cs",
+    "Hash": "B6C3A19B373B393ABB6D923557EECB1CD51017DBFECDA1A0F42C7AE39BE9A475"
+  },
+  {
+    "Path": "GatherBuddy/AutoHookIntegration/Models/AHBaseBiteConfig.cs",
+    "Hash": "806F0F5CC53B19040CF22795E7C1C946E1B22CA69F3FFF2480597286601CE505"
+  },
+  {
+    "Path": "GatherBuddy/AutoHookIntegration/Models/AHBaseHookset.cs",
+    "Hash": "377173ED7B7482BA36DBF13AF68449BA8693958427D0151A66C02A15EFEF2863"
+  },
+  {
+    "Path": "GatherBuddy/AutoHookIntegration/Models/AHConditionSet.cs",
+    "Hash": "3F4841D89E916690AE1C1115BF24193EC59E3D07ECE302E4046A85FC418AC6DA"
+  },
+  {
+    "Path": "GatherBuddy/AutoHookIntegration/Models/AHCustomPresetConfig.cs",
+    "Hash": "DBF13FEA7A9798C4F4CA192D39EA6E96338EE4D62FE4B650A89B0B50409867FF"
+  },
+  {
+    "Path": "GatherBuddy/AutoHookIntegration/Models/AHEnums.cs",
+    "Hash": "3454FF6144B5890F5B77852E30A9701E9046740BE7030C8BE1DA0423B96E29AD"
+  },
+  {
+    "Path": "GatherBuddy/AutoHookIntegration/Models/AHExtraCfg.cs",
+    "Hash": "166FB97DC15BC308CD650DAA4A3F51C0BB7C3B5358A16A93CD281C3070089384"
+  },
+  {
+    "Path": "GatherBuddy/AutoHookIntegration/Models/AHFishConfig.cs",
+    "Hash": "EE60B4BFD0A07B23A8B2BBF39433FAA234053108076AD828791B5A02B98CE1A3"
+  },
+  {
+    "Path": "GatherBuddy/AutoHookIntegration/Models/AHHookConfig.cs",
+    "Hash": "F433AA3056C210CD751F87F2A60F6A00300555F8E67F1B5486E752DB507F5D5C"
+  },
+  {
+    "Path": "GatherBuddy/AutoHookIntegration/Models/AHLuresConfig.cs",
+    "Hash": "D90A883CCD8B436288F73947410212E1B62444A3B9F8786053692CD315D0FBD3"
+  },
+  {
+    "Path": "GatherBuddy/AutoHookIntegration/Models/BiteTimerData.cs",
+    "Hash": "8094180B7302141FB58797E8B34F81C707E0740FC853EDD6433FB307DAF17182"
+  },
+  {
+    "Path": "GatherBuddy/Automation/AddonMaster.cs",
+    "Hash": "6DC5A6308477FE68926AA9272927FD89028DEE248B7F4DA2471AE0C980976FE7"
+  },
+  {
+    "Path": "GatherBuddy/Automation/AtkReader.cs",
+    "Hash": "4D5E56F53FE29E15500C7915F8FC4980EE5C9CB657F4A953C36DC4F6A7874A28"
+  },
+  {
+    "Path": "GatherBuddy/Automation/AutomationHelpers.cs",
+    "Hash": "0A56C75FC9E3459417EBE45615E0C71F6E8E451AE07E3A9DD78B54D025190168"
+  },
+  {
+    "Path": "GatherBuddy/Automation/GenericHelpers.cs",
+    "Hash": "9D83F18E91E8050F03D91AFE00C00D9EC96F751E91C700AA8A3475340334DA01"
+  },
+  {
+    "Path": "GatherBuddy/Config/AetherytePreference.cs",
+    "Hash": "A456148DF69C1CD595712FD347BE52CE76F89156C563EDFE311D000BC0FECA80"
+  },
+  {
+    "Path": "GatherBuddy/Config/CollectableConfig.cs",
+    "Hash": "ADA221948707462CDD2C3768D60522D5740061B2E2B9DF5DB4296CD09A632E01"
+  },
+  {
+    "Path": "GatherBuddy/Config/ColorId.cs",
+    "Hash": "33C407CB6E24538F99C6D80AFB64A64CBC73C95CE4704B1E0A22A7A0270CCD66"
+  },
+  {
+    "Path": "GatherBuddy/Config/Configuration.Defaults.cs",
+    "Hash": "404C42619EA191963F0BE5C3E17E477D9698DDCAC396D6AC5D856500631EA019"
+  },
+  {
+    "Path": "GatherBuddy/Config/Configuration.cs",
+    "Hash": "B5099CE51E4D76BB295748DF4886E3B42A2BB1732BF08A4E5CED813C9D8AA395"
+  },
+  {
+    "Path": "GatherBuddy/Config/FishFilter.cs",
+    "Hash": "DA171A719F2CFC2B5AFE562E37816DBAA2ACA8275F773C73A36CFBF5EA1EE771"
+  },
+  {
+    "Path": "GatherBuddy/Config/GatheredFilter.cs",
+    "Hash": "9821DEDB1CBBF24C239C148957F6C3629F13C827CBB2434E2F73AFCF9F93809B"
+  },
+  {
+    "Path": "GatherBuddy/Config/ItemFilter.cs",
+    "Hash": "F56C54025216AD9352D0FBD45561468B7CAF1079918DBFF8997EC4BAA7ED4458"
+  },
+  {
+    "Path": "GatherBuddy/Config/JobFlags.cs",
+    "Hash": "1F55180671A509151E8AB8AE244ECA5EF58C3C8F3442A5DD405BDC08C0781C04"
+  },
+  {
+    "Path": "GatherBuddy/Config/LevelingFilter.cs",
+    "Hash": "3F85BE6655B35239FF9026911989AE7AD7D4612F68D77D74DA30BF8C70BF9E83"
+  },
+  {
+    "Path": "GatherBuddy/Config/TabSortOrder.cs",
+    "Hash": "40B000CD99B60F831B5AD1313BC2B132A066A88D5E0CE1B5FF18FA4FBABA936D"
+  },
+  {
+    "Path": "GatherBuddy/Crafting/ConsumableChecker.cs",
+    "Hash": "B64897170EDD7E2A4E7971CEC975279319055405EDC99014ACC12C1668F59DA5"
+  },
+  {
+    "Path": "GatherBuddy/Crafting/CraftingActionExecutor.cs",
+    "Hash": "8A96161DAE9D5C7F0655A4699063A1F92BFEFBB16A834ACB253B3F2AF7ADA320"
+  },
+  {
+    "Path": "GatherBuddy/Crafting/CraftingContextResolver.cs",
+    "Hash": "53FC637C9990BFCB1DBBCA6F62047A83B20A7ED9EE2AABDB2D78FB2E30229BAE"
+  },
+  {
+    "Path": "GatherBuddy/Crafting/CraftingExecutionPlan.cs",
+    "Hash": "2DD3954C7A705A6686E3B8F903543F2D78B54A786DF3B82D86B428B411E1E60D"
+  },
+  {
+    "Path": "GatherBuddy/Crafting/CraftingGameInterop.cs",
+    "Hash": "1A769B1A53BFD44C31C5E49D26B75733D31E2C2DF98002CB5FE813BC3367C14A"
+  },
+  {
+    "Path": "GatherBuddy/Crafting/CraftingGatherBridge.cs",
+    "Hash": "3DE5F82A83ACF0AB667263195BA70D2F519A3CB85C80B0CA04B7156B805CEA90"
+  },
+  {
+    "Path": "GatherBuddy/Crafting/CraftingListDefinition.cs",
+    "Hash": "D5E121D83C9DD1B39A986477BC085C5396D099C22BEDE0C2AE71707B5C2A34BB"
+  },
+  {
+    "Path": "GatherBuddy/Crafting/CraftingListManager.cs",
+    "Hash": "695660227D9336F15B775C5B3DA50EA860680AFADE2BB311B27B5322B2FD49B3"
+  },
+  {
+    "Path": "GatherBuddy/Crafting/CraftingListPlanner.cs",
+    "Hash": "4F31405C970A8B6E273EC0FA2C02628C64159019AEF7653992B0CD0FD6EAFC3E"
+  },
+  {
+    "Path": "GatherBuddy/Crafting/CraftingListQueueBuilder.cs",
+    "Hash": "2AF0C905675E759A3F037B2FCC2B3A017CB0526E9B235EF676E0CF3AB8406A1F"
+  },
+  {
+    "Path": "GatherBuddy/Crafting/CraftingQualityPolicy.cs",
+    "Hash": "47A319E736BBCE0EFB52F43AC471F957DEE6DD3515610C047DB0EA05B861633A"
+  },
+  {
+    "Path": "GatherBuddy/Crafting/CraftingQueue.cs",
+    "Hash": "13560706FFB9E3C20ABCE397D1B5BBC4C7D61FEE1C44B65827302BE326E369E5"
+  },
+  {
+    "Path": "GatherBuddy/Crafting/CraftingQueueProcessor.cs",
+    "Hash": "E896EE06970C4797FE0F89F4EC5967C26F1B03937D432FD5A97BF22EAD4DE4A2"
+  },
+  {
+    "Path": "GatherBuddy/Crafting/CraftingStateBuilder.cs",
+    "Hash": "22EFB4FF964765D94C41AEF937B60F443EF18D89C02AF25D3096C4F7F4756926"
+  },
+  {
+    "Path": "GatherBuddy/Crafting/CraftingTasks.cs",
+    "Hash": "81A84B8D340ED7EDB491CC2C30E99BCD20C93E7BEC91BCA2510DC5A0F1737896"
+  },
+  {
+    "Path": "GatherBuddy/Crafting/CraftingTimeEstimator.cs",
+    "Hash": "CEAF4B1DCC7A16E9327676E5A153C00F18380FD49BC9456E6EFC2D26DB7D18A9"
+  },
+  {
+    "Path": "GatherBuddy/Crafting/GearsetStatsReader.cs",
+    "Hash": "AF904BA9D70FA4416C97460CBF05D0043274BD098FFA69244C400C9BDB2CC5DA"
+  },
+  {
+    "Path": "GatherBuddy/Crafting/MacroParser.cs",
+    "Hash": "E8FC757BB4CE3C9E5E5F44AD542CE946F8A913711C9023DB387FE13C5B287468"
+  },
+  {
+    "Path": "GatherBuddy/Crafting/MateriaManager.cs",
+    "Hash": "0395A1DB2D9B0E89623BF7E882D53F9B0E6834ACB92498F66BD0C07F46073776"
+  },
+  {
+    "Path": "GatherBuddy/Crafting/MaterialSourceClassifier.cs",
+    "Hash": "519811099D04A2F82A64234B396A0A232E0448D17BFEA6A8B298AF3A0B860887"
+  },
+  {
+    "Path": "GatherBuddy/Crafting/MobDropInfoCache.cs",
+    "Hash": "7E33E454366A24C4C07BE1016A25F7FF220E175DFC5696DA32DA141C265B9919"
+  },
+  {
+    "Path": "GatherBuddy/Crafting/QualityCalculator.cs",
+    "Hash": "0AE53C7F70468FAE7A1D5B4134F1AA68D4838E89482B876F6DAC4ED4C23117BC"
+  },
+  {
+    "Path": "GatherBuddy/Crafting/RaphaelAssessmentService.cs",
+    "Hash": "E09084B430F5DA2BD9E68E99B13C5C651E30E231187AFA675F15C173F08D51C4"
+  },
+  {
+    "Path": "GatherBuddy/Crafting/RaphaelSolveCoordinator.cs",
+    "Hash": "4EE01D4C42E82F59215000B0577BC79E62A93202F59AC474A95E9A0703195DD8"
+  },
+  {
+    "Path": "GatherBuddy/Crafting/RaphaelSolveData.cs",
+    "Hash": "53F71D05A48F1C15E83DB1A82EED542E5CDFE5C55E2541247C8FF642B9206F89"
+  },
+  {
+    "Path": "GatherBuddy/Crafting/RecipeBrowserSettings.cs",
+    "Hash": "42FAF870F25B0EEF37A2AC31BC64EE08BB6D5E4370A035B833D97B8DC890E905"
+  },
+  {
+    "Path": "GatherBuddy/Crafting/RecipeManager.cs",
+    "Hash": "2FFBA8AC695A1AC606F9702582726A6C298882298638ABE450DDC1880068AA61"
+  },
+  {
+    "Path": "GatherBuddy/Crafting/RecipeNoteExt.cs",
+    "Hash": "1EF4EBC8BC4D52288B73DBD97949F1A781A742F3099B3CB154C676F41BB3E05A"
+  },
+  {
+    "Path": "GatherBuddy/Crafting/RepairManager.cs",
+    "Hash": "10DEE561979F560CBD58C6DCB232D7D10E90EE177A8F49A693371A28904F77DC"
+  },
+  {
+    "Path": "GatherBuddy/Crafting/RepairNPCHelper.cs",
+    "Hash": "E092BC379FB5111C01283BF474A433D9A14BFF407728E680F3694CC2FD36D556"
+  },
+  {
+    "Path": "GatherBuddy/Crafting/RepairNPCNavigator.cs",
+    "Hash": "4B82B45FBFEDB6ABE9438316CE4C92D53ABF1316DEC7FC9A88412609E915D506"
+  },
+  {
+    "Path": "GatherBuddy/Crafting/RetainerBellNavigator.cs",
+    "Hash": "7CA7D1AD07D6C8D3EF194B6DBDC057E375033F9D63CBE06F6AB357C2C86295D9"
+  },
+  {
+    "Path": "GatherBuddy/Crafting/RetainerItemCommandDispatcher.cs",
+    "Hash": "2575C4713C7EC24A6BE71BB2067B31FA8C82E2C9B5195DD3AE8C4F68E4E41821"
+  },
+  {
+    "Path": "GatherBuddy/Crafting/RetainerItemQuery.cs",
+    "Hash": "DE1F055B77CACE93C695B855C0D521E418508C34BD284BBA6B68E49291DDCE48"
+  },
+  {
+    "Path": "GatherBuddy/Crafting/RetainerTaskExecutor.cs",
+    "Hash": "EEA8E53876DCAA4B41B883D2FC8C1709F04880922C7ECA9E8CF716E75D53F111"
+  },
+  {
+    "Path": "GatherBuddy/Crafting/SkillActionMap.cs",
+    "Hash": "808D8269ED08EC79699B0745D1D613C39DC12459C8133F119E40F19603D9B4E0"
+  },
+  {
+    "Path": "GatherBuddy/Crafting/SynthesisReader.cs",
+    "Hash": "D69F44FD4EDFD4AA6686923DF49C53693C3D42954AE8A2519C44431A7B3FC078"
+  },
+  {
+    "Path": "GatherBuddy/CustomInfo/AutoOffsets.cs",
+    "Hash": "8B31FB15F6F190A92A5289EBA0C8C9989F5DE9BCE6CAC45EAC05ED538B1C8829"
+  },
+  {
+    "Path": "GatherBuddy/CustomInfo/FuzzyVector3.cs",
+    "Hash": "7A318B472E93B9525514046E6687EA6358E96818F9D671F1C3833273A3FCD83E"
+  },
+  {
+    "Path": "GatherBuddy/CustomInfo/IlvConvertTable.csv",
+    "Hash": "495E224F991F9F21A62F9876271EDCD79D7B4831099CE52B584B6AB3A697A1AF"
+  },
+  {
+    "Path": "GatherBuddy/CustomInfo/LocationData.cs",
+    "Hash": "6F514DE82582A44490BFF63933D9790CBCD17AD7B281AE1E2C8ABBFF302DEA99"
+  },
+  {
+    "Path": "GatherBuddy/CustomInfo/LocationManager.cs",
+    "Hash": "F4DEA42D7B54F14DB9A03961304CB2C2798F4429F1C6ABE7EB93CFD444737346"
+  },
+  {
+    "Path": "GatherBuddy/CustomInfo/WorldData.cs",
+    "Hash": "93310C4EE6C0E2A2E42551CF9551A43668263E7F821193460972DEE7A45A312A"
+  },
+  {
+    "Path": "GatherBuddy/CustomInfo/fish_records.json",
+    "Hash": "D892476D69DC1BAC23264BBE98EF9EE5DE66DF3B6EC5CF7F16845A2AF347DA2D"
+  },
+  {
+    "Path": "GatherBuddy/CustomInfo/honk-sound.wav",
+    "Hash": "8B3D3F2B5B0A487DD4B0BC1647190E19444CBEBDBBC61074AB793CD7501E33B4"
+  },
+  {
+    "Path": "GatherBuddy/CustomInfo/mob_drop_overrides.json",
+    "Hash": "21D8603756E7E021DDE1802E04D65447D71D4EBA978EBDBD5BE8746BAAE37F7A"
+  },
+  {
+    "Path": "GatherBuddy/CustomInfo/node_offsets.json",
+    "Hash": "04E50FA6470C29F18779565038650473EC097C1A4164441A823A5FF6F183A1D8"
+  },
+  {
+    "Path": "GatherBuddy/CustomInfo/world_locations.json",
+    "Hash": "0B36738290CE2FE9C1D6E236D199D60338CF6DFE3021241A1FD3916C40D30A72"
+  },
+  {
+    "Path": "GatherBuddy/Dalamud.cs",
+    "Hash": "DCE204B0440E13CC20FC0446ACE4265A6874A15BE42F6528C04E233F5A4574F2"
+  },
+  {
+    "Path": "GatherBuddy/FishTimer/FishRecord.cs",
+    "Hash": "92D5E44347796682F0D90BB34DE1EDDC0482A9A5680BDE28298EC0DDC9CC16F7"
+  },
+  {
+    "Path": "GatherBuddy/FishTimer/FishRecordTimes.cs",
+    "Hash": "BF4C9E3F5ECAD8E1FDF15711F2BB583934823C2D49D344D44153B853FF1A26B1"
+  },
+  {
+    "Path": "GatherBuddy/FishTimer/FishRecorder.Files.cs",
+    "Hash": "DF59512014C7FDBA015197AA616C5BAD1F4BAF5BF8FEE334EA330825F2E276A3"
+  },
+  {
+    "Path": "GatherBuddy/FishTimer/FishRecorder.Record.cs",
+    "Hash": "7DEB5ABC207643BEAEB1E428C79BD14CCAC4F9C9E72FDC5658008275398DC1D9"
+  },
+  {
+    "Path": "GatherBuddy/FishTimer/FishRecorder.Remote.cs",
+    "Hash": "7191B8F28EEEE59AA651613C526B43A02E0040253CD3D7ABEECC34917AE10CFE"
+  },
+  {
+    "Path": "GatherBuddy/FishTimer/FishRecorder.cs",
+    "Hash": "1B4ED68B00699FCFFAD4A21A2B480983C6A7BBDEC955B9449491DB601EB21E54"
+  },
+  {
+    "Path": "GatherBuddy/FishTimer/FishTimerWindow.FishCache.cs",
+    "Hash": "E1ED1488020A8090C6E2ECD8A561644CD2F78E9B17A947BAFD2B7C9DFA60C7D0"
+  },
+  {
+    "Path": "GatherBuddy/FishTimer/FishTimerWindow.cs",
+    "Hash": "8D2C02DD79EC0A38701292E9D47C1ACEB369D4B6E9809AC3A8E19E667D16CE96"
+  },
+  {
+    "Path": "GatherBuddy/FishTimer/Parser/FishingParser.Data.cs",
+    "Hash": "7B1B1578DAB11F61D468D464C0CCBDB326046CA3E47625CD2C9C3F0E760ACB45"
+  },
+  {
+    "Path": "GatherBuddy/FishTimer/Parser/FishingParser.Matches.cs",
+    "Hash": "15ED6687CDD1B6CDA50E9A49B5C270CF648B19AE69F4BC06DBC77DDF67633EE8"
+  },
+  {
+    "Path": "GatherBuddy/FishTimer/Parser/FishingParser.Regexes.cs",
+    "Hash": "8A6805019A3CD0A9C4994B40CE72695B2026B7D18C7A2CFFE09D3DC03EA896B4"
+  },
+  {
+    "Path": "GatherBuddy/FishTimer/Parser/FishingParser.cs",
+    "Hash": "CDB377CE6124B0D60803E9A2E347A1E494A6E556EB5C56F2A5BED308CD5B9DC5"
+  },
+  {
+    "Path": "GatherBuddy/GatherBuddy.Commands.cs",
+    "Hash": "C830802C6D3AB2420428FED6F2ED8A0105B57533C172CDF93269160385A8AFC4"
+  },
+  {
+    "Path": "GatherBuddy/GatherBuddy.cs",
+    "Hash": "36BFF734A870BF7B2149A8E95B3C4DFE564BE6FDFC1661C4949FA964218793D7"
+  },
+  {
+    "Path": "GatherBuddy/GatherBuddy.csproj",
+    "Hash": "EA88057D9E925A13C7C3E97DEE78BFB582B009DCD7858DD2109700422B03C420"
+  },
+  {
+    "Path": "GatherBuddy/GatherBuddyReborn.json",
+    "Hash": "FB1FEE3495D5FD81CFB33E6370CBAC8EF177A8B690F3CDBAB0FADB70EB1660F9"
+  },
+  {
+    "Path": "GatherBuddy/GatherGroup/DefaultGroups.cs",
+    "Hash": "2FF22C290B7803706E7F5573ECD5CFCE43340EF5D4FA8B33FF8653A5B897FD56"
+  },
+  {
+    "Path": "GatherBuddy/GatherGroup/GatherGroupManager.cs",
+    "Hash": "E1A2570D17743D8D51161A280C4FFDFFB688CB32BEC25E3D2DA41A6C2891713B"
+  },
+  {
+    "Path": "GatherBuddy/GatherGroup/TimedGroup.cs",
+    "Hash": "BBDCE5018DE494D7E77FB5CBF5F7D9DB8FAB806C427FD8159ABF72A8438E7D19"
+  },
+  {
+    "Path": "GatherBuddy/GatherGroup/TimedGroupNode.cs",
+    "Hash": "B3E7CC06BFCDA46FEC10C7C9BA8343CC885FCCBCB898780348C984831F7F205B"
+  },
+  {
+    "Path": "GatherBuddy/GatherHelper/GatherWindow.Ui.cs",
+    "Hash": "F44C9F0A01FE77443495BB74431BE67D2873E55A570A3947950B1597268C30B7"
+  },
+  {
+    "Path": "GatherBuddy/GatherHelper/GatherWindowManager.ManipPreset.cs",
+    "Hash": "2F03B6DCBF57329753D4188BD458D382200273898242714D4BB2E529E9449887"
+  },
+  {
+    "Path": "GatherBuddy/GatherHelper/GatherWindowManager.cs",
+    "Hash": "240CE5997560A260FFB770FED88C87303345FE86C24F968A0ED637D95F68C62E"
+  },
+  {
+    "Path": "GatherBuddy/GatherHelper/GatherWindowPreset.cs",
+    "Hash": "25C685F94985DD3605C9C51C6AAE0719CCD44D0BF37A8C315DDB2025BF389C3A"
+  },
+  {
+    "Path": "GatherBuddy/Gui/CollectablesWindow.cs",
+    "Hash": "EA2B2DFF2316852600E37230320E1EC593FD867DB13FAC1B17F2C94D2B064AFB"
+  },
+  {
+    "Path": "GatherBuddy/Gui/CraftingListConsumablesPopup.cs",
+    "Hash": "76BBFFB899E7CD6C1C3EC4EC99C959D1920C8103DE276D652BB4AD3E827C3A4B"
+  },
+  {
+    "Path": "GatherBuddy/Gui/CraftingListEditor.cs",
+    "Hash": "DCB13DE0769F41936CD5C6A7580771B25661BDAE0B8DA86539DD26BAF1E7122F"
+  },
+  {
+    "Path": "GatherBuddy/Gui/CraftingMaterialsWindow.cs",
+    "Hash": "751391813026662BF3CEBBC0628ABB49AF3415F0809A5CEE00C7231BFB1D6C99"
+  },
+  {
+    "Path": "GatherBuddy/Gui/CraftingRowIcons.cs",
+    "Hash": "72F0B3492EE26F86A90226178F68713724DFEDF4002CA7F338EA618D8198328C"
+  },
+  {
+    "Path": "GatherBuddy/Gui/CraftingStatusWindow.cs",
+    "Hash": "D3B19ACE0BF558A69EBA898F2FBA1C11A3FFC9E66765316DD78B476790CD6DDF"
+  },
+  {
+    "Path": "GatherBuddy/Gui/CraftingTreeWindow.cs",
+    "Hash": "90AF4B92CA6705488E73B9EF0E3214B96B74417DF1898E7A724E307BBA6EE133"
+  },
+  {
+    "Path": "GatherBuddy/Gui/ImGuiEx.cs",
+    "Hash": "0965E3B10DBF7AB60B15ABD2F176E8EC47A16797D305EC2141E40C47B0878409"
+  },
+  {
+    "Path": "GatherBuddy/Gui/Interface.AlarmTab.cs",
+    "Hash": "DD3638BE7FA6B47AAC2719073E64E5677CB83B087E9C292AAD84EA6BE47A26B0"
+  },
+  {
+    "Path": "GatherBuddy/Gui/Interface.AutoGatherListSelector.cs",
+    "Hash": "E052C96EF50094F6C22973F6976D0D6A0968B973668773B8E4FC32A5C2B05985"
+  },
+  {
+    "Path": "GatherBuddy/Gui/Interface.AutoGatherTab.cs",
+    "Hash": "9907BF65EB2E9BB68B91BBB8CB1962991314302225B09EB4BC48082A8CD3C25F"
+  },
+  {
+    "Path": "GatherBuddy/Gui/Interface.ConfigPresetsTab.cs",
+    "Hash": "210C46B8DB31C4BC8372497A68E98ACA7C11E9B342055E0BAD51C61185BC4B3F"
+  },
+  {
+    "Path": "GatherBuddy/Gui/Interface.ConfigTab.cs",
+    "Hash": "8F65F8A367861A46E57004EC0B03BDC1E27790A79DCA7D72F2127C0CF3497F8E"
+  },
+  {
+    "Path": "GatherBuddy/Gui/Interface.ContextMenus.cs",
+    "Hash": "D151AAE1E2DB39321D2F9A766C8B236ED54257BF7BB91C63EA04A560277DB4C8"
+  },
+  {
+    "Path": "GatherBuddy/Gui/Interface.DebugTab.cs",
+    "Hash": "7F1586744E9431AAB56B56B1DD55CDE268948DF4B983517DCCE4F71E90762347"
+  },
+  {
+    "Path": "GatherBuddy/Gui/Interface.FishTab.ExtendedFish.cs",
+    "Hash": "5CD5596B7BE860CC40133B74AA66596136AA85253BC2EE11B5E9E1CDCF20DBDF"
+  },
+  {
+    "Path": "GatherBuddy/Gui/Interface.FishTab.cs",
+    "Hash": "CE52CE8D1F4CA28CBC848FA4E79BA6AB72E548C3D96468CA4D96D3CA8B7C039E"
+  },
+  {
+    "Path": "GatherBuddy/Gui/Interface.GatherGroupTab.cs",
+    "Hash": "0A15185CC66DD243B5B3CA6A1EE85BF561DA4D88F7CA1FDC858EDA2B4B4DC22B"
+  },
+  {
+    "Path": "GatherBuddy/Gui/Interface.GatherWindowTab.cs",
+    "Hash": "257B81B58EB7921A089A5F226CE6927D4B405CF9552BC028D0E6D62AB6531D40"
+  },
+  {
+    "Path": "GatherBuddy/Gui/Interface.Header.cs",
+    "Hash": "1C9005D8BDA9ACCE81B78327F5CABAE79B8B75063F5FEF4A68359340DBD69480"
+  },
+  {
+    "Path": "GatherBuddy/Gui/Interface.ItemTab.ExtendedGatherable.cs",
+    "Hash": "EF2D161D87CC9DB4B550645F2EA41B3FEF4D77093596B85ADB1E8991A03B1F9C"
+  },
+  {
+    "Path": "GatherBuddy/Gui/Interface.ItemTab.cs",
+    "Hash": "4A78FFB2B00F9158F91B577D629B680735BDA2DB81D1EF86824F739D5DC95FFA"
+  },
+  {
+    "Path": "GatherBuddy/Gui/Interface.LocationsTab.cs",
+    "Hash": "79F2C4123B3B6330F074F91ED010B5BFD7C1994E6A5D4CCC257A3EADEC5D6234"
+  },
+  {
+    "Path": "GatherBuddy/Gui/Interface.RecordTab.cs",
+    "Hash": "5BD596D5D24FED35ECBC6DA957EC862FD9F82116D889B11DDF36F3D6E768472D"
+  },
+  {
+    "Path": "GatherBuddy/Gui/Interface.StatsPage.cs",
+    "Hash": "67F213942C1D3CE85A939916952816E971E291D5E1B85BC43AD319B69A1EC57D"
+  },
+  {
+    "Path": "GatherBuddy/Gui/Interface.Values.cs",
+    "Hash": "51C75779CF6F596E3C0AAD44C269D41A0CE1DE42358C3ADEAB954546CE6C7713"
+  },
+  {
+    "Path": "GatherBuddy/Gui/Interface.WeatherTab.CachedWeather.cs",
+    "Hash": "50EFF097584209092B74F59A26B0F5E2EA25567FA12D9554485682F9B401E87D"
+  },
+  {
+    "Path": "GatherBuddy/Gui/Interface.WeatherTab.cs",
+    "Hash": "819F536AB6A0971EFD9BAE4D4695C77AB63EFF87038EAC19C096787D7B4A7594"
+  },
+  {
+    "Path": "GatherBuddy/Gui/Interface.cs",
+    "Hash": "85C268824F2AA199FCAD5E411860CABE9E947D80413392E48EAB9B3757398A89"
+  },
+  {
+    "Path": "GatherBuddy/Gui/NativeItemTooltipBridge.cs",
+    "Hash": "4327A58E17FFDB6AFF3ADEB37F47F5DA1D7DB5F8ED1E13BA92CEFF43AF6C099F"
+  },
+  {
+    "Path": "GatherBuddy/Gui/RecipeCraftSettingsPopup.cs",
+    "Hash": "0CC267C78D8B6F247C1BB5BBD1CD45A317CF4CDFFDDE30C2E34B2CB5C2B27FCF"
+  },
+  {
+    "Path": "GatherBuddy/Gui/UiHelpers.cs",
+    "Hash": "B7A50EB707A7D20EFCFFA3BD33E72705D89F6244A9195320227AEEC12C57FFD4"
+  },
+  {
+    "Path": "GatherBuddy/Gui/VendorBuyListWindow.TeamCraftImport.cs",
+    "Hash": "4E42B8E4B14A54B8712A6268984394560DADE7EA7E48E78AA010CAB8314BA09E"
+  },
+  {
+    "Path": "GatherBuddy/Gui/VendorBuyListWindow.cs",
+    "Hash": "34CE8600C1DC59F28769EA23595A529DED04E6720F2E302C9F2975F6835B2837"
+  },
+  {
+    "Path": "GatherBuddy/Gui/VulcanUiScaling.cs",
+    "Hash": "33364A0CA47ADB2F0B68514ADDAC4FFB2308E551834A27E30617139F2DAEE188"
+  },
+  {
+    "Path": "GatherBuddy/Gui/VulcanUiStyle.cs",
+    "Hash": "12526DD79D67A9996C798DCF8DB2E968DEF5465FEE66C936BD50165E6BCBB86D"
+  },
+  {
+    "Path": "GatherBuddy/Gui/VulcanWindow.CraftingListsTab.Actions.cs",
+    "Hash": "9E615ABC5DEAFE2272CF891BE39942209250873393FBB3CBA95909976C1AFBD1"
+  },
+  {
+    "Path": "GatherBuddy/Gui/VulcanWindow.CraftingListsTab.Popups.cs",
+    "Hash": "1284FEE4671D3277A905C1F4C32A2A988073C1A0872FDC80D76FD6F346654730"
+  },
+  {
+    "Path": "GatherBuddy/Gui/VulcanWindow.CraftingListsTab.TeamCraft.cs",
+    "Hash": "74CE5D42EF97840F5BA205382335823507F93C4012943CA253EF4BDBD39A77BA"
+  },
+  {
+    "Path": "GatherBuddy/Gui/VulcanWindow.CraftingListsTab.cs",
+    "Hash": "D4E411E9E030C776B0450667A7CF4B7F8E897D76D39F8136B4C9353D76BDE93B"
+  },
+  {
+    "Path": "GatherBuddy/Gui/VulcanWindow.DebugTab.cs",
+    "Hash": "618AF106BBF6EA1513AB24418ADE3144B784A42D039C126E73CCCDD394E68FE3"
+  },
+  {
+    "Path": "GatherBuddy/Gui/VulcanWindow.MacrosTab.cs",
+    "Hash": "71F2BD1771650CB4433E0247CF6B6CF1CFEACC4CF56787E7AE01093E12201545"
+  },
+  {
+    "Path": "GatherBuddy/Gui/VulcanWindow.MarketboardTab.cs",
+    "Hash": "6ACD9332D2C548828694CB137D2EE0C900CBABF5A896E48BA88C34317E3C55C0"
+  },
+  {
+    "Path": "GatherBuddy/Gui/VulcanWindow.RecipesTab.Actions.cs",
+    "Hash": "8C210A4FB03F2E9EDC08DF2D832F1D66E411C92D00B9A286C0B226686A2A33CF"
+  },
+  {
+    "Path": "GatherBuddy/Gui/VulcanWindow.RecipesTab.Content.cs",
+    "Hash": "6A7C75A8679783E231F1733B1B244C954A030954D2229A103FC481FAC757A94E"
+  },
+  {
+    "Path": "GatherBuddy/Gui/VulcanWindow.RecipesTab.Models.cs",
+    "Hash": "D9B6025512206F5157B720BE90852114400721984F940B1D33493FAD4035EE0C"
+  },
+  {
+    "Path": "GatherBuddy/Gui/VulcanWindow.RecipesTab.cs",
+    "Hash": "2F1055B6D8BD8F9A1DB2C7EF46309A957FE638921863EC83123C5A839DE77B13"
+  },
+  {
+    "Path": "GatherBuddy/Gui/VulcanWindow.SettingsTab.cs",
+    "Hash": "4A4DCA30E26E403EAA2C434D35B7B49F9B48CFE56D8D45B15B287F04DEA34B72"
+  },
+  {
+    "Path": "GatherBuddy/Gui/VulcanWindow.SolutionsTab.cs",
+    "Hash": "7BAE4A25D143B113B06A50A61D8E7276D80BD1EC360EE3AA867F1C81208DA0D4"
+  },
+  {
+    "Path": "GatherBuddy/Gui/VulcanWindow.StandardSolverTab.cs",
+    "Hash": "4885141A66E7EF0B399218B01BF9FF05ECE5D78143305FEDB8EE854C3E393279"
+  },
+  {
+    "Path": "GatherBuddy/Gui/VulcanWindow.VendorsTab.cs",
+    "Hash": "D3F2E158513D15F13BAC80C01208E391C5F9611ADD86846473748FB3309D4FC0"
+  },
+  {
+    "Path": "GatherBuddy/Gui/VulcanWindow.WorkshopsTab.cs",
+    "Hash": "E69CB11214A5747B117707546A13334925612054416445968F5060A1A9728262"
+  },
+  {
+    "Path": "GatherBuddy/Gui/VulcanWindow.cs",
+    "Hash": "AA6DED4663C9B33E75567327C8D8E3FC5015EF2209A975CB0741B71BBBC7AFE0"
+  },
+  {
+    "Path": "GatherBuddy/Helpers/HomeNavigationHelper.cs",
+    "Hash": "4CB1E827328E5D97A209B53336C833BAF889F12BEF68D7E2DBB01AB58F460D2A"
+  },
+  {
+    "Path": "GatherBuddy/Helpers/Player.cs",
+    "Hash": "C662666CA867375FF299D01369D47D198CE73865BFAE41FE6F0B7973586002A7"
+  },
+  {
+    "Path": "GatherBuddy/Icons.cs",
+    "Hash": "50FE9F7995FBF0E2B8410106BD9895220571018745BD770D1EB626F67EF644CE"
+  },
+  {
+    "Path": "GatherBuddy/Marketboard/MarketboardModels.cs",
+    "Hash": "D82306097FBB34C5576485EA1822EA5978E0FF697EB2B2D23E0FCDE7B4541C11"
+  },
+  {
+    "Path": "GatherBuddy/Marketboard/MarketboardService.cs",
+    "Hash": "16451CEAFCE488E565B3EDD8E80EFB276F5772DA7EB550207F575E6EEA60413A"
+  },
+  {
+    "Path": "GatherBuddy/Marketboard/UniversalisService.cs",
+    "Hash": "B9B323FAC4ACA5DC891D452C2787AD759694E66A8BF7C1386557F4F2737AA26B"
+  },
+  {
+    "Path": "GatherBuddy/Plugin/Communicator.cs",
+    "Hash": "E0DA11FD26A8DA581609F70B1B4F32F4F2205C0720FF510E34946727404157FE"
+  },
+  {
+    "Path": "GatherBuddy/Plugin/ContextMenu.cs",
+    "Hash": "853093F8B18D38104F94F292BD9FD5F969C04D4964C32CBC338BBA5AD24F9648"
+  },
+  {
+    "Path": "GatherBuddy/Plugin/Executor.cs",
+    "Hash": "2D9F45CDEF6121790AFE86BC1423248DF4A1F8185533C99E5482CF73398CF856"
+  },
+  {
+    "Path": "GatherBuddy/Plugin/EzIpc.cs",
+    "Hash": "66E44482D67C95F862548F9C5EB5AE61F326F90695E1383440CDDCE19843D5AA"
+  },
+  {
+    "Path": "GatherBuddy/Plugin/Functions.cs",
+    "Hash": "2FA33BFD4E626697415C4FD6EB2341650ABE43C154CF604BA6647F86740B78C9"
+  },
+  {
+    "Path": "GatherBuddy/Plugin/GatherBuddyIpc.cs",
+    "Hash": "DD5CCC325B2252A3675BD5FE9E5177453199AA173C7EE101E7A422EC1CC6B4DB"
+  },
+  {
+    "Path": "GatherBuddy/Plugin/Identificator.cs",
+    "Hash": "B69C05BE88465884663A608C9844C6C17F7E1614ECDF9C0FED02F735C0B18468"
+  },
+  {
+    "Path": "GatherBuddy/Plugin/IpcSubscribers.cs",
+    "Hash": "A03AC82347D86365693E9FA70C53B0B44AC4D11564B223B2914DBEC1B2749C1D"
+  },
+  {
+    "Path": "GatherBuddy/Plugin/OceanUptime.cs",
+    "Hash": "F7FDFCC98755A48800B064C282AF9AE3CEE3F3CC7A8C20BFBBD83E9C36E0F12C"
+  },
+  {
+    "Path": "GatherBuddy/Plugin/Offsets.cs",
+    "Hash": "43512E21CD21C05301AB8B7451E580F39CEF50F0D7C6DD3D8CAA1FEEA5A992C3"
+  },
+  {
+    "Path": "GatherBuddy/Plugin/UptimeManager.cs",
+    "Hash": "502E04DA171E0F5E70E622116501045A7AB1834E203807640DE74E353BC4BDBC"
+  },
+  {
+    "Path": "GatherBuddy/Plugin/WotsitIpc.cs",
+    "Hash": "3F8C8131E11024960A58FB5342224144700C6B8FADAC9DA7F005263C2EF7662E"
+  },
+  {
+    "Path": "GatherBuddy/SeFunctions/AddonSpearFishingExtensions.cs",
+    "Hash": "2F978252E6B61BEB10BC1C927AF3AB26D6EF969C2BA6352ACD222FB90E673DA2"
+  },
+  {
+    "Path": "GatherBuddy/SeFunctions/CommandManager.cs",
+    "Hash": "2622BD06B5FF491A535BCD7BEE8572C024C0CEDB065066E8C9A538C90AAAC582"
+  },
+  {
+    "Path": "GatherBuddy/SeFunctions/CurrentBait.cs",
+    "Hash": "62D96CBCA9E867F52B4A1674CB9CB7B5BD9D9EDB7E1813BC5536701739C6381C"
+  },
+  {
+    "Path": "GatherBuddy/SeFunctions/EnhancedCurrentWeather.cs",
+    "Hash": "AE6F4CC277589C9A66D8B094AB7ED6EA5C79C4C9D8BE58743A879D4414FE4683"
+  },
+  {
+    "Path": "GatherBuddy/SeFunctions/EventFramework.cs",
+    "Hash": "A0EA04F037562D2BBAB043F369FBB2BFABF0C9C1DC4FBC3C20E1A1A026DF25F3"
+  },
+  {
+    "Path": "GatherBuddy/SeFunctions/FishLog.cs",
+    "Hash": "4EED4FCCBDBE41D676557FF617D614973AB720B531D9352FD150944307218CC5"
+  },
+  {
+    "Path": "GatherBuddy/SeFunctions/HousingManager.cs",
+    "Hash": "E45507C4380DB48AF94180044C4F5665CCE5457DB11FC5F8A6E20CFFC95C0A35"
+  },
+  {
+    "Path": "GatherBuddy/SeFunctions/MacroManager.cs",
+    "Hash": "D780B18678CE916B08A6A9ED460F26F24A913C1D86A7CCFB2132C254D50D1967"
+  },
+  {
+    "Path": "GatherBuddy/SeFunctions/SeAddressBase.cs",
+    "Hash": "5B6CFBB6FC532E3E646D29405B01A6FF3AC174E322D7B3C72A5A6A38BB12B3A3"
+  },
+  {
+    "Path": "GatherBuddy/SeFunctions/SeFunctionBase.cs",
+    "Hash": "4C6ACDE225EA986CF3EB19A5BF709AF1419C9C5A3BF657C21650EDF29CBCB3A9"
+  },
+  {
+    "Path": "GatherBuddy/SeFunctions/SeTime.cs",
+    "Hash": "554DAB958E7823C645F61E41E06C25561190DCBC437013592A5DA40521955966"
+  },
+  {
+    "Path": "GatherBuddy/SeFunctions/SeTugType.cs",
+    "Hash": "5AEF66E3E982EB117E12653FCD8384100B1B599BDD201CDC0774E73A02D20FBF"
+  },
+  {
+    "Path": "GatherBuddy/SeFunctions/SigScannerWrapper.cs",
+    "Hash": "74A7D711A600B6E340AE652294EFE19931E28ABE4C66EFC91E388C82AE4FBF57"
+  },
+  {
+    "Path": "GatherBuddy/SeFunctions/Teleporter.cs",
+    "Hash": "D4654EF7EAAE053869A26613219D4A55F2C4120B6A7B8FD9F37E92784669ADA5"
+  },
+  {
+    "Path": "GatherBuddy/SeFunctions/WaymarkManager.cs",
+    "Hash": "92BA59B533658DC750FD9112C5E021C44E3F63746513F836999C0237ED89E809"
+  },
+  {
+    "Path": "GatherBuddy/Spearfishing/SpearfishingHelper.Ui.cs",
+    "Hash": "B388B36D4ECACCBE2320CEB0B1AC0754BD19EBA5CDE62FF97D3A4A556F5FF32B"
+  },
+  {
+    "Path": "GatherBuddy/Spearfishing/SpearfishingHelper.cs",
+    "Hash": "51EA8BDBE9F22CAF64DFA603E42D32BBA5781CC7E2E60918DC212284B0C32048"
+  },
+  {
+    "Path": "GatherBuddy/Utility/DalamudPluginToggleHelper.cs",
+    "Hash": "67626869305B17CCCE4E38957FA37EE83898AB824BEEB64E3BFD68B9E034B4F4"
+  },
+  {
+    "Path": "GatherBuddy/Utility/MathHelpers.cs",
+    "Hash": "D9CD272BBD7E32B367083F7B28813393ED44EDF860A12B6A4B8AB08C1ABED362"
+  },
+  {
+    "Path": "GatherBuddy/Utility/ReflectionHelpers.cs",
+    "Hash": "30A699E72493FB81846BDE7767BAE93305A02F23B67F77D13BA95651DF4D842E"
+  },
+  {
+    "Path": "GatherBuddy/Utility/Throttler.cs",
+    "Hash": "583DDA58CEBB282093713A40193E385D7D158B81FD0A9D5543313B0A67F71C7E"
+  },
+  {
+    "Path": "GatherBuddy/Vulcan/MacroValidator.cs",
+    "Hash": "4B5561A5D8E486667A54FE66C8C6FEDBA25296E3671A01255938CBAED3CD0012"
+  },
+  {
+    "Path": "GatherBuddy/Vulcan/NOTICE.md",
+    "Hash": "1981BC560D1326573B4BC378F43DFA741ADD3D5111527403DE58652C54A53D66"
+  },
+  {
+    "Path": "GatherBuddy/Vulcan/Vendors/VendorAutomationRequirements.cs",
+    "Hash": "245B3DC178FB88920137C0F9BCC2B82D43ACAA9BCE2D5C9EF0E50830479A7B89"
+  },
+  {
+    "Path": "GatherBuddy/Vulcan/Vendors/VendorBuyListDefinition.cs",
+    "Hash": "63A8588953AD91AB6754BE14103822C83A4B4D38C479E858C40C71CD92F217F8"
+  },
+  {
+    "Path": "GatherBuddy/Vulcan/Vendors/VendorBuyListEntry.cs",
+    "Hash": "04D624D8DB57634A044B9170F5BAA06D4EC99E4C3C60A734633F36497A82D04C"
+  },
+  {
+    "Path": "GatherBuddy/Vulcan/Vendors/VendorBuyListManager.TeamCraftImport.cs",
+    "Hash": "04B6E987B3B9741CE99BC54889E17E8B908CB5185FFB9AD5260962F1FFCE95BB"
+  },
+  {
+    "Path": "GatherBuddy/Vulcan/Vendors/VendorBuyListManager.cs",
+    "Hash": "45A8697798315028BD4DD055615537DA8CDCE8F1428AF64AED128092E4D9F7C2"
+  },
+  {
+    "Path": "GatherBuddy/Vulcan/Vendors/VendorCurrencyAvailabilityResolver.cs",
+    "Hash": "13BE0FA8E4B2C73B7EA16FD58878BEDBC2118FD2D0E5EE4DC30B54E2C5EBF9E5"
+  },
+  {
+    "Path": "GatherBuddy/Vulcan/Vendors/VendorDevExclusions.cs",
+    "Hash": "BD00E16F69D00A2303D9C5D6EE074B032B67EDF9941BFAB49B6F026909A29498"
+  },
+  {
+    "Path": "GatherBuddy/Vulcan/Vendors/VendorGilShopReader.cs",
+    "Hash": "CF61DE34AEB8F94DDD741D52C7C41C155DB2E2AD114AB7F9033FE05065AA2612"
+  },
+  {
+    "Path": "GatherBuddy/Vulcan/Vendors/VendorGrandCompanyExchangeReader.cs",
+    "Hash": "C6FDDECB4ED9D942131FFE322E98EFDF8A26453BE60FEFFCDD62839C1FFDBB04"
+  },
+  {
+    "Path": "GatherBuddy/Vulcan/Vendors/VendorInteractionHelper.cs",
+    "Hash": "14C26D933D1EA62FB3DFB1BEFCFFC719D34C80A899DEF756F1E085D51F01D183"
+  },
+  {
+    "Path": "GatherBuddy/Vulcan/Vendors/VendorItem.cs",
+    "Hash": "C989CA2209B2E48A5CB8BD33A97DBF79C958418CFCD41DFF0248E1815F97C354"
+  },
+  {
+    "Path": "GatherBuddy/Vulcan/Vendors/VendorNavigator.cs",
+    "Hash": "3E10A56A9145A8B13C0EFB7AA9ACEB0BAC6868DAC605722B032C7BE5B1C23447"
+  },
+  {
+    "Path": "GatherBuddy/Vulcan/Vendors/VendorNpcLocation.cs",
+    "Hash": "519F15F8935A129FD1E2C2681FE82E1E8C8357C4A8C24AF40880A1E6C82F0A2A"
+  },
+  {
+    "Path": "GatherBuddy/Vulcan/Vendors/VendorNpcLocationCache.cs",
+    "Hash": "4C3EA8FFD0BDA0C1F48D7ACB0A547058C10E12A288374DF51F3D07A42918DB02"
+  },
+  {
+    "Path": "GatherBuddy/Vulcan/Vendors/VendorPreferenceHelper.cs",
+    "Hash": "ED8C2AB2EAFA31105DA918E0A63BBF308C95BB5BCA4368F6283977A8DE596F0F"
+  },
+  {
+    "Path": "GatherBuddy/Vulcan/Vendors/VendorPurchaseManager.cs",
+    "Hash": "C4277BB373D380CD47F4059E61E858544A03D617537EE4EBFF9B915BCEEE6602"
+  },
+  {
+    "Path": "GatherBuddy/Vulcan/Vendors/VendorShopResolver.cs",
+    "Hash": "4D27C607AEEEE411520FF3E3D38CAC16024CE33FA5B3F4D146114DB968CE7346"
+  },
+  {
+    "Path": "GatherBuddy/Vulcan/Vulcan.ActionExecutor.cs",
+    "Hash": "FF50C588CA3818A487B8C01D827F556336753ED8AA4BB6E68F80D15C0F192F73"
+  },
+  {
+    "Path": "GatherBuddy/Vulcan/Vulcan.Calculations.cs",
+    "Hash": "D0F5B7E68C415B7B6E74AFAD94E21CC53D3856ABB723CC3F09E8AEFD2A17355F"
+  },
+  {
+    "Path": "GatherBuddy/Vulcan/Vulcan.Condition.cs",
+    "Hash": "C2784665DB891A7B73E33C32218D0455EC23C96D045E4DC5975B989B6B9ABE2C"
+  },
+  {
+    "Path": "GatherBuddy/Vulcan/Vulcan.CraftingEvents.cs",
+    "Hash": "FD49489DA0076D0892F3FB37F80CA6CAED1289083CC8906F8E2006C8201F1D79"
+  },
+  {
+    "Path": "GatherBuddy/Vulcan/Vulcan.CraftingProcessor.cs",
+    "Hash": "DFF64E0BD48DCD8B1B9F141EE876DCD4EB0807E4157A63234046A379C3FBDB1B"
+  },
+  {
+    "Path": "GatherBuddy/Vulcan/Vulcan.GameStateBuilder.cs",
+    "Hash": "A8C3728BDAAE18698541CF4DEC8F312EEA7509CB4B7A84BFE68B1D0D0FE6DCEA"
+  },
+  {
+    "Path": "GatherBuddy/Vulcan/Vulcan.ProgressOnlySolver.cs",
+    "Hash": "FB57778F5C76C1CC3333F2CF36933E8F91461885CF938962EA9F61B0ED1EC8D9"
+  },
+  {
+    "Path": "GatherBuddy/Vulcan/Vulcan.RaphaelSolver.cs",
+    "Hash": "524234AC2CA808F31ECADA15A6553CB54ADC71279669BE91C299223D045199D5"
+  },
+  {
+    "Path": "GatherBuddy/Vulcan/Vulcan.Simulator.cs",
+    "Hash": "7E18A1F7F6523B0D6715AB53584E33075149E08C86F6C2B9278D8C740502CF8C"
+  },
+  {
+    "Path": "GatherBuddy/Vulcan/Vulcan.Skills.cs",
+    "Hash": "AD45E2A562437316C2C0CDD25FCA2D677AA08F24067A7A0AA61D49CAE8C94AD2"
+  },
+  {
+    "Path": "GatherBuddy/Vulcan/Vulcan.Solver.cs",
+    "Hash": "240D14974C49BF1EAE7F019F2DABA7EB3901A8489181F1C5B89B3EF73C6DD987"
+  },
+  {
+    "Path": "GatherBuddy/Vulcan/Vulcan.SolverUtils.cs",
+    "Hash": "B8D17A7A89B77A23EB4C1DDD97A944B19A2A10B134FE28E31764B8E83B5BECB2"
+  },
+  {
+    "Path": "GatherBuddy/Vulcan/Vulcan.StandardSolver.cs",
+    "Hash": "005D3DB102DF0D9A60458E1BBC87AA686AD94AE6D1618D5880FE797F2D450672"
+  },
+  {
+    "Path": "GatherBuddy/Vulcan/Vulcan.State.cs",
+    "Hash": "04E68E368D727EB277491264F8902288CA26C0D29B310B86A9E6A6A448956A4B"
+  },
+  {
+    "Path": "GatherBuddy/Vulcan/Vulcan.UserMacroSolver.cs",
+    "Hash": "90C95E87D873D882C84AFCB4DA04A2A74487FCDE3EB0ABDD63A0BB9E14DA50F8"
+  },
+  {
+    "Path": "GatherBuddy/Vulcan/Workshops/WorkshopDataService.cs",
+    "Hash": "7A64A76BF7CD66B3EEFE872E2C9291ED4D843BF27C14902C445C730B86AE83B3"
+  },
+  {
+    "Path": "GatherBuddy/Weather/WeatherListing.cs",
+    "Hash": "0B1675ADA9D88C06FD5A525ED74744857FE22EFAC1B84E01919647BD69722F5D"
+  },
+  {
+    "Path": "GatherBuddy/Weather/WeatherManager.Computation.cs",
+    "Hash": "4B96C637C1587D2F12798B83173CCB1085212204027E4F7BACD07C1DF7C68076"
+  },
+  {
+    "Path": "GatherBuddy/Weather/WeatherManager.cs",
+    "Hash": "BA8D07CF3770060D42E34FBD341DA528BC39FFAFDDB67FB2854BA5BB09E3F579"
+  },
+  {
+    "Path": "GatherBuddy/Weather/WeatherTimeline.cs",
+    "Hash": "BB3E2B6545E984AC3988A99518AE5C1320AFD0EA848ABCD0AA1D628993874F7F"
+  },
+  {
+    "Path": "GatherBuddy/packages.lock.json",
+    "Hash": "BDCC377688D420AE1B81CFA1100FE298BEB08C6F5D587F9731F766E84EB001A4"
+  },
+  {
+    "Path": "LICENSE",
+    "Hash": "1EB85FC97224598DAD1852B5D6483BBCF0AA8608790DCC657A5A2A761AE9C8C6"
+  },
+  {
+    "Path": "README.md",
+    "Hash": "BB0C2E8A4A6D800591EB0DDF187CDAB3359E91D37C20648F5FDB674285591AB7"
+  },
+  {
+    "Path": "images/QuadHookIcon.bmp",
+    "Hash": "5D5FA48603487714505B7A6E6FE32EFC9DD5F9B48610D0071DEA2533FC1E9F06"
+  },
+  {
+    "Path": "images/icon.png",
+    "Hash": "F70597DC5B8FB11C22EF6C9ACD9C6D5AAE5B819AFD396822BB3612548C78DDBF"
+  },
+  {
+    "Path": "manifest.json",
+    "Hash": "FB1FEE3495D5FD81CFB33E6370CBAC8EF177A8B690F3CDBAB0FADB70EB1660F9"
+  }
+]

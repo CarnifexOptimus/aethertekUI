@@ -1,0 +1,12 @@
+{
+  "Author": "CombatReborn",
+  "Name": "CombatReborn MaterialUI Showcase",
+  "InternalName": "CombatReborn.MaterialUI.Demo",
+  "AssemblyVersion": "0.1.0.0",
+  "Description": "Standalone MaterialUI showcase with interactive mock data.",
+  "Punchline": "Compact Material controls and dense data.",
+  "ApplicableVersion": "any",
+  "DalamudApiLevel": 15,
+  "LoadRequiredState": 0,
+  "CanUnloadAsync": false
+}

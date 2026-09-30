@@ -1,0 +1,7 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup><OutputType>Exe</OutputType><AllowUnsafeBlocks>true</AllowUnsafeBlocks><IsPackable>false</IsPackable></PropertyGroup>
+  <ItemGroup>
+    <Reference Include="Dalamud.Bindings.ImGui"><HintPath>$(DalamudLibPath)/Dalamud.Bindings.ImGui.dll</HintPath></Reference>
+    <Reference Include="HexaGen.Runtime"><HintPath>$(DalamudLibPath)/HexaGen.Runtime.dll</HintPath></Reference>
+  </ItemGroup>
+</Project>

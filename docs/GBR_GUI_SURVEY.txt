@@ -1,0 +1,53 @@
+CollectablesWindow.cs (450 lines): Button=10, Toggle=5, Combo=4, Popup=6, Tooltip=6, Disabled=4, Colors=13, Controller=2
+CraftingListConsumablesPopup.cs (508 lines): Button=2, Toggle=1, Combo=10, Input=3, Tooltip=2
+CraftingListEditor.cs (2239 lines): Button=16, Toggle=7, Combo=4, Input=2, Child=5, Popup=8, Tooltip=14, Disabled=3, Colors=34, Controller=8
+CraftingMaterialsWindow.cs (1400 lines): Button=20, Toggle=4, Table=1, Child=2, Popup=12, Tooltip=13, Progress=1, DrawList=4, Disabled=1, Colors=22
+CraftingRowIcons.cs (246 lines): Tooltip=1
+CraftingStatusWindow.cs (341 lines): Button=5, Tooltip=2, Colors=3, Controller=2
+CraftingTreeWindow.cs (642 lines): Button=3, Child=1, Tooltip=4, DrawList=6, Colors=10
+ImGuiEx.cs (161 lines): Tooltip=5, Colors=6
+Interface.AlarmTab.cs (374 lines): Button=6, Toggle=6, Combo=3, Input=2, Table=1, Child=1, Tooltip=8, Navigation=1, Colors=4
+Interface.AutoGatherListSelector.cs (458 lines): Button=7, Child=1, Popup=11, Tooltip=1, Colors=3
+Interface.AutoGatherTab.cs (517 lines): Button=13, Toggle=5, Input=1, Child=2, Popup=4, Tooltip=6, Navigation=1, DrawList=1, Disabled=1
+Interface.ConfigPresetsTab.cs (858 lines): Button=7, Toggle=22, Combo=1, Table=1, Child=1, Popup=3, Tooltip=4, Navigation=1, Colors=2
+Interface.ConfigTab.cs (1823 lines): Button=15, Toggle=112, Combo=10, Input=5, Child=3, Popup=1, Tooltip=30, Navigation=1
+Interface.ContextMenus.cs (338 lines): Button=1, Popup=10, Tooltip=5, Colors=2
+Interface.cs (104 lines): Navigation=1
+Interface.DebugTab.cs (1157 lines): Button=15, Toggle=2, Combo=3, Input=1, Table=9, Child=1, Tooltip=1, Navigation=1
+Interface.FishTab.cs (619 lines): Tooltip=6, Navigation=1, Colors=15
+Interface.FishTab.ExtendedFish.cs (561 lines): Tooltip=2, Colors=3
+Interface.GatherGroupTab.cs (479 lines): Button=11, Input=2, Table=1, Tooltip=5, Navigation=1, Colors=5
+Interface.GatherWindowTab.cs (220 lines): Button=4, Toggle=1, Tooltip=1, Navigation=1, Colors=2
+Interface.Header.cs (248 lines): Button=7, Tooltip=4, Colors=9
+Interface.ItemTab.cs (792 lines): Toggle=2, Combo=2, Tooltip=5, Navigation=1, Colors=7
+Interface.ItemTab.ExtendedGatherable.cs (132 lines):
+Interface.LocationsTab.cs (393 lines): Button=2, Tooltip=5, Navigation=1, Colors=8
+Interface.RecordTab.cs (762 lines): Button=8, Popup=2, Tooltip=10, Navigation=1, Colors=3
+Interface.StatsPage.cs (851 lines): Button=1, Tooltip=2, Navigation=1, DrawList=12
+Interface.Values.cs (43 lines):
+Interface.WeatherTab.CachedWeather.cs (44 lines):
+Interface.WeatherTab.cs (180 lines): Tooltip=2, Navigation=1, Colors=4
+NativeItemTooltipBridge.cs (425 lines): Tooltip=13
+RecipeCraftSettingsPopup.cs (1266 lines): Button=3, Toggle=1, Combo=29, Input=3, Child=1, Tooltip=6, Colors=14
+UiHelpers.cs (325 lines): Button=4, Combo=1, Input=1, Table=1, Child=1, Popup=3, Tooltip=10, Colors=6
+VendorBuyListWindow.cs (792 lines): Button=10, Toggle=1, Combo=2, Input=1, Table=1, Child=3, Popup=18, Tooltip=8, Disabled=9, Colors=29, Controller=2
+VendorBuyListWindow.TeamCraftImport.cs (264 lines): Button=4, Toggle=2, Combo=2, Input=1, Child=1, Disabled=1, Colors=2
+VulcanUiScaling.cs (23 lines):
+VulcanUiStyle.cs (74 lines): Colors=14
+VulcanWindow.CraftingListsTab.Actions.cs (184 lines):
+VulcanWindow.CraftingListsTab.cs (603 lines): Button=10, Toggle=1, Child=4, Popup=13, Tooltip=3, Navigation=3, Disabled=2, Colors=22, Controller=10
+VulcanWindow.CraftingListsTab.Popups.cs (215 lines): Button=6, Toggle=2, Input=2, Popup=15, Tooltip=2, Disabled=2, Colors=7
+VulcanWindow.CraftingListsTab.TeamCraft.cs (217 lines): Button=2, Toggle=1, Input=1, Child=1, Tooltip=1, Colors=2
+VulcanWindow.cs (475 lines): Button=4, Input=1, Popup=4, Tooltip=2, Navigation=1, DrawList=2, Disabled=2, Controller=5
+VulcanWindow.DebugTab.cs (324 lines): Button=6, Toggle=2, Combo=2, Tooltip=4, Navigation=2, Colors=1, Controller=32
+VulcanWindow.MacrosTab.cs (506 lines): Button=8, Toggle=2, Input=2, Child=3, Popup=3, Tooltip=2, Navigation=2, Disabled=1, Colors=16, Controller=2
+VulcanWindow.MarketboardTab.cs (425 lines): Button=4, Combo=2, Input=1, Table=1, Child=2, Popup=1, Tooltip=1, Navigation=3, Colors=20, Controller=6
+VulcanWindow.RecipesTab.Actions.cs (244 lines):
+VulcanWindow.RecipesTab.Content.cs (1086 lines): Button=11, Toggle=11, Input=3, Child=2, Popup=9, Tooltip=15, DrawList=1, Disabled=2, Colors=54, Controller=4
+VulcanWindow.RecipesTab.cs (481 lines): Child=3, Navigation=3, Colors=3, Controller=2
+VulcanWindow.RecipesTab.Models.cs (489 lines): Popup=1, Tooltip=3, Colors=9, Controller=4
+VulcanWindow.SettingsTab.cs (347 lines): Button=1, Toggle=8, Combo=4, Input=1, Tooltip=20, Navigation=2, Colors=3, Controller=2
+VulcanWindow.SolutionsTab.cs (300 lines): Button=2, Toggle=1, Input=1, Child=3, Tooltip=3, Navigation=2, Disabled=1, Colors=11, Controller=2
+VulcanWindow.StandardSolverTab.cs (196 lines): Button=1, Toggle=6, Combo=1, Tooltip=11, Navigation=2, Colors=1, Controller=2
+VulcanWindow.VendorsTab.cs (1232 lines): Button=32, Combo=2, Input=2, Table=1, Child=3, Popup=7, Tooltip=4, Navigation=3, DrawList=1, Disabled=1, Colors=20, Controller=1
+VulcanWindow.WorkshopsTab.cs (583 lines): Button=4, Toggle=1, Input=2, Child=6, Popup=11, Tooltip=10, Navigation=2, Disabled=2, Colors=28, Controller=2
