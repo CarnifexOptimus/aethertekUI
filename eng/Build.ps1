@@ -18,6 +18,8 @@ try {
         New-Item -ItemType Directory -Force -Path $libraryOut,$demoOut | Out-Null
         Copy-Item "src/CombatReborn.MaterialUI/bin/$configuration/net10.0-windows/CombatReborn.MaterialUI.dll" $libraryOut
         Copy-Item "src/CombatReborn.MaterialUI/bin/$configuration/net10.0-windows/CombatReborn.MaterialUI.pdb" $libraryOut
+        Copy-Item "src/CombatReborn.MaterialUI.Dalamud/bin/$configuration/net10.0-windows/CombatReborn.MaterialUI.Dalamud.dll" $libraryOut
+        Copy-Item "src/CombatReborn.MaterialUI.Dalamud/bin/$configuration/net10.0-windows/CombatReborn.MaterialUI.Dalamud.pdb" $libraryOut
         Get-ChildItem "src/CombatReborn.MaterialUI.Demo/bin/$configuration" -File |
             Where-Object { $_.Extension -in @('.dll','.pdb','.json','.zip') } |
             Copy-Item -Destination $demoOut
@@ -25,6 +27,10 @@ try {
     & dotnet pack src/CombatReborn.MaterialUI -c Release --no-build --no-restore -o artifacts -v:minimal *> artifacts/pack.log
     if ($LASTEXITCODE -ne 0) { Get-Content artifacts/pack.log; throw 'Pack failed' }
     Get-Content artifacts/pack.log
+    & dotnet pack src/CombatReborn.MaterialUI.Dalamud -c Release --no-build --no-restore -o artifacts -v:minimal *> artifacts/pack-adapter.log
+    if ($LASTEXITCODE -ne 0) { Get-Content artifacts/pack-adapter.log; throw 'Adapter pack failed' }
+    & (Join-Path $PSScriptRoot 'Verify-Consumer.ps1')
+    & (Join-Path $PSScriptRoot 'Verify-Artifacts.ps1')
     & (Join-Path $PSScriptRoot 'Verify-LocalOutputs.ps1')
 }
 finally { Pop-Location }

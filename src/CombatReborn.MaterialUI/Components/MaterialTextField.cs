@@ -3,20 +3,29 @@ using Dalamud.Bindings.ImGui;
 
 namespace CombatReborn.MaterialUI;
 
+/// <summary>Optional host-owned focus request, also restores editing focus after clearing.</summary>
+public sealed class MaterialSearchState
+{
+    public bool FocusRequested { get; set; }
+}
+
 public static class MaterialTextField
 {
-    public static bool SearchField(string id,ref string value,string hint="Search...",float width=-1,bool disabled=false)
-        => Field(id,ref value,hint,width,disabled,false,MaterialIcon.Search,MaterialIcon.None,true,ImGuiInputTextFlags.None,1024);
+    public static bool SearchField(string id,ref string value,string hint="Search...",float width=-1,bool disabled=false,MaterialSearchState? state=null)
+        => Field(id,ref value,hint,width,disabled,false,MaterialIcon.Search,MaterialIcon.None,true,ImGuiInputTextFlags.None,1024,state);
     public static bool TextField(string id,ref string value,string hint="",float width=-1,bool disabled=false,bool error=false,
         MaterialIcon leading=MaterialIcon.None,MaterialIcon trailing=MaterialIcon.None,ImGuiInputTextFlags flags=ImGuiInputTextFlags.None,int maxLength=1024)
         => Field(id,ref value,hint,width,disabled,error,leading,trailing,false,flags,maxLength);
 
     private static bool Field(string id,ref string value,string hint,float width,bool disabled,bool error,
-        MaterialIcon leading,MaterialIcon trailing,bool clear,ImGuiInputTextFlags flags,int maxLength)
+        MaterialIcon leading,MaterialIcon trailing,bool clear,ImGuiInputTextFlags flags,int maxLength,MaterialSearchState? searchState=null)
     {
         var m=MaterialTheme.Metrics; var c=MaterialTheme.Current.Colors;
         var height=Math.Max(m.ButtonHeight,ImGui.GetTextLineHeight()+2*m.Gap);
         var size=MaterialDraw.Size(new(width,0),220*m.Scale,height);
+        // Suppress decoration when a narrow panel cannot fit an editable area.
+        if (size.X < height*3) leading=MaterialIcon.None;
+        if (size.X < height*2) { clear=false; trailing=MaterialIcon.None; }
         var origin=ImGui.GetCursorScreenPos();
         ImGui.PushID(id); ImGui.BeginGroup(); ImGui.BeginDisabled(disabled);
         var dl=ImGui.GetWindowDrawList();
@@ -31,6 +40,11 @@ public static class MaterialTextField
         style.Style(ImGuiStyleVar.FrameBorderSize,0);
         ImGui.SetCursorScreenPos(origin+new Vector2(leadingWidth+m.Gap,0));
         ImGui.SetNextItemWidth(Math.Max(1,size.X-leadingWidth-trailingWidth-2*m.Gap));
+        if (!disabled && searchState is { FocusRequested: true })
+        {
+            ImGui.SetKeyboardFocusHere();
+            searchState.FocusRequested=false;
+        }
         var changed=ImGui.InputTextWithHint("##input",hint,ref value,maxLength,flags);
         var focused=ImGui.IsItemActive()||ImGui.IsItemFocused();
         style.Dispose();
@@ -39,7 +53,7 @@ public static class MaterialTextField
         {
             ImGui.SetCursorScreenPos(origin+new Vector2(Math.Max(0,size.X-height),0));
             if(MaterialButton.IconButton("clear",MaterialIcon.Close,disabled:disabled||value.Length==0,size:height/m.Scale))
-            { value=string.Empty; changed=true; }
+            { value=string.Empty; changed=true; if(searchState is not null) searchState.FocusRequested=true; }
         }
         else if(trailing!=MaterialIcon.None)
             MaterialIcons.Draw(trailing,origin+new Vector2(size.X-height+(height-m.IconSize)*.5f,(height-m.IconSize)*.5f),m.IconSize,c.OnSurfaceVariant);

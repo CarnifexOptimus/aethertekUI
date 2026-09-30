@@ -1,7 +1,7 @@
 # CombatReborn.MaterialUI
 A standalone, dark-first, Material Design 3-inspired immediate-mode C# library for Dalamud API 15. Compact desktop controls, cached seed-derived themes, scoped styles and native data tables. This is an independent prototype, with no dependency on GBR, ElliLib, RSR or plugin-specific game code.
 
-**Status:** compiled library + standalone interactive demo; Debug and Release validation is reproducible below. Native headless ImGui tests exercise the real controls and all five demo pages. The plugin has not been installed into Dalamud or tested in the game.
+**Status v0.2:** compiled library, optional Dalamud host adapter, seven-page interactive demo, and an independent consumer built using both project references and local packages. Coverage now includes whole-plugin settings, list editors, specialized overlay escape hatches, and large tables. The plugin has not been installed into Dalamud or tested in the game. See the [integration guide](docs/INTEGRATION_GUIDE.md) and [whole-GBR coverage](docs/FULL_GBR_COVERAGE.md).
 
 ## Repository
 ```text
@@ -13,9 +13,12 @@ src/
     Core/                          colors, palettes, roles, metrics, motion, scopes
     Drawing/                       native hit behavior and vector icons
     Components/                    composable control families
+    Data/                          cached options/views and key selection
+  CombatReborn.MaterialUI.Dalamud/  optional WindowSystem adapter
   CombatReborn.MaterialUI.Demo/
     Plugin.cs                      /crmaterial and UI lifecycle
-    Showcase*.cs                   five interactive pages and floating overlay
+    Showcase*.cs                   seven interactive pages and floating overlay
+samples/ConsumerContract/          independent compiled integration example
 tests/
   CombatReborn.MaterialUI.Tests/    pure logic and native input/render tests
 eng/                               local environment, build and verification scripts
@@ -56,11 +59,13 @@ All paths below are relative to this repository:
 - Reusable DLL: artifacts/lib/Release/CombatReborn.MaterialUI.dll
 - Debug DLL: artifacts/lib/Debug/CombatReborn.MaterialUI.dll
 - Demo: artifacts/demo/Release/CombatReborn.MaterialUI.Demo.dll (with manifest, library and PDBs beside it)
-- Local package: artifacts/CombatReborn.MaterialUI.0.1.0.nupkg
+- Optional adapter DLL: artifacts/lib/Release/CombatReborn.MaterialUI.Dalamud.dll
+- Local packages: artifacts/CombatReborn.MaterialUI.0.2.0.nupkg and artifacts/CombatReborn.MaterialUI.Dalamud.0.2.0.nupkg
+- Package consumer proof: artifacts/consumer-package/ConsumerContract.dll
 - Normal library output: src/CombatReborn.MaterialUI/bin/{Debug|Release}/net10.0-windows/
 - Normal demo output: src/CombatReborn.MaterialUI.Demo/bin/{Debug|Release}/
 - Build/test logs: artifacts/build-*.log, artifacts/test-*.log, artifacts/TestResults/
-- Visual previews: artifacts/previews/page-0.png through page-4.png, settings-150-percent.png
+- Visual previews: artifacts/previews/page-0.png through page-6.png, settings-150-percent.png, integration density/scale previews
 
 ## Use from a plugin
 A normal ProjectReference is the preferred local development arrangement:
@@ -120,6 +125,8 @@ Core generates primary/secondary/tertiary/neutral/error tonal palettes in OKLCH 
 3. Dense mock gathering table: search/filter, native sorting/resizing and selected/hover rows. Semantic status colors remain fixed when the accent changes.
 4. Action dashboard: mock Start/Pause/Stop, Move/Return/Repair, progress/status.
 5. Realistic settings: switches, route combo, segmented mode, slider, preset field and nested dependency card.
+6. List editor: resizable panels, tree/folder drag-and-drop, context menu, job bit filters, searchable 500-option combo, quantity/delay editors, inherited setting and multiline import.
+7. Large catalog: 10,000 cached mock rows, native sorting/resizing/reordering/hiding, clipped rendering, key-based multiselection and semantic statuses.
 
 ## Manually load later
 No plugin was installed by this task.
@@ -139,4 +146,4 @@ The dev-plugin location workflow is described in the [official Dalamud getting-s
 - [Future GBR plan](docs/GBR_INTEGRATION_PLAN.md) — not implemented.
 - [Known limitations](docs/KNOWN_LIMITATIONS.md) and [smoke test](docs/PROTOTYPE_SMOKE_TEST.md).
 
-The prototype supports a cautious isolated GBR pilot, with CraftingStatusWindow recommended first. In-game typography, controller routing, localization and large-table performance remain second-pass work. GBR integration requires new explicit authorization; it is not part of this repository's prototype task.
+The integration kit covers the audited common patterns across GBR, including non-Gui overlays. Native/domain-specific rendering remains composable under the theme. The [compiled consumer example](samples/ConsumerContract/ConsumerUi.cs) is the starting point for later wiring; CraftingStatusWindow remains the recommended first acceptance window. GBR wiring and in-game validation require separate explicit authorization and have not been performed.

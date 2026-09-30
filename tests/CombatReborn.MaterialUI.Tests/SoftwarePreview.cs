@@ -9,21 +9,52 @@ internal static unsafe class SoftwarePreview
 {
     public static void Save(string path,NativeTestContext host)
     {
+        // The atlas can be rebuilt during frame submission; never retain its old backing pointer.
+        host.RefreshAtlas();
         var data=ImGui.GetDrawData();
+        if(Environment.GetEnvironmentVariable("MATERIALUI_MESH_DIAGNOSTICS")=="1")
+        {
+            Directory.CreateDirectory(Path.GetDirectoryName(path)!);
+            using var mesh=new BinaryWriter(File.Create(path+".mesh"));
+            mesh.Write(data.CmdListsCount);
+            for(var index=0;index<data.CmdListsCount;index++)
+            {
+                var list=new ImDrawListPtr(data.CmdLists[index]);
+                mesh.Write(list.CmdBuffer.Size);mesh.Write(list.VtxBuffer.Size);mesh.Write(list.IdxBuffer.Size);
+                for(var ci=0;ci<list.CmdBuffer.Size;ci++)
+                {
+                    var cmd=list.CmdBuffer[ci];
+                    mesh.Write(cmd.ClipRect.X);mesh.Write(cmd.ClipRect.Y);mesh.Write(cmd.ClipRect.Z);mesh.Write(cmd.ClipRect.W);
+                    mesh.Write(cmd.ElemCount);mesh.Write(cmd.IdxOffset);mesh.Write(cmd.VtxOffset);
+                }
+                for(var vi=0;vi<list.VtxBuffer.Size;vi++)
+                {
+                    var vertex=list.VtxBuffer[vi];
+                    mesh.Write(vertex.Pos.X);mesh.Write(vertex.Pos.Y);mesh.Write(vertex.Uv.X);mesh.Write(vertex.Uv.Y);mesh.Write(vertex.Col);
+                }
+                for(var ii=0;ii<list.IdxBuffer.Size;ii++) mesh.Write(list.IdxBuffer[ii]);
+            }
+        }
         var width=(int)data.DisplaySize.X;var height=(int)data.DisplaySize.Y;
         var rgba=new byte[width*height*4];
         for(var i=0;i<rgba.Length;i+=4) { rgba[i]=26;rgba[i+1]=29;rgba[i+2]=33;rgba[i+3]=255; }
         for(var listIndex=0;listIndex<data.CmdListsCount;listIndex++)
         {
             var list=new ImDrawListPtr(data.CmdLists[listIndex]);
+            // Snapshot native vectors before CPU rasterization. Nested generated binding indexers
+            // can alias temporary wrapper storage under optimized code.
+            var vertices=new ImDrawVert[list.VtxBuffer.Size];
+            var indices=new ushort[list.IdxBuffer.Size];
+            for(var i=0;i<vertices.Length;i++) vertices[i]=list.VtxBuffer[i];
+            for(var i=0;i<indices.Length;i++) indices[i]=list.IdxBuffer[i];
             for(var ci=0;ci<list.CmdBuffer.Size;ci++)
             {
                 var cmd=list.CmdBuffer[ci];
                 for(uint offset=0;offset<cmd.ElemCount;offset+=3)
                 {
-                    var a=list.VtxBuffer[(int)(list.IdxBuffer[(int)(cmd.IdxOffset+offset)]+cmd.VtxOffset)];
-                    var b=list.VtxBuffer[(int)(list.IdxBuffer[(int)(cmd.IdxOffset+offset+1)]+cmd.VtxOffset)];
-                    var c=list.VtxBuffer[(int)(list.IdxBuffer[(int)(cmd.IdxOffset+offset+2)]+cmd.VtxOffset)];
+                    var a=vertices[(int)(indices[(int)(cmd.IdxOffset+offset)]+cmd.VtxOffset)];
+                    var b=vertices[(int)(indices[(int)(cmd.IdxOffset+offset+1)]+cmd.VtxOffset)];
+                    var c=vertices[(int)(indices[(int)(cmd.IdxOffset+offset+2)]+cmd.VtxOffset)];
                     Raster(a,b,c,cmd.ClipRect,rgba,width,height,host);
                 }
             }

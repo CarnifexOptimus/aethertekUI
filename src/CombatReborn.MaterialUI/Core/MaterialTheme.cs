@@ -24,7 +24,7 @@ public sealed class MaterialTheme
         Density = density;
     }
     public Vector4 SurfaceColor(Vector4 role) => MaterialColor.Alpha(role,SurfaceOpacity);
-    public static ThemeScope Push(MaterialTheme theme, float globalScale = 1) => new(theme,globalScale);
+    public static ThemeScope Push(MaterialTheme theme, float globalScale = 1, bool applyMetrics = true) => new(theme,globalScale,applyMetrics);
 
     public ref struct ThemeScope
     {
@@ -32,7 +32,7 @@ public sealed class MaterialTheme
         private readonly MaterialTheme? previous;
         private readonly MaterialMetrics previousMetrics;
         private bool active;
-        internal ThemeScope(MaterialTheme theme, float scale)
+        internal ThemeScope(MaterialTheme theme, float scale, bool applyMetrics)
         {
             ArgumentNullException.ThrowIfNull(theme);
             if (!float.IsFinite(scale) || scale <= 0) throw new ArgumentOutOfRangeException(nameof(scale));
@@ -88,6 +88,7 @@ public sealed class MaterialTheme
             style.Color(ImGuiCol.TableRowBg,Vector4.Zero);
             style.Color(ImGuiCol.TableRowBgAlt,MaterialColor.Alpha(c.OnSurface,.025f));
             style.Color(ImGuiCol.ModalWindowDimBg,MaterialColor.Alpha(c.Scrim,.5f));
+            if (!applyMetrics) return;
             style.Style(ImGuiStyleVar.WindowRounding,m.OuterRadius);
             style.Style(ImGuiStyleVar.ChildRounding,m.OuterRadius);
             style.Style(ImGuiStyleVar.PopupRounding,m.Radius);

@@ -34,4 +34,8 @@ CraftingListEditor (queue planning intertwined with draw state); RecipesTab.Cont
 ## Controller acceptance criteria
 Keep bumper tab order and programmatic focus, context-menu activation and root/child focused-window reporting. Test disabled controls, popup focus return, search clear focus, long scrolling tables and D-pad traversal. Standard ImGui button navigation is covered by the prototype; GBR's custom controller bridge is not. Do not enable global ImGui navigation flags from the library.
 
-The prototype is suitable for a limited opt-in pilot. Broad migration depends on in-game visual/input validation and retaining the existing domain/table behaviors.
+The v0.2 integration kit now covers the common controls needed by the entire surveyed plugin. Use MaterialWindowHost, ThemeController and the compiled ConsumerContract example for wiring; use MaterialOptions/Combo, Input, Override and Flags for settings, and native tree/context/drag scopes for editors. Keep existing table abstractions; optional DataView/SelectionSet/Clipper help only where the consumer needs them.
+
+The whole-plugin scope also includes AutoGather.Ui, GatherWindow.Ui, FishTimerWindow/FishCache, and SpearfishingHelper.Ui outside Gui. Apply the colors-only profile to game-anchored geometry where useful. Keep fish timer charts, spearfishing overlay coordinates, uptime formatting, native item tooltips, texture acquisition and domain ColorId handling. These are consumer responsibilities rather than generic widgets to rewrite.
+
+Library and package consumption are compiled and native interaction tests pass. Broad migration still requires wiring and in-game visual/input validation; no end-to-end GBR compatibility is claimed before that pass. FULL_GBR_COVERAGE.md and INTEGRATION_GUIDE.md define the boundary for every audited pattern.

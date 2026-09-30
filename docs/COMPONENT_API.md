@@ -77,10 +77,33 @@ if (dialog.Visible)
 OpenPopup and Begin must run at the same ImGui ID-stack level. Scope disposal handles only EndPopup; the consumer controls close/save/cancel.
 
 ## IDs, input and clipping
-Use stable domain IDs for repeated items. Keep segment order stable while interacting; segment indices form part of IDs. Labels in custom controls are display text and can change without changing the hit ID. Tabs follow native ImGui label/### conventions.
+Use stable domain IDs for repeated items. MaterialSegment.Key supplies identity across reordering; omitted keys retain positional IDs for fixed lists. Labels in custom controls are display text and can change without changing the hit ID. Tabs follow native ImGui label/### conventions.
 Standard keyboard/gamepad navigation requires the host's native navigation configuration. The library does not set it. Segments are separately focusable native button items; a full radio-group arrow/bumper model is future work.
 Native inputs own text editing and flags, including ReadOnly. Search reserves a trailing clear slot rather than drawing over editable text. Practical minimum width is about 120 logical units. After SearchField, the last item is the field group; tooltips can be attached to it. Button/switch/tile calls preserve their hit item for native consumer tooltips/context menus.
 
 ## Lifetime and performance
 Create themes and segment/action arrays on configuration/model changes, not each frame. A theme caches all palette colors; modifying SurfaceOpacity does not regenerate RGB. Use theme.Motion.Enabled=false for reduced motion.
 Every style/child/tab/dialog scope is a ref struct. Do not copy, box, store or dispose them out of order. All calls belong on the owning ImGui UI thread. Native draw-list primitives are clipped by the host.
+
+## Integration additions (v0.2)
+| Type | Contract |
+|---|---|
+| MaterialThemeSettings / Controller | Serializable immutable settings; Apply validates, skips unchanged settings, regenerates only for RGB changes |
+| MaterialWindowHost (optional adapter assembly) | Draw(WindowSystem,applyMetrics) or BeginFrame(applyMetrics); no subscriptions or config writes |
+| MaterialTheme.Push(...,applyMetrics:false) | Native colors only; preserves existing ImGui geometry styles |
+| MaterialOptions<T> / MaterialCombo.Draw | Cached keyed options, filtered on SetQuery/Replace; disabled options, native editing/selection |
+| MaterialInput | Integer, Number, Slider, Multiline; stable IDs, native flags, logical size, disabled and bounds |
+| MaterialOverride.Switch | Nullable bool with Inherit/On/Off |
+| MaterialFlags | Explicit ulong masks; preserves unrelated bits; Draw, IsSet and Set |
+| MaterialTree.Node / MaterialContextMenu.Begin | Native scopes; Visible gates contents; lexical disposal |
+| MaterialDragDrop.Source / TryAccept<T> | Copies unmanaged ID payload, validates type/size and waits for delivery |
+| MaterialSplitPane.Divider | Host-owned first panel width, logical dimensions, mouse drag and clamps |
+| MaterialDataView<T> | Explicit Rebuild(source,filter,comparer); old view retained if callback throws |
+| MaterialSelectionSet<TKey> | Selection survives filtering and sorting; explicit prune on object deletion |
+| MaterialClipper | Native uniform-row clipper; Step then Start..End, optional Include before first Step |
+| MaterialSearchState | Optional FocusRequested, restores text focus following clear |
+| MaterialSemantic | Text/Colors scopes preserve supplied colors; Feedback and Tooltip |
+| MaterialCanvas | Public pixel-space Color/Surface; borrowed Image/ImageButton/GlyphButton with logical control sizes |
+| MaterialNavigationMath.NextEnabled | Pure host-routed traversal; skips disabled options, optional wrap; no global input |
+
+Options/models must be owned per control or deliberately shared; sharing a MaterialOptions instance also shares its query. Payload type names must distinguish incompatible layouts even when their unmanaged sizes match. Keep native table ID/column settings and host texture lifetimes. Full usage is compiled in samples/ConsumerContract; see INTEGRATION_GUIDE.md.

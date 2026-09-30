@@ -7,9 +7,9 @@ pwsh -NoProfile -File .\eng\Verify-Gbr.ps1
 ```
 Build.ps1 sets local caches, builds Debug/Release, runs all tests for both configurations, creates a local NuGet package, copies convenient DLL artifacts and verifies output paths. Test logs and TRX files are in artifacts/.
 
-The suite has 39 tests: sRGB/OKLab/OKLCH round trips, known reference coordinates, deterministic palette hue/gamut/tone ordering, all 33 semantic roles, contrast, independent alpha, geometry/scaling and bounded motion; native context rendering, every theme color restoration, mouse/keyboard activation, disabled switch/control/options, input typing and clear, button families, chips, checkbox/radio, navigation/action tiles, popup/table/child scopes, five actual demo pages and a 150% layout.
+The v0.2 suite has 63 tests: original color/theme/control coverage plus settings serialization and regeneration caching, keyed filtering/sorting/selection, navigation math, flag preservation, native searchable combo editing, drag payload delivery, numeric clamps/disabled state, search focus return, colors-only/semantic scope preservation, tree/context/multiline scopes, borrowed icon rendering, splitter dragging, native 10,000-row clipping, and all seven demo pages. Integration pages are exercised at Compact/100% and Standard/150%. A warmed 300-frame catalog test records managed allocation and CPU submission time; native allocations and GPU cost are excluded.
 
-With -Previews, artifacts/previews contains page-0.png through page-4.png and settings-150-percent.png. These are generated from the real ImGui draw meshes with a small CPU renderer, default font and fixed background. They are for manual review, not brittle pixel assertions.
+With -Previews, artifacts/previews contains page-0.png through page-6.png, settings-150-percent.png and integration density/scale previews. These are generated from the real ImGui draw meshes with a small CPU renderer, default font and fixed background. They are for manual review, not brittle pixel assertions. Build.ps1 also validates both packages with an independent consumer and records artifact hashes/dependencies.
 
 ## Later in-game manual acceptance (not performed)
 1. Follow README's dev-plugin loading steps; run /crmaterial. Confirm command works and no log errors occur. Close/reopen through plugin UI.
@@ -21,5 +21,7 @@ With -Previews, artifacts/previews contains page-0.png through page-4.png and se
 7. Dashboard: Start, Pause, resume Start and Stop. Confirm progress changes, pauses and resets; Move/Return/Repair only update mock selection.
 8. Settings: nested cards, route combo, delay slider, preset text, disabled dependency and reduced motion. Repeat at 100%, 150% and 200% global scale.
 9. Reload/unload the plugin; confirm command/events are removed and no global ImGui state remains changed.
+10. List editor: search the 500-option combo; disabled recipes must not select. Change quantity/delay/inheritance and job bits. Resize panels, drag the mock item between folders, right-click it, hold Ctrl to enable Remove. Edit/paste multiline text.
+11. Large catalog: scroll to both ends, sort all columns, hide/reorder/resize columns, Ctrl-select rows, then filter and clear. Selection must remain tied to IDs. Type immediately after clearing search. Change seed and confirm semantic statuses retain their color.
 
 No actual FFXIV rendering, gamepad integration, or plugin loading is claimed by the automated results.

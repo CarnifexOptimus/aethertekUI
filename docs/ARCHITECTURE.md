@@ -1,4 +1,8 @@
 # Architecture
+Version 0.2 adds a separately packaged CombatReborn.MaterialUI.Dalamud adapter and a compiled independent ConsumerContract sample. Core still has no game/plugin dependency. The adapter wraps WindowSystem.Draw or returns a frame scope without subscribing to events. ThemeController owns validated settings and regenerates only on seed changes; persistence remains in the consumer. See INTEGRATION_GUIDE.md.
+
+Data contains explicit-invalidation view/filter/sort caches, keyed options and keyed selection. There is no background task or global model cache. Native wrapper components add multiline/numeric editors, combos, flags/inheritance, tree/context/drag-drop and clipping. Borrowed texture/font helpers never own resources. Colors-only scoping preserves native geometry styles for game-anchored overlays.
+
 A normal net10.0-windows x64 assembly built with Microsoft.NET.Sdk. The only direct runtime reference is Dalamud.Bindings.ImGui, resolved from the installed distribution via DalamudLibPath; it is not copied into consumer builds. No plugin lifecycle or game data is inside the library.
 The demo uses Dalamud.NET.Sdk/15.0.0 (verified in GBR) and a normal ProjectReference. Its lifecycle owns command registration and UI callbacks.
 

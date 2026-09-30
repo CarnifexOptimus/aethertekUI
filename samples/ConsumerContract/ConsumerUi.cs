@@ -1,0 +1,72 @@
+using System.Numerics;
+using CombatReborn.MaterialUI;
+using CombatReborn.MaterialUI.Dalamud;
+using Dalamud.Bindings.ImGui;
+using Dalamud.Interface.Windowing;
+
+namespace ConsumerContract;
+
+/// <summary>Compiles against project references AND packages. No GBR source or services.</summary>
+public sealed class ConsumerUi : IDisposable
+{
+    private readonly WindowSystem windows = new("Independent consumer example");
+    private readonly MaterialWindowHost material;
+    public ConsumerUi(MaterialThemeSettings settings)
+    {
+        material = new(settings);
+        windows.AddWindow(new ExampleWindow());
+    }
+
+    // Consumer calls this from its existing draw subscription.
+    public void Draw() => material.Draw(windows);
+    // Consumer persists these settings using its own configuration service.
+    public void ApplySettings(MaterialThemeSettings settings) => material.Controller.Apply(settings);
+
+    // Consumer retains game geometry and supplies its existing specialized draw callback.
+    public void DrawGameAnchoredOverlay(Action draw)
+    {
+        using var colors = material.BeginFrame(applyMetrics: false);
+        draw();
+    }
+
+    public void Dispose() => windows.RemoveAllWindows();
+
+    private sealed class ExampleWindow : Window
+    {
+        private readonly MaterialOptions<int> routes = new([new("local",0,"Local route"),new("remote",1,"Remote route")]);
+        private readonly MaterialSearchState searchFocus = new();
+        private static readonly MaterialSegment<int>[] Modes = [new(0,"Auto",Key:"auto"),new(1,"Manual",Key:"manual"),new(2,"Off",Key:"off")];
+        private static readonly Vector4 DomainReady = new(.2f,.9f,.6f,1);
+        private int route, mode, count = 10;
+        private bool enabled = true;
+        private bool? recipeOverride;
+        private string query = string.Empty;
+
+        public ExampleWindow() : base("Consumer integration contract###consumer-contract")
+        {
+            IsOpen = true;
+            Size = new(600,500);
+            SizeCondition = ImGuiCond.FirstUseEver;
+        }
+
+        public override void Draw()
+        {
+            MaterialWindowHeader.Draw("Independent plugin", "Consumer owns lifecycle and domain state", []);
+            MaterialSwitch.Draw("enabled","Enabled",ref enabled);
+            MaterialSegmented.Draw<int>("mode",Modes,ref mode);
+            MaterialTextField.SearchField("search",ref query,state:searchFocus);
+            MaterialCombo.Draw("route",routes,ref route);
+            MaterialInput.Integer("quantity",ref count,1,999,disabled:!enabled);
+            MaterialOverride.Switch("inherited",ref recipeOverride);
+            using var tableStyle = MaterialTable.PushStyle();
+            if (ImGui.BeginTable("native-data",2,ImGuiTableFlags.Resizable|ImGuiTableFlags.RowBg))
+            {
+                ImGui.TableSetupColumn("Item");ImGui.TableSetupColumn("Status");ImGui.TableHeadersRow();
+                ImGui.TableNextRow();ImGui.TableSetColumnIndex(0);ImGui.TextUnformatted("Domain item");
+                ImGui.TableSetColumnIndex(1);
+                using (var domain = MaterialSemantic.Text(DomainReady)) ImGui.TextUnformatted("Ready");
+                ImGui.EndTable();
+            }
+        }
+    }
+}

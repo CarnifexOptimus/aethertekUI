@@ -3,7 +3,7 @@ using Dalamud.Bindings.ImGui;
 
 namespace CombatReborn.MaterialUI;
 
-public readonly record struct MaterialSegment<T>(T Value, string Label, MaterialIcon Icon = MaterialIcon.None, bool Disabled = false);
+public readonly record struct MaterialSegment<T>(T Value, string Label, MaterialIcon Icon = MaterialIcon.None, bool Disabled = false, string? Key = null);
 
 public static class MaterialSegmented
 {
@@ -22,7 +22,7 @@ public static class MaterialSegmented
         {
             if(i>0) ImGui.SameLine(0,0);
             var bounds=MaterialGeometry.SegmentBounds(size.X,segments.Length,i);
-            ImGui.PushID(i);
+            if (segments[i].Key is { } key) ImGui.PushID(key); else ImGui.PushID(i);
             if(MaterialDraw.Hit("##segment",new(bounds.Width,size.Y),disabled||segments[i].Disabled,out var state)
                 && !EqualityComparer<T>.Default.Equals(value,segments[i].Value))
             {

@@ -1,19 +1,22 @@
-# Known limitations
-- Dark mode only; OKLCH-inspired roles, not exact Google HCT/Material dynamic color. There is no claim of Material certification.
-- The plugin compiles and its actual pages render in a native headless ImGui context. It has not been installed or loaded into the game. Dalamud injection/lifecycle, gamepad bridge and visual compositing over real game scenes still need manual acceptance.
-- Software previews use Dear ImGui's default font and a diagnostic CPU renderer. They validate layout for review; they are not screenshots from FFXIV or a production GPU backend.
-- Compact is the primary target. Both scale and density are supported, but exhaustive localization, unusual host fonts and tiny window widths are not covered. Very long labels clip; no ellipsis/wrapping engine for controls. Give search fields practical width (at least about 120 logical units).
-- Vector icon set is intentionally small and texture-free. Custom game textures and arbitrary glyph/font icons remain consumer rendering work.
-- Navigation items use native button activation. Arrow/bumper group semantics and screen-reader metadata are not a complete accessibility layer. The library does not change host navigation flags.
-- Segment IDs use stable indices inside the caller's ID. Keep the option order stable while a control is active; rebuild/re-ID deliberately when reordering. All scopes must remain lexical LIFO and must not be copied.
-- ClickableCard is a separate single-action card. Surface/Card scopes can contain arbitrary native children, but do not intercept clicks across interactive descendants.
-- Search clear does not automatically return keyboard focus to the edit after clearing. Native multiline editing remains a consumer call under the theme.
-- Dense table APIs style native tables and selection; consumers still own sort/filter/virtualization logic. Demo sorting is single-column on 18 mock rows.
-- Animation is a small exponential fade/position cache (4096-entry cap, 180 stale frames, sweep every 60 frames). No ripple, spring model, cross-window shared-element animation or animated sliding segment geometry.
-- Theme scope is UI-thread/context bound. Use a separate cached theme per ImGui context and do not switch contexts while a scope is active. Library version 0.1 is not a frozen API.
-- Demo settings are in memory only. No game actions, configuration files, textures or plugin installation are performed.
-- Windows x64 / net10.0-windows / installed Dalamud API 15 is the validated configuration. The local package expects the consuming Dalamud SDK to provide its bindings. Native tests require that distribution's cimgui.dll and HexaGen.Runtime.dll.
-- Output-boundary verification checks MSBuild output manifests and process cache/temp paths. It is not a forensic system-wide filesystem monitor. GBR is additionally verified with HEAD/status/index/content hashes.
+# Known limitations — v0.2
 
-## Second pass
-In-game font/contrast review; real gamepad and context-menu acceptance; long-label/localization behavior; more flexible icon and content slots; keyboard focus return after clearing; table benchmarks with thousands of rows; optional light mode; refined motion and accessibility. Consider exact HCT only if a consumer needs it.
+- Dark mode only; OKLCH-generated roles are MD3-inspired, not exact Google HCT or a certification claim.
+- Core, optional Dalamud adapter, demo and independent consumer compile. The consumer also builds from freshly packed local packages. No plugin has been installed or loaded into FFXIV; GPU compositing, real fonts, unload/reload and GBR controller routing remain manual acceptance.
+- All seven actual demo pages render through the native ImGui binding. Diagnostic CPU mesh previews use the default font; they are not in-game screenshots.
+- Existing fish-timer charts, spearfishing addon coordinates, native item tooltips, domain formatting and controller bridge remain consumer code. The kit supplies scoped colors, native compatibility and borrowed texture/font helpers, not game services.
+- Native navigation remains host-configured. NextEnabled supports explicit routed selection events; there is no global input manager or complete accessibility/screen-reader layer.
+- Long labels clip within controls. Exhaustive localization and unusual fonts are not covered. Search suppresses decorations at very narrow widths; clear focus restoration requires an optional host-owned MaterialSearchState.
+- Fixed segment lists can use index IDs. Reordered lists must provide stable unique Key values. Options require unique string keys. Repeated domain rows need caller PushID keys.
+- Clipping requires uniformly spaced rows. Variable-height trees retain consumer traversal. Sorting/filter predicates and invalidation policy remain consumer-owned. The large catalog demonstrates single-column native sorting; existing native multi-sort specs remain available.
+- Borrowed textures/fonts must stay alive through render submission. The library does not create or dispose host resources. Drag payloads support small unmanaged IDs only; type names must distinguish layouts of the same size.
+- Split panes support mouse dragging; keyboard resize shortcuts are not implemented. Existing gamepad panel focus can stay in the consumer.
+- ClickableCard is a single action; ordinary Card scopes can hold arbitrary interactive children without an overlapping card hit target.
+- Scopes are UI-thread/context-bound and lexical LIFO. Do not copy scopes, mix contexts mid-scope, or reuse one theme across separate ImGui contexts.
+- The bounded motion cache has 4096 entries and stale-frame pruning. No ripple physics or shared-element animation.
+- Demo settings are memory-only. Production settings can serialize MaterialThemeSettings using the consumer's persistence service. No configuration files or game actions are owned by the libraries.
+- API 15 / .NET 10 / Windows x64 is the validated combination. v0.2 is still a pre-1.0 API; rebuild consumers when upgrading.
+- Filesystem evidence covers MSBuild manifests and configured cache/temp paths, plus GBR HEAD/status/index/content hashes. It is not a forensic system-wide filesystem monitor.
+
+## Next pass
+
+After explicitly authorized wiring: review actual in-game typography/translucency, controller and popup focus flow, retained overlay coordinates, resource lifetimes and performance with real data. Then refine long-label handling, keyboard panel resizing, accessibility and API stabilization. Light mode or exact HCT should follow demonstrated consumer needs.

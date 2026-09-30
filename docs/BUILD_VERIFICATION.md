@@ -1,31 +1,32 @@
-# Final prototype verification
-Observed 2026-09-30 (America/Chicago). Build/test logs and generated artifacts remain under this repository.
+# Integration kit v0.2 verification
+
+Observed 2026-09-30, America/Chicago. The complete eng/Build.ps1 -Previews workflow succeeded after the final changes.
 
 | Check | Result |
 |---|---|
-| Debug solution build | PASS — 0 warnings, 0 errors |
-| Release solution build | PASS — 0 warnings, 0 errors |
-| Debug tests | PASS — 39 passed, 0 failed, 0 skipped |
-| Release tests | PASS — 39 passed, 0 failed, 0 skipped |
-| Reusable assembly | Present; Release SHA256 8CFB2C3634234AA91EA2DA49EDA4682067966D5514691E831C9CADD1478396E9 |
-| Demo assembly | Present; Release SHA256 AA734FD8D1977FB77BAC208E97D7BEE44BDE782258BD31401649E13ACBA0B80A |
-| Local package | artifacts/CombatReborn.MaterialUI.0.1.0.nupkg |
-| Package contents | README and reusable DLL under lib/net10.0-windows7.0; no bundled Dalamud assemblies |
-| Output-boundary check | 287 generated MSBuild output paths within repository; configured cache/temp locations within .cache; no outside paths found |
-| Production dependency inspection | System.Runtime, System.Numerics.Vectors, System.Collections, Dalamud.Bindings.ImGui only |
-| Source dependency scan | No GatherBuddy, ElliLib or RSR references in src/tests |
-| Native behavior | Switch/segments/input/buttons/chips/checkbox/radio/nav/tiles plus modal/table/child scopes exercised in real cimgui context |
-| Scope restoration | Every pushed theme color restored; nested theme and representative geometry restoration checked |
-| Visual review | All five actual demo pages inspected via mesh previews; settings also inspected at 150% host scale |
+| Debug and Release solution builds | PASS; each 0 warnings / 0 errors |
+| Tests in each configuration | PASS; 63 passed, 0 failed, 0 skipped |
+| Core / adapter / demo DLLs | Present in artifacts/lib and artifacts/demo |
+| Local packages | Core and Dalamud adapter 0.2.0 |
+| Independent ProjectReference consumer | Compiles in both configurations |
+| Independent local-package consumer | Release compiles, both dependency DLLs copied; fresh isolated cache and generated lockfile |
+| Dependencies | Core: System.Runtime, System.Numerics.Vectors, System.Collections, Dalamud.Bindings.ImGui; adapter adds core and Dalamud |
+| Forbidden production references | No GatherBuddy, ElliLib or RSR |
+| Managed performance sample | Release: 300 warmed catalog frames, 47.05 ms total, 40 allocated bytes, 7,800 submitted rows from a 10,000-row source |
+| Performance limits | Diagnostic headless CPU submission only; native allocations, GPU cost and game workload excluded; timing is an observation, not an SLA |
+| Visual review | Seven demo pages plus Compact/100% and Standard/150% integration previews |
+| Preview diagnostic | Debug/Release native mesh dump for large Standard catalog was byte-identical; optimized diagnostic renderer fixed by snapshotting native vectors before nested indexing |
+| Output boundaries | 371 MSBuild-generated paths checked; all configured caches/temp paths local; no outside paths found |
 | GBR HEAD | a204f2f45cb98302dbe938921255c3a6d617c775 unchanged |
-| GBR working tree | Same 4 modified and 25 untracked paths as baseline |
-| GBR contents/index | All 431 recorded file hashes and index SHA256 match; no differences |
-| Mission | Original SHA256 D20CA1C9BEC4EDB110EFCA974C2E8FD5B9B31CDAA503B4DBC9AB362E4B5675CC unchanged |
-| Remote | None configured; no remote created/pushed |
-| Installation | Demo not copied/installed into Dalamud/XIVLauncher |
+| GBR state | Same 4 modified / 25 untracked paths as baseline |
+| GBR files / index | All 431 recorded hashes match; index SHA256 unchanged |
+| Mission | SHA256 D20CA1C9BEC4EDB110EFCA974C2E8FD5B9B31CDAA503B4DBC9AB362E4B5675CC unchanged |
+| Remote / installation | No remote publication or Dalamud installation performed |
 
-Evidence: GBR_BASELINE.json, GBR_FILE_BASELINE.json, GBR_FINAL_VERIFICATION.json; artifacts/ARTIFACT_MANIFEST.json; artifacts/local-output-verification.json; artifacts/build-Debug.log, build-Release.log, test-Debug.log, test-Release.log; artifacts/TestResults/*.trx.
+Release core SHA256: E5897B0660537DD53F72C36C4F81BB149ED621A4583E9613E7B8D85DB2EFE4BB.
+Release adapter SHA256: 8FFC924C26FB9D64061E7932495045E75E7055D412C28B7C557F72B9A235E508.
+Release demo SHA256: 9F9A57DE5B7B9DD8F7D9E886B3A8BAAE02FF2187B6ADE833F0638C4DBF09DB44.
 
-Git diff review: source/docs/scripts reviewed and staged whitespace check passes when excluding the immutable PROJECT_MISSION.md. The full check flags its original seven-equals MISSION underline as a conflict marker. That is original prompt text, not an actual merge conflict, and must not be changed.
+Evidence: artifacts/ARTIFACT_MANIFEST.json, dependencies.txt, local-output-verification.json, consumer-package.log, build/test logs, TestResults/tests-{Debug,Release}.trx, previews/, and docs/GBR_FINAL_VERIFICATION.json. The baseline files are unchanged.
 
-The output-boundary result is based on recorded generated paths and configured process environment, not a system-wide filesystem monitor. In-game plugin loading, GPU compositing, custom GBR gamepad behavior and real Dalamud fonts remain manual acceptance tasks; see PROTOTYPE_SMOKE_TEST.md and KNOWN_LIMITATIONS.md.
+The boundary check is based on output manifests and process configuration, not a system-wide filesystem monitor. Runtime acceptance in FFXIV is still pending. Whitespace review excludes the immutable PROJECT_MISSION.md because its original seven-equals underline triggers Git's conflict-marker heuristic.

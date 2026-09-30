@@ -3,7 +3,7 @@ $rootPath = [IO.Path]::GetFullPath((Split-Path $PSScriptRoot -Parent))
 $rootPrefix = $rootPath.TrimEnd([IO.Path]::DirectorySeparatorChar) + [IO.Path]::DirectorySeparatorChar
 $outside = [Collections.Generic.List[string]]::new()
 $outputs = [Collections.Generic.HashSet[string]]::new([StringComparer]::OrdinalIgnoreCase)
-foreach ($list in Get-ChildItem (Join-Path $rootPath 'src'),(Join-Path $rootPath 'tests'),(Join-Path $rootPath 'eng') -Recurse -Filter '*.FileListAbsolute.txt') {
+foreach ($list in Get-ChildItem (Join-Path $rootPath 'src'),(Join-Path $rootPath 'tests'),(Join-Path $rootPath 'eng'),(Join-Path $rootPath 'samples'),(Join-Path $rootPath '.cache/package-consumer-obj') -Recurse -Filter '*.FileListAbsolute.txt') {
     foreach ($line in Get-Content $list.FullName) {
         if (-not $line.Trim()) { continue }
         $fullPath = [IO.Path]::GetFullPath($line)

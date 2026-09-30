@@ -86,8 +86,8 @@ internal sealed unsafe class NativeTestContext : IDisposable
 {
     private readonly ImGuiContextPtr context;
     public byte* Pixels { get; private set; }
-    public int AtlasWidth { get; }
-    public int AtlasHeight { get; }
+    public int AtlasWidth { get; private set; }
+    public int AtlasHeight { get; private set; }
     public NativeTestContext(int width=1100,int height=850,float scale=1)
     {
         context=ImGui.CreateContext();
@@ -97,6 +97,12 @@ internal sealed unsafe class NativeTestContext : IDisposable
         byte* pixels=null;int aw=0,ah=0;
         io.Fonts.GetTexDataAsRGBA32(0,&pixels,&aw,&ah);io.Fonts.SetTexID(0,new ImTextureID((nint)1));
         Pixels=pixels;AtlasWidth=aw;AtlasHeight=ah;
+    }
+    public void RefreshAtlas()
+    {
+        byte* pixels=null;int width=0,height=0;
+        ImGui.GetIO().Fonts.GetTexDataAsRGBA32(0,&pixels,&width,&height);
+        Pixels=pixels;AtlasWidth=width;AtlasHeight=height;
     }
     public void Frame(Action draw)
     {
