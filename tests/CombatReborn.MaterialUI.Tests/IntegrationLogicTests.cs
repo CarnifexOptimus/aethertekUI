@@ -39,6 +39,20 @@ public class IntegrationLogicTests
         Assert.Same(before,host.Theme);
     }
     [Fact]
+    public void HostSettingsRoundTripWithDalamudsNewtonsoftSerializer()
+    {
+        var settings=new MaterialThemeSettings
+        {
+            SeedRed=.2f,SeedGreen=.4f,SeedBlue=.8f,
+            SurfaceOpacity=.7f,Density=MaterialDensity.Standard,ReducedMotion=true,
+        };
+        var json=Newtonsoft.Json.JsonConvert.SerializeObject(settings);
+        var restored=Newtonsoft.Json.JsonConvert.DeserializeObject<MaterialThemeSettings>(json);
+        Assert.Equal(settings,restored);
+        Assert.Equal(new MaterialThemeSettings(),
+            Newtonsoft.Json.JsonConvert.DeserializeObject<MaterialThemeSettings>("{}"));
+    }
+    [Fact]
     public void FilteredOptionsRetainValueIdentityAcrossReplacementAndRejectDuplicateKeys()
     {
         var options=new MaterialOptions<int>([new("a",1,"Ore"),new("b",2,"Herb"),new("c",3,"Dark ore",true)]);

@@ -13,14 +13,19 @@ public static class MaterialNavigation
     public static bool Item(string id,string label,MaterialIcon icon,bool selected,bool expanded=true,bool disabled=false)
     {
         var m=MaterialTheme.Metrics; var c=MaterialTheme.Current.Colors;
-        var size=new Vector2(Math.Max(1,ImGui.GetContentRegionAvail().X),m.ButtonHeight+m.Gap);
+        var controls=MaterialControls.Metrics;
+        var size=new Vector2(Math.Max(1,ImGui.GetContentRegionAvail().X),controls.Height+controls.Gap);
         ImGui.PushID(id);
         var clicked=MaterialDraw.Hit("##navigation",size,disabled,out var state);
         var emphasis=MaterialDraw.Animate(state.Id,3,selected?1:0);
         var bg=MaterialColor.Alpha(c.SecondaryContainer,emphasis);
         MaterialDraw.Shape(state,bg,c.OnSecondaryContainer,size.Y*.5f);
         if(expanded) MaterialDraw.Content(state,label,selected?c.OnSecondaryContainer:c.OnSurfaceVariant,icon,MaterialIcon.None,true);
-        else if(state.Visible) MaterialIcons.Draw(icon,state.Min+(size-new Vector2(m.IconSize))*.5f,m.IconSize,selected?c.OnSecondaryContainer:c.OnSurfaceVariant,state.Alpha);
+        else if(state.Visible)
+        {
+            var iconSize=Math.Min(controls.IconSize,Math.Max(1,size.X-2*m.Scale));
+            MaterialIcons.Draw(icon,state.Min+(size-new Vector2(iconSize))*.5f,iconSize,selected?c.OnSecondaryContainer:c.OnSurfaceVariant,state.Alpha);
+        }
         ImGui.PopID();
         return clicked;
     }

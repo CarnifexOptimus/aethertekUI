@@ -1,0 +1,13 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup><OutputType>Exe</OutputType><AllowUnsafeBlocks>true</AllowUnsafeBlocks><IsPackable>false</IsPackable></PropertyGroup>
+  <!-- Opt-in integration probe of already built binaries. Never invoked by the standalone library build. -->
+  <ItemGroup>
+    <Reference Include="GatherBuddyReborn"><HintPath>../../../GatherBuddyReborn/GatherBuddy/bin/Debug/GatherBuddyReborn.dll</HintPath></Reference>
+    <Reference Include="ElliLib"><HintPath>../../../GatherBuddyReborn/GatherBuddy/bin/Debug/ElliLib.dll</HintPath></Reference>
+    <Reference Include="CombatReborn.MaterialUI"><HintPath>../../../GatherBuddyReborn/GatherBuddy/bin/Debug/CombatReborn.MaterialUI.dll</HintPath></Reference>
+    <Reference Include="Dalamud.Bindings.ImGui"><HintPath>$(DalamudLibPath)/Dalamud.Bindings.ImGui.dll</HintPath></Reference>
+    <Reference Include="HexaGen.Runtime"><HintPath>$(DalamudLibPath)/HexaGen.Runtime.dll</HintPath></Reference>
+    <Reference Include="Dalamud"><HintPath>$(DalamudLibPath)/Dalamud.dll</HintPath></Reference>
+    <None Include="$(DalamudLibPath)/cimgui.dll" Link="cimgui.dll" CopyToOutputDirectory="PreserveNewest"/>
+  </ItemGroup>
+</Project>

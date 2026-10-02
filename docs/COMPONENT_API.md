@@ -1,4 +1,18 @@
 # Component API contract
+
+## Adaptive sizing (v0.3)
+
+See [Adaptive sizing and host compatibility](ADAPTIVE_SIZING.md) for units, ownership and upgrade behavior.
+
+| API | Purpose |
+|---|---|
+| MaterialStyleMode.Compatible / Material / ColorsOnly | Preserve host layout by default; opt into full metrics or colors alone |
+| MaterialControls.Push(context) | Match native and custom control heights using current font, density and scale |
+| MaterialControlContext.Regular / Toolbar / Dense | Local sizing intent independent of theme density |
+| MaterialTable.PushControls() | Native table styling plus Dense editor sizing |
+| MaterialComboLayout | Independent popup width and visible row limit |
+| MaterialActionTile.Measure / MaterialTileSizing | Content-aware wrapping and grid measurement; explicit fixed-height option |
+
 All controls are immediate-mode; booleans return activation or value change. Consumers own state and lifecycle.
 Use MaterialTheme.Push(theme, ImGuiHelpers.GlobalScale) around your window draw. Pass stable IDs separately from visible labels. Scope IDs further with ImGui.PushID for repeated domain objects.
 Button variants share label, leading/trailing MaterialIcon, size and disabled support. Negative width fills available width; positive sizes are logical units; zero selects defaults.

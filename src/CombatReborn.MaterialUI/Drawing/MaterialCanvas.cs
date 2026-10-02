@@ -3,7 +3,7 @@ using Dalamud.Bindings.ImGui;
 
 namespace CombatReborn.MaterialUI;
 
-/// <summary>Public escape hatch for charts and game-anchored overlays. Coordinates and sizes here are pixels.</summary>
+/// <summary>Surface coordinates are pixels. Image/button size arguments are logical units, scaled exactly once.</summary>
 public static class MaterialCanvas
 {
     public static uint Color(Vector4 color) => MaterialDraw.Color(color);
@@ -18,12 +18,26 @@ public static class MaterialCanvas
     public static bool GlyphButton(string id, string glyph, ImFontPtr font, bool disabled = false, float size = 0)
     {
         var m=MaterialTheme.Metrics; var c=MaterialTheme.Current.Colors;
-        var pixels=size>0?size*m.Scale:m.ButtonHeight;
+        var controls=MaterialControls.Metrics;
+        var pixels=size>0?size*m.Scale:controls.Height;
         ImGui.PushID(id);
         var clicked=MaterialDraw.Hit("##glyph",new Vector2(pixels),disabled,out var state);
         MaterialDraw.Shape(state,c.SecondaryContainer,c.OnSecondaryContainer,pixels*.5f);
         ImGui.PushFont(font);
-        try { MaterialDraw.Content(state,glyph,c.OnSecondaryContainer,MaterialIcon.None,MaterialIcon.None); }
+        try
+        {
+            if(state.Visible)
+            {
+                var measured=ImGui.CalcTextSize(glyph);
+                var available=Math.Min(controls.IconSize,Math.Max(1,pixels-2*m.Scale));
+                var factor=Math.Min(1,available/Math.Max(1,Math.Max(measured.X,measured.Y)));
+                var dl=ImGui.GetWindowDrawList();
+                dl.PushClipRect(state.Min,state.Max,true);
+                dl.AddText(font,ImGui.GetFontSize()*factor,state.Min+(new Vector2(pixels)-measured*factor)*.5f,
+                    MaterialDraw.Color(c.OnSecondaryContainer,state.Alpha),glyph);
+                dl.PopClipRect();
+            }
+        }
         finally { ImGui.PopFont(); ImGui.PopID(); }
         return clicked;
     }
@@ -32,13 +46,17 @@ public static class MaterialCanvas
         Vector4? tint = null)
     {
         var m=MaterialTheme.Metrics; var c=MaterialTheme.Current.Colors;
-        var pixels=MaterialDraw.Size(size,m.ButtonHeight,m.ButtonHeight);
+        var controls=MaterialControls.Metrics;
+        var pixels=MaterialDraw.Size(size,controls.Height,controls.Height);
         ImGui.PushID(id);
         var clicked=MaterialDraw.Hit("##image",pixels,disabled,out var state);
         MaterialDraw.Shape(state,selected?c.PrimaryContainer:c.SurfaceContainer,c.OnSurface,m.Radius,selected);
         if(state.Visible)
-            ImGui.GetWindowDrawList().AddImage(texture,state.Min+new Vector2(m.Gap),state.Max-new Vector2(m.Gap),
+        {
+            var inset=Math.Min(controls.Gap,Math.Max(0,(Math.Min(pixels.X,pixels.Y)-1)*.5f));
+            ImGui.GetWindowDrawList().AddImage(texture,state.Min+new Vector2(inset),state.Max-new Vector2(inset),
                 Vector2.Zero,Vector2.One,MaterialDraw.Color(tint ?? Vector4.One,state.Alpha));
+        }
         ImGui.PopID();
         return clicked;
     }

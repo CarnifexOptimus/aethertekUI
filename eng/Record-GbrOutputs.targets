@@ -1,0 +1,9 @@
+<Project>
+  <!-- FileWrites is the current build's item list, unlike the historical
+       FileListAbsolute file which retains entries from moved checkouts. -->
+  <Target Name="RecordMaterialPreviewOutputs" AfterTargets="Build" Condition="'$(MaterialPreviewOutputDirectory)' != ''">
+    <MakeDir Directories="$(MaterialPreviewOutputDirectory)" />
+    <WriteLinesToFile File="$(MaterialPreviewOutputDirectory)/$(MSBuildProjectName).txt"
+                      Lines="@(FileWrites->'%(FullPath)')" Overwrite="true" />
+  </Target>
+</Project>

@@ -23,11 +23,11 @@ public static class MaterialButton
     public static bool Draw(string id, string label, MaterialButtonVariant variant = MaterialButtonVariant.Filled,
         Vector2 size = default, bool disabled = false, MaterialIcon leading = MaterialIcon.None, MaterialIcon trailing = MaterialIcon.None)
     {
-        var c=MaterialTheme.Current.Colors; var m=MaterialTheme.Metrics;
-        var width=ImGui.CalcTextSize(label).X+2*m.Padding;
+        var c=MaterialTheme.Current.Colors; var m=MaterialControls.Metrics;
+        var width=ImGui.CalcTextSize(label).X+2*m.Padding.X;
         if(leading!=MaterialIcon.None) width+=m.IconSize+m.Gap;
         if(trailing!=MaterialIcon.None) width+=m.IconSize+m.Gap;
-        var actual=MaterialDraw.Size(size,width,Math.Max(m.ButtonHeight,ImGui.GetTextLineHeight()+2*m.Gap));
+        var actual=MaterialDraw.Size(size,width,m.Height);
         ImGui.PushID(id);
         var clicked=MaterialDraw.Hit("##button",actual,disabled,out var state);
         var bg=variant switch { MaterialButtonVariant.Filled=>c.Primary, MaterialButtonVariant.Tonal=>c.SecondaryContainer, _=>Vector4.Zero };
@@ -42,11 +42,13 @@ public static class MaterialButton
     public static bool IconButton(string id, MaterialIcon icon, bool tonal = false, bool disabled = false, float size = 0)
     {
         var m=MaterialTheme.Metrics; var c=MaterialTheme.Current.Colors;
-        var side=size>0?size*m.Scale:m.ButtonHeight;
+        var controls=MaterialControls.Metrics;
+        var side=size>0?size*m.Scale:controls.Height;
+        var iconSize=Math.Min(controls.IconSize,Math.Max(1,side-2*m.Scale));
         ImGui.PushID(id);
         var clicked=MaterialDraw.Hit("##icon",new(side),disabled,out var state);
         MaterialDraw.Shape(state,tonal?c.SecondaryContainer:Vector4.Zero,c.OnSurface,side*.5f);
-        if(state.Visible) MaterialIcons.Draw(icon,state.Min+new Vector2((side-m.IconSize)*.5f),m.IconSize,tonal?c.OnSecondaryContainer:c.OnSurface,state.Alpha);
+        if(state.Visible) MaterialIcons.Draw(icon,state.Min+new Vector2((side-iconSize)*.5f),iconSize,tonal?c.OnSecondaryContainer:c.OnSurface,state.Alpha);
         ImGui.PopID();
         return clicked;
     }

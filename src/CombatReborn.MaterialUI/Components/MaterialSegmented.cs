@@ -11,10 +11,11 @@ public static class MaterialSegmented
     {
         if(segments.Length<2) throw new ArgumentException("At least two segments are required.",nameof(segments));
         var m=MaterialTheme.Metrics; var c=MaterialTheme.Current.Colors;
+        var controls=MaterialControls.Metrics;
         var natural=0f;
         for(var i=0;i<segments.Length;i++)
-            natural=Math.Max(natural,ImGui.CalcTextSize(segments[i].Label).X+2*m.Padding+m.IconSize+m.Gap);
-        var size=MaterialDraw.Size(new(width,0),natural*segments.Length,Math.Max(m.ButtonHeight,ImGui.GetTextLineHeight()+2*m.Gap));
+            natural=Math.Max(natural,ImGui.CalcTextSize(segments[i].Label).X+2*controls.Padding.X+controls.IconSize+controls.Gap);
+        var size=MaterialDraw.Size(new(width,0),natural*segments.Length,controls.Height);
         var changed=false;
         ImGui.PushID(id);
         ImGui.BeginGroup();

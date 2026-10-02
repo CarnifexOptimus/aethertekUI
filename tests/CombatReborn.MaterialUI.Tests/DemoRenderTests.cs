@@ -12,6 +12,7 @@ public class DemoRenderTests
     [Theory]
     [InlineData(5,1f,MaterialDensity.Compact)] [InlineData(6,1f,MaterialDensity.Compact)]
     [InlineData(5,1.5f,MaterialDensity.Standard)] [InlineData(6,1.5f,MaterialDensity.Standard)]
+    [InlineData(7,1f,MaterialDensity.Compact)] [InlineData(7,1.5f,MaterialDensity.Standard)]
     public void IntegrationPagesRenderAtBothDensitiesAndScales(int page,float scale,MaterialDensity density)
     {
         using var host=new NativeTestContext((int)(1100*scale),(int)(850*scale),scale);
@@ -41,7 +42,7 @@ public class DemoRenderTests
         Assert.InRange(bytes,0,1_000_000);
     }
     [Theory]
-    [InlineData(0)] [InlineData(1)] [InlineData(2)] [InlineData(3)] [InlineData(4)] [InlineData(5)] [InlineData(6)]
+    [InlineData(0)] [InlineData(1)] [InlineData(2)] [InlineData(3)] [InlineData(4)] [InlineData(5)] [InlineData(6)] [InlineData(7)]
     public void ActualDemoPageRendersWithoutStackErrors(int page)
     {
         using var host=new NativeTestContext();

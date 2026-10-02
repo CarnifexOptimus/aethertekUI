@@ -14,8 +14,8 @@ internal sealed partial class Showcase
     private int density;
     private bool expanded=true;
     private string notice="Ready. All actions use mock state.";
-    private static readonly string[] Pages=["Gallery","Automation","Gathering data","Dashboard","Settings","List editor","Large catalog"];
-    private static readonly MaterialIcon[] PageIcons=[MaterialIcon.Grid,MaterialIcon.Play,MaterialIcon.Table,MaterialIcon.Home,MaterialIcon.Settings,MaterialIcon.Edit,MaterialIcon.Table];
+    private static readonly string[] Pages=["Gallery","Automation","Gathering data","Dashboard","Settings","List editor","Large catalog","Sizing lab"];
+    private static readonly MaterialIcon[] PageIcons=[MaterialIcon.Grid,MaterialIcon.Play,MaterialIcon.Table,MaterialIcon.Home,MaterialIcon.Settings,MaterialIcon.Edit,MaterialIcon.Table,MaterialIcon.Sliders];
     private static readonly MaterialHeaderAction[] HeaderActions=[new("density",MaterialIcon.Sliders,"Toggle expanded navigation"),new("close",MaterialIcon.Close,"Close showcase")];
     private static readonly MaterialSegment<int>[] DensityOptions=[new(0,"Compact"),new(1,"Standard")];
     private static readonly MaterialSegment<int>[] Modes=[new(0,"Auto"),new(1,"Manual"),new(2,"Off")];
@@ -27,7 +27,7 @@ internal sealed partial class Showcase
     {
         if(!IsOpen&&!overlayOpen) return;
         // The theme scope wraps Begin/End, so it also styles the outer window.
-        using var scope=MaterialTheme.Push(theme,globalScale);
+        using var scope=MaterialTheme.Push(theme,globalScale,MaterialStyleMode.Material);
         if(IsOpen)
         {
             var scale=MaterialTheme.Metrics.Scale;
@@ -73,6 +73,7 @@ internal sealed partial class Showcase
                             case 4: Settings(); break;
                             case 5: Editors(); break;
                             case 6: LargeData(); break;
+                            case 7: SizingLab(); break;
                         }
                     }
                 }

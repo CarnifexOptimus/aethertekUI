@@ -55,6 +55,28 @@ public unsafe class NativeInteractionTests
         Assert.Equal("",query);
     }
     [Fact]
+    public void SearchHonorsConsumerSuppliedInputLimit()
+    {
+        using var host=new NativeTestContext();
+        var theme=new MaterialTheme(new(.3f,.7f,.4f));
+        var query=""; Vector2 origin=default;
+        void Draw()
+        {
+            using var scope=MaterialTheme.Push(theme);
+            ImGui.SetNextWindowPos(new(0,0)); ImGui.SetNextWindowSize(new(600,400));
+            ImGui.Begin("Limited search",ImGuiWindowFlags.NoSavedSettings|ImGuiWindowFlags.NoTitleBar);
+            MaterialTextField.SearchField("search",ref query,width:300,maxLength:16);
+            origin=ImGui.GetItemRectMin();
+            ImGui.End();
+        }
+        host.Frame(Draw); host.Frame(Draw);
+        host.Click(origin+new Vector2(80,14),Draw);
+        foreach(var character in new string('x',100)) ImGui.GetIO().AddInputCharacter(character);
+        host.Frame(Draw);
+        Assert.InRange(query.Length,1,16);
+        Assert.All(query,character=>Assert.Equal('x',character));
+    }
+    [Fact]
     public void StableIdSurvivesLabelChangeAndKeyboardActivation()
     {
         using var host=new NativeTestContext();

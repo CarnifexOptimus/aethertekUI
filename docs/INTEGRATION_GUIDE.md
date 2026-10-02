@@ -1,10 +1,10 @@
-# Integration kit v0.2
+# Integration kit v0.3
 
-This kit can be referenced and wired into a full plugin. No GBR files have been changed. The compiled contract in samples/ConsumerContract/ConsumerUi.cs demonstrates the host boundary without game services; Build.ps1 compiles it from ProjectReferences and again from the two freshly built local packages.
+This kit can be referenced and wired into a full plugin. This library revision does not modify GBR. See [adaptive sizing](ADAPTIVE_SIZING.md) before upgrading an existing consumer. The compiled contract in samples/ConsumerContract/ConsumerUi.cs demonstrates the host boundary without game services; Build.ps1 compiles it from ProjectReferences and again from the two freshly built local packages.
 
 ## Assemblies and installation contract
 
-CombatReborn.MaterialUI.dll supplies the design system and controls. CombatReborn.MaterialUI.Dalamud.dll is an optional adapter that references core and installed Dalamud. Both are ordinary class libraries. Use ProjectReferences during development or packages CombatReborn.MaterialUI and CombatReborn.MaterialUI.Dalamud version 0.2.0 from artifacts/. Copy their DLLs beside the consuming plugin. Do not bundle Dalamud, its ImGui binding, or cimgui from this repository.
+CombatReborn.MaterialUI.dll supplies the design system and controls. CombatReborn.MaterialUI.Dalamud.dll is an optional adapter that references core and installed Dalamud. Both are ordinary class libraries. Use ProjectReferences during development or packages CombatReborn.MaterialUI and CombatReborn.MaterialUI.Dalamud version 0.3.0 from artifacts/. Copy their DLLs beside the consuming plugin. Do not bundle Dalamud, its ImGui binding, or cimgui from this repository.
 
 The packages target net10.0-windows (NuGet canonical platform suffix windows7.0). API 15 / x64 is the validated host. A Dalamud SDK plugin resolves host references normally. A Microsoft.NET.Sdk consumer must resolve the same installed Dalamud and ImGui assemblies; the sample shows this explicitly and enables CopyLocalLockFileAssemblies. No installation, subscription, or configuration persistence happens inside either library.
 
@@ -27,7 +27,7 @@ Call Controller.Apply(newSettings) on configuration change. It validates before 
 
 Keep models, sorting rules and persistence in the plugin. Cache MaterialOptions<T> for combos, with unique stable string keys; Replace on model revision and SetQuery when filtering changes. Labels are display text. Nullable option values can represent inherited settings; MaterialOverride.Switch supplies Inherit/On/Off for bool?.
 
-For native tables, enter MaterialTable.PushStyle once. Keep existing column IDs, flags, sorting specs, visibility, widths, context menus and game icons. MaterialDataView<T>.Rebuild performs filtering/sorting only on explicit invalidation. Comparers should include a unique-key tie-breaker. MaterialSelectionSet<TKey> stores domain keys across filtering and sorting; call Prune only when objects are actually deleted, not when hidden by filters.
+For editable native tables, enter MaterialTable.PushControls once to align Dense native and Material editors. Use PushStyle when retaining existing editor dimensions. Keep existing column IDs, flags, sorting specs, visibility, widths, context menus and game icons. MaterialDataView<T>.Rebuild performs filtering/sorting only on explicit invalidation. Comparers should include a unique-key tie-breaker. MaterialSelectionSet<TKey> stores domain keys across filtering and sorting; call Prune only when objects are actually deleted, not when hidden by filters.
 
 MaterialClipper wraps the native clipper for uniformly spaced rows and belongs inside the table/child scope. Include a selected/focused row before Step when it must be submitted even offscreen. Variable-height recipe trees and timeline charts retain their existing traversal. Do not introduce virtualization into a table that already owns a clipper without removing the duplicate owner.
 

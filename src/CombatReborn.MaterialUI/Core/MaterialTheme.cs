@@ -3,6 +3,9 @@ using Dalamud.Bindings.ImGui;
 
 namespace CombatReborn.MaterialUI;
 
+/// <summary>Compatible preserves host layout; Material owns layout metrics; ColorsOnly preserves every style variable.</summary>
+public enum MaterialStyleMode { Compatible, Material, ColorsOnly }
+
 public sealed class MaterialTheme
 {
     [ThreadStatic] private static MaterialTheme? current;
@@ -24,22 +27,27 @@ public sealed class MaterialTheme
         Density = density;
     }
     public Vector4 SurfaceColor(Vector4 role) => MaterialColor.Alpha(role,SurfaceOpacity);
-    public static ThemeScope Push(MaterialTheme theme, float globalScale = 1, bool applyMetrics = true) => new(theme,globalScale,applyMetrics);
+    public static ThemeScope Push(MaterialTheme theme, float globalScale = 1, bool applyMetrics = true)
+        => new(theme,globalScale,applyMetrics ? MaterialStyleMode.Compatible : MaterialStyleMode.ColorsOnly);
+    public static ThemeScope Push(MaterialTheme theme, float globalScale, MaterialStyleMode mode) => new(theme,globalScale,mode);
 
     public ref struct ThemeScope
     {
         private MaterialStyleScope style;
         private readonly MaterialTheme? previous;
         private readonly MaterialMetrics previousMetrics;
+        private readonly MaterialControlContext previousContext;
         private bool active;
-        internal ThemeScope(MaterialTheme theme, float scale, bool applyMetrics)
+        internal ThemeScope(MaterialTheme theme, float scale, MaterialStyleMode mode)
         {
             ArgumentNullException.ThrowIfNull(theme);
             if (!float.IsFinite(scale) || scale <= 0) throw new ArgumentOutOfRangeException(nameof(scale));
+            if (!Enum.IsDefined(mode)) throw new ArgumentOutOfRangeException(nameof(mode));
             previous = current;
             previousMetrics = metrics;
             current = theme;
             metrics = new(theme.Density,scale);
+            previousContext = MaterialControls.SetContext(MaterialControlContext.Regular);
             style = new();
             active = true;
             var c = theme.Colors;
@@ -88,22 +96,25 @@ public sealed class MaterialTheme
             style.Color(ImGuiCol.TableRowBg,Vector4.Zero);
             style.Color(ImGuiCol.TableRowBgAlt,MaterialColor.Alpha(c.OnSurface,.025f));
             style.Color(ImGuiCol.ModalWindowDimBg,MaterialColor.Alpha(c.Scrim,.5f));
-            if (!applyMetrics) return;
+            if (mode == MaterialStyleMode.ColorsOnly) return;
             style.Style(ImGuiStyleVar.WindowRounding,m.OuterRadius);
             style.Style(ImGuiStyleVar.ChildRounding,m.OuterRadius);
             style.Style(ImGuiStyleVar.PopupRounding,m.Radius);
-            style.Style(ImGuiStyleVar.FrameRounding,m.ButtonHeight*.5f);
+            // Native checkboxes, steppers and narrow editors are not pill buttons.
+            style.Style(ImGuiStyleVar.FrameRounding,4*scale);
             style.Style(ImGuiStyleVar.GrabRounding,m.Radius);
             style.Style(ImGuiStyleVar.TabRounding,m.Radius*.5f);
             style.Style(ImGuiStyleVar.ScrollbarRounding,m.Radius);
+            if (mode == MaterialStyleMode.Compatible) return;
+            var controls = MaterialControls.Metrics;
             style.Style(ImGuiStyleVar.WindowBorderSize,0);
             style.Style(ImGuiStyleVar.ChildBorderSize,m.Border);
             style.Style(ImGuiStyleVar.FrameBorderSize,0);
             style.Style(ImGuiStyleVar.PopupBorderSize,m.Border);
             style.Style(ImGuiStyleVar.WindowPadding,new Vector2(m.Padding));
-            style.Style(ImGuiStyleVar.FramePadding,m.FramePadding);
-            style.Style(ImGuiStyleVar.ItemSpacing,m.ItemSpacing);
-            style.Style(ImGuiStyleVar.CellPadding,m.CellPadding);
+            style.Style(ImGuiStyleVar.FramePadding,controls.NativePadding);
+            style.Style(ImGuiStyleVar.ItemSpacing,controls.ItemSpacing);
+            style.Style(ImGuiStyleVar.CellPadding,controls.CellPadding);
         }
         public void Dispose()
         {
@@ -111,6 +122,7 @@ public sealed class MaterialTheme
             style.Dispose();
             current = previous;
             metrics = previousMetrics;
+            MaterialControls.SetContext(previousContext);
             active = false;
         }
     }

@@ -5,6 +5,30 @@ namespace CombatReborn.MaterialUI;
 
 public static class MaterialTable
 {
+    /// <summary>Table colors plus a shared sizing context for native and Material cell editors.</summary>
+    public static TableControlScope PushControls(bool alternateRows = true, MaterialControlContext context = MaterialControlContext.Dense)
+        => new(alternateRows, context);
+
+    public ref struct TableControlScope
+    {
+        private MaterialStyleScope style;
+        private MaterialControls.ControlScope controls;
+        private bool active;
+        internal TableControlScope(bool alternateRows, MaterialControlContext context)
+        {
+            if (!Enum.IsDefined(context)) throw new ArgumentOutOfRangeException(nameof(context));
+            style = PushStyle(alternateRows);
+            controls = MaterialControls.Push(context);
+            active = true;
+        }
+        public void Dispose()
+        {
+            if (!active) return;
+            controls.Dispose();
+            style.Dispose();
+            active = false;
+        }
+    }
     public static MaterialStyleScope PushStyle(bool alternateRows=true)
     {
         var c=MaterialTheme.Current.Colors;

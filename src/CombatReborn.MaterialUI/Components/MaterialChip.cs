@@ -16,8 +16,9 @@ public static class MaterialChip
     private static bool Draw(string id,string label,bool selected,bool disabled,MaterialIcon icon)
     {
         var m=MaterialTheme.Metrics; var c=MaterialTheme.Current.Colors;
-        var size=new Vector2(ImGui.CalcTextSize(label).X+2*m.Padding+(icon==MaterialIcon.None?0:m.IconSize+m.Gap),
-            Math.Max(m.ChipHeight,ImGui.GetTextLineHeight()+m.Gap));
+        var controls=MaterialControls.Metrics;
+        var size=new Vector2(MaterialLayout.ResolveWidth(0,ImGui.CalcTextSize(label).X+2*controls.Padding.X+(icon==MaterialIcon.None?0:controls.IconSize+controls.Gap),
+            ImGui.GetContentRegionAvail().X,m.Scale),Math.Max(Math.Min(m.ChipHeight,controls.Height),ImGui.GetTextLineHeight()+2*m.Scale));
         ImGui.PushID(id);
         var clicked=MaterialDraw.Hit("##chip",size,disabled,out var state);
         MaterialDraw.Shape(state,selected?c.SecondaryContainer:Vector4.Zero,c.OnSurface,size.Y*.5f,!selected);

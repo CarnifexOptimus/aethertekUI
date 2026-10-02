@@ -1,4 +1,6 @@
 # Design system
+Sizing is adaptive: Compact/Standard establishes density, while Regular/Toolbar/Dense establishes local control intent. Font height provides a minimum; geometry scale is applied once. Theme application preserves host padding by default. Newly designed windows can explicitly opt into Material layout metrics, and table editors can opt into a shared Dense scope. See [adaptive sizing](ADAPTIVE_SIZING.md).
+
 MD3-inspired, dark-first, desktop-density design. Not Google HCT or exact dynamic-color compatibility.
 OKLab/OKLCH uses Björn Ottosson's published conversion matrices: https://bottosson.github.io/posts/oklab/ .
 Tone means OKLab lightness (0–100), not CIELAB L*. Gamut mapping binary-searches chroma at constant hue/lightness, then clamps floating-point epsilon.

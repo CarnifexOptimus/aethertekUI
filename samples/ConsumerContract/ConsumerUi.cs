@@ -58,7 +58,7 @@ public sealed class ConsumerUi : IDisposable
             MaterialCombo.Draw("route",routes,ref route);
             MaterialInput.Integer("quantity",ref count,1,999,disabled:!enabled);
             MaterialOverride.Switch("inherited",ref recipeOverride);
-            using var tableStyle = MaterialTable.PushStyle();
+            using var tableStyle = MaterialTable.PushControls();
             if (ImGui.BeginTable("native-data",2,ImGuiTableFlags.Resizable|ImGuiTableFlags.RowBg))
             {
                 ImGui.TableSetupColumn("Item");ImGui.TableSetupColumn("Status");ImGui.TableHeadersRow();

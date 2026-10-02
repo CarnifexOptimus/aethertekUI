@@ -1,4 +1,6 @@
 # Architecture
+Version 0.3 separates theme ownership from local control geometry. Compatible theme scopes preserve host layout by default; Material opts into complete layout metrics. MaterialControls measures the current font and exposes Regular/Toolbar/Dense contexts through balanced value-type scopes. Native and custom controls share row heights without a plugin-specific layout engine. See [adaptive sizing](ADAPTIVE_SIZING.md).
+
 Version 0.2 adds a separately packaged CombatReborn.MaterialUI.Dalamud adapter and a compiled independent ConsumerContract sample. Core still has no game/plugin dependency. The adapter wraps WindowSystem.Draw or returns a frame scope without subscribing to events. ThemeController owns validated settings and regenerates only on seed changes; persistence remains in the consumer. See INTEGRATION_GUIDE.md.
 
 Data contains explicit-invalidation view/filter/sort caches, keyed options and keyed selection. There is no background task or global model cache. Native wrapper components add multiline/numeric editors, combos, flags/inheritance, tree/context/drag-drop and clipping. Borrowed texture/font helpers never own resources. Colors-only scoping preserves native geometry styles for game-anchored overlays.
