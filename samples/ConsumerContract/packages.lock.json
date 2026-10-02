@@ -2,13 +2,13 @@
   "version": 1,
   "dependencies": {
     "net10.0-windows7.0": {
-      "combatreborn.materialui": {
+      "aethertekui": {
         "type": "Project"
       },
-      "combatreborn.materialui.dalamud": {
+      "aethertekui.dalamud": {
         "type": "Project",
         "dependencies": {
-          "CombatReborn.MaterialUI": "[0.2.0, )"
+          "AethertekUI": "[0.3.0, )"
         }
       }
     }

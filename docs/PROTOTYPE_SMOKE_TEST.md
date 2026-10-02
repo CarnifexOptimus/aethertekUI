@@ -2,18 +2,28 @@
 ## Automated validation
 Run from the repository:
 ```powershell
-pwsh -NoProfile -File .\eng\Build.ps1 -Previews
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\eng\Build.ps1 -Previews
 ```
-Build.ps1 sets local caches, builds Debug/Release, runs all tests for both configurations, creates a local NuGet package, copies convenient DLL artifacts and verifies output paths. Test logs and TRX files are in artifacts/.
+Build.ps1 enters the existing repository-local environment, builds the renamed
+solution once in Debug/x64, runs the existing test project, and checks the
+independent project-reference consumer. Logs and TRX results are in artifacts/.
+Release/package generation and legacy GBR tooling are outside this route.
 
-The v0.3 suite has 111 passing tests in Debug and Release. It retains color/theme/control, data, native input, clipping and performance coverage, and adds sizing regression tests across both densities, three local contexts, 100/125/150 percent geometry scales and two font scales. Checks cover shared native/custom heights, host-style restoration, constrained fields with wider searchable popups, small icon activation, narrow numeric stepper fallback and tile wrapping. All eight demo pages render through the native binding. A warmed 300-frame catalog test records managed allocation and CPU submission time; native allocations and GPU cost are excluded.
+Tests cover color/theme/control behavior, disabled controls, stable IDs, scope
+restoration, native input, clipping, data and adaptive sizing across density,
+control context, geometry and font scales. All eight showcase pages are submitted
+through the native binding. The warmed catalog check measures CPU submission and
+managed allocations; native allocations and GPU costs are excluded. Use fresh
+local output for pass counts; preserved historical reports describe prior runs.
 
-The original Verify-Gbr.ps1 compares against the initial prototype baseline. Do not use that old baseline as evidence for a newer pass with separately authorized intervening GBR work. The current pass compares HEAD, index, status and 410 file hashes against artifacts/gbr-library-sizing-baseline.json; results are in artifacts/gbr-library-sizing-verification.json and [the validation report](LIBRARY_SIZING_VALIDATION.md).
-
-With -Previews, artifacts/previews contains page-0.png through page-7.png, settings-150-percent.png, narrow-field-wide-popup.png and integration density/scale previews. These are generated from the real ImGui draw meshes with a small CPU renderer, default font and fixed background. They are for manual review, not brittle pixel assertions. Build.ps1 also validates both packages with an independent consumer and records artifact hashes/dependencies.
+With -Previews, artifacts/previews contains page-0.png through page-7.png,
+settings-150-percent.png, narrow-field-wide-popup.png and integration density/scale
+previews. These are diagnostic CPU renders of actual native ImGui meshes with a
+default font and fixed background, not in-game screenshots or pixel assertions.
+The preview switch sets AETHERTEKUI_PREVIEW_DIR for the test process.
 
 ## Later in-game manual acceptance (not performed)
-1. Follow README's dev-plugin loading steps; run /crmaterial. Confirm command works and no log errors occur. Close/reopen through plugin UI.
+1. After separately authorizing client installation, load src/AethertekUI.Demo/bin/Debug/AethertekUI.Demo.dll as a developer plugin with its manifest and AethertekUI.dll beside it; run /aethertekui. Confirm command works and no log errors occur. Close/reopen through plugin UI.
 2. Gallery: change green seed to violet/orange. All chrome changes coherently; change opacity independently; switch Compact/Standard. Tab through controls, activate with keyboard/gamepad where host supports it.
 3. Activate all four button variants and each icon. Toggle switch/checkbox/chips, 2/3/4 segments. In Disabled & focus, confirm entire and per-option disabled states do not activate. Test read-only/error fields, typing, paste, selection and inline clear.
 4. Scroll to cards; select the interactive card. Open/confirm/cancel the modal. Confirm popup focus and no style leakage into another plugin.

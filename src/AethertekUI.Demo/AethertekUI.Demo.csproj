@@ -1,0 +1,16 @@
+<Project Sdk="Dalamud.NET.Sdk/15.0.0">
+  <PropertyGroup>
+    <Name>AethertekUI Showcase</Name>
+    <Author>CombatReborn</Author>
+    <Description>AethertekUI interactive showcase; mock data only.</Description>
+    <Punchline>Compact Material-inspired controls and dense data.</Punchline>
+    <IsPackable>false</IsPackable>
+    <Use_DalamudPackager>false</Use_DalamudPackager>
+    <OutputPath>bin/$(Configuration)/</OutputPath>
+    <DalamudLibPath>$(DalamudLibPath)</DalamudLibPath>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="../AethertekUI/AethertekUI.csproj"/>
+    <None Include="AethertekUI.Demo.json" CopyToOutputDirectory="PreserveNewest"/>
+  </ItemGroup>
+</Project>

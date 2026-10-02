@@ -5,12 +5,12 @@
     <DefaultItemExcludes>$(DefaultItemExcludes);obj/**;bin/**</DefaultItemExcludes>
   </PropertyGroup>
   <ItemGroup Condition="'$(UseMaterialPackages)' != 'true'">
-    <ProjectReference Include="../../src/CombatReborn.MaterialUI/CombatReborn.MaterialUI.csproj"/>
-    <ProjectReference Include="../../src/CombatReborn.MaterialUI.Dalamud/CombatReborn.MaterialUI.Dalamud.csproj"/>
+    <ProjectReference Include="../../src/AethertekUI/AethertekUI.csproj"/>
+    <ProjectReference Include="../../src/AethertekUI.Dalamud/AethertekUI.Dalamud.csproj"/>
   </ItemGroup>
   <ItemGroup Condition="'$(UseMaterialPackages)' == 'true'">
-    <PackageReference Include="CombatReborn.MaterialUI" Version="$(Version)"/>
-    <PackageReference Include="CombatReborn.MaterialUI.Dalamud" Version="$(Version)"/>
+    <PackageReference Include="AethertekUI" Version="$(Version)"/>
+    <PackageReference Include="AethertekUI.Dalamud" Version="$(Version)"/>
   </ItemGroup>
   <ItemGroup>
     <Reference Include="Dalamud"><HintPath>$(DalamudLibPath)/Dalamud.dll</HintPath><Private>false</Private></Reference>

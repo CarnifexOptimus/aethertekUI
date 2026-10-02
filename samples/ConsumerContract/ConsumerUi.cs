@@ -1,6 +1,6 @@
 using System.Numerics;
-using CombatReborn.MaterialUI;
-using CombatReborn.MaterialUI.Dalamud;
+using AethertekUI;
+using AethertekUI.Dalamud;
 using Dalamud.Bindings.ImGui;
 using Dalamud.Interface.Windowing;
 

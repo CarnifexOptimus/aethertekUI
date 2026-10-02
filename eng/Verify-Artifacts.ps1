@@ -4,11 +4,11 @@ Push-Location $repoRoot
 try {
     $version = ([xml](Get-Content Directory.Build.props)).Project.PropertyGroup.Version
     $required = @(
-        'artifacts/lib/Release/CombatReborn.MaterialUI.dll',
-        'artifacts/lib/Release/CombatReborn.MaterialUI.Dalamud.dll',
-        'artifacts/demo/Release/CombatReborn.MaterialUI.Demo.dll',
-        "artifacts/CombatReborn.MaterialUI.$version.nupkg",
-        "artifacts/CombatReborn.MaterialUI.Dalamud.$version.nupkg",
+        'artifacts/lib/Release/AethertekUI.dll',
+        'artifacts/lib/Release/AethertekUI.Dalamud.dll',
+        'artifacts/demo/Release/AethertekUI.Demo.dll',
+        "artifacts/AethertekUI.$version.nupkg",
+        "artifacts/AethertekUI.Dalamud.$version.nupkg",
         'artifacts/consumer-package/ConsumerContract.dll')
     $manifest = foreach ($relative in $required) {
         $file = Get-Item -LiteralPath (Join-Path $repoRoot $relative)

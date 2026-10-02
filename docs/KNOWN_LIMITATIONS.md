@@ -1,7 +1,7 @@
 # Known limitations — v0.3
 
 - Dark mode only; OKLCH-generated roles are MD3-inspired, not exact Google HCT or a certification claim.
-- Core, optional Dalamud adapter, demo and independent consumer compile. The consumer also builds from freshly packed local packages. This library revision has not been deployed or tested in FFXIV; GPU compositing, real fonts, unload/reload and GBR controller routing remain manual acceptance.
+- Core, optional Dalamud adapter, demo and independent consumer compile. The normal route verifies project-reference consumption; local package consumption is not revalidated in this foundation delivery. This library revision has not been deployed or tested in FFXIV; GPU compositing, real fonts, unload/reload and consumer controller routing remain manual acceptance.
 - All eight actual demo pages render through the native ImGui binding. Diagnostic CPU mesh previews use the default font; they are not in-game screenshots.
 - Existing fish-timer charts, spearfishing addon coordinates, native item tooltips, domain formatting and controller bridge remain consumer code. The kit supplies scoped colors, native compatibility and borrowed texture/font helpers, not game services.
 - Native navigation remains host-configured. NextEnabled supports explicit routed selection events; there is no global input manager or complete accessibility/screen-reader layer.
@@ -15,7 +15,7 @@
 - The bounded motion cache has 4096 entries and stale-frame pruning. No ripple physics or shared-element animation.
 - Demo settings are memory-only. Production settings can serialize MaterialThemeSettings using the consumer's persistence service. No configuration files or game actions are owned by the libraries.
 - API 15 / .NET 10 / Windows x64 is the validated combination. v0.3 is still a pre-1.0 API; rebuild consumers when upgrading.
-- Filesystem evidence covers MSBuild manifests and configured cache/temp paths, plus GBR HEAD/status/index/content hashes. It is not a forensic system-wide filesystem monitor.
+- The existing environment directs tooling caches and outputs into this repository. Historical GBR filesystem/baseline reports do not describe this delivery; no system-wide filesystem monitoring is performed.
 
 See [adaptive sizing](ADAPTIVE_SIZING.md) for the new compatibility default and local control contexts.
 

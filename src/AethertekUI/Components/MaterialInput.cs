@@ -1,0 +1,77 @@
+using System.Numerics;
+using Dalamud.Bindings.ImGui;
+
+namespace AethertekUI;
+
+/// <summary>Native editors under the current theme. Explicit IDs keep label/localization changes safe.</summary>
+public static class MaterialInput
+{
+    public static bool Integer(string id, ref int value, int minimum = int.MinValue, int maximum = int.MaxValue,
+        float width = -1, bool disabled = false, int step = 1)
+    {
+        if (minimum > maximum) throw new ArgumentException("Minimum exceeds maximum.");
+        using var controls = MaterialControls.Push();
+        var pixels = Begin(id, width, disabled);
+        Span<byte> text = stackalloc byte[16];
+        System.Buffers.Text.Utf8Formatter.TryFormat(value,text,out var written);
+        var minimumEditor = ImGui.CalcTextSize(text[..written]).X + 2*ImGui.GetStyle().FramePadding.X + 4*MaterialTheme.Metrics.Scale;
+        var stepperWidth = 2*(ImGui.GetFrameHeight()+ImGui.GetStyle().ItemInnerSpacing.X);
+        // Preserve the editable value when a cell cannot also fit two step buttons.
+        var effectiveStep = pixels >= minimumEditor+stepperWidth ? step : 0;
+        var changed = ImGui.InputInt("##value", ref value, effectiveStep);
+        if (changed) value = Math.Clamp(value, minimum, maximum);
+        End();
+        return changed;
+    }
+
+    public static bool Number(string id, ref float value, float minimum = float.MinValue, float maximum = float.MaxValue,
+        float width = -1, bool disabled = false, string format = "%.2f")
+    {
+        if (!float.IsFinite(minimum) || !float.IsFinite(maximum) || minimum > maximum)
+            throw new ArgumentException("Bounds must be finite and ordered.");
+        using var controls = MaterialControls.Push();
+        Begin(id, width, disabled);
+        var changed = ImGui.InputFloat("##value", ref value, 0, 0, format);
+        if (changed) value = float.IsFinite(value) ? Math.Clamp(value, minimum, maximum) : minimum;
+        End();
+        return changed;
+    }
+
+    public static bool Slider(string id, ref float value, float minimum, float maximum, float width = -1,
+        bool disabled = false, string format = "%.2f")
+    {
+        if (!float.IsFinite(minimum) || !float.IsFinite(maximum) || minimum >= maximum)
+            throw new ArgumentException("Slider bounds must be finite and increasing.");
+        using var controls = MaterialControls.Push();
+        Begin(id, width, disabled);
+        var changed = ImGui.SliderFloat("##value", ref value, minimum, maximum, format, ImGuiSliderFlags.AlwaysClamp);
+        End();
+        return changed;
+    }
+
+    public static bool Multiline(string id, ref string value, Vector2 size, int maxLength = 500_000,
+        bool disabled = false, bool error = false, ImGuiInputTextFlags flags = ImGuiInputTextFlags.None)
+    {
+        if (maxLength < 1) throw new ArgumentOutOfRangeException(nameof(maxLength));
+        using var controls = MaterialControls.Push();
+        ImGui.PushID(id);
+        ImGui.BeginDisabled(disabled);
+        using var style = new MaterialStyleScope();
+        style.Style(ImGuiStyleVar.FrameRounding, MaterialTheme.Metrics.Radius);
+        if (error) { style.Color(ImGuiCol.Border, MaterialTheme.Current.Colors.Error); style.Style(ImGuiStyleVar.FrameBorderSize, MaterialTheme.Metrics.Border); }
+        var changed = ImGui.InputTextMultiline("##value", ref value, maxLength, MaterialTheme.Metrics.Scaled(size), flags);
+        ImGui.EndDisabled();
+        ImGui.PopID();
+        return changed;
+    }
+
+    private static float Begin(string id, float width, bool disabled)
+    {
+        var pixels = MaterialLayout.ResolveWidth(width,180*MaterialTheme.Metrics.Scale,ImGui.GetContentRegionAvail().X,MaterialTheme.Metrics.Scale);
+        ImGui.PushID(id);
+        ImGui.BeginDisabled(disabled);
+        ImGui.SetNextItemWidth(pixels);
+        return pixels;
+    }
+    private static void End() { ImGui.EndDisabled(); ImGui.PopID(); }
+}

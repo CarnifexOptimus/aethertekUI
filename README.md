@@ -1,150 +1,158 @@
-# CombatReborn.MaterialUI
-A standalone, dark-first, Material Design 3-inspired immediate-mode C# library for Dalamud API 15. Compact desktop controls, cached seed-derived themes, scoped styles and native data tables. This is an independent prototype, with no dependency on GBR, ElliLib, RSR or plugin-specific game code.
+# AethertekUI
 
-**Status v0.3:** compiled library, optional Dalamud host adapter, eight-page interactive demo, and an independent consumer built using both project references and local packages. Coverage now includes whole-plugin settings, list editors, specialized overlay escape hatches, and large tables. This revision has not been tested in the game. Adaptive sizing and host-layout compatibility are described in the [sizing guide](docs/ADAPTIVE_SIZING.md). See the [integration guide](docs/INTEGRATION_GUIDE.md) and [whole-GBR coverage](docs/FULL_GBR_COVERAGE.md).
+A local, private C# immediate-mode UI library for FFXIV-related applications:
+MD3-inspired dark surfaces, compact desktop controls, cached OKLCH seed-derived
+themes, scoped styles and native ImGui interaction. Version remains **0.3.0**.
+The core targets .NET 10 / Windows x64 and uses Dalamud.Bindings.ImGui; the
+optional adapter integrates with Dalamud API 15 hosts.
 
 ## Repository
+
 ```text
-CombatReborn.MaterialUI.sln
-PROJECT_MISSION.md                 authoritative, preserved task
-AGENTS.md                          filesystem and GBR read-only rules
+AethertekUI.sln
+AGENTS.md                          current repository instructions
+skills/aethertek-ui/SKILL.md        adoption and library evolution guidance
 src/
-  CombatReborn.MaterialUI/
-    Core/                          colors, palettes, roles, metrics, motion, scopes
-    Drawing/                       native hit behavior and vector icons
-    Components/                    composable control families
-    Data/                          cached options/views and key selection
-  CombatReborn.MaterialUI.Dalamud/  optional WindowSystem adapter
-  CombatReborn.MaterialUI.Demo/
-    Plugin.cs                      /crmaterial and UI lifecycle
-    Showcase*.cs                   eight interactive pages and floating overlay
-samples/ConsumerContract/          independent compiled integration example
-tests/
-  CombatReborn.MaterialUI.Tests/    pure logic and native input/render tests
-eng/                               local environment, build and verification scripts
-docs/                              audit, architecture, API, integration plan, limitations
-artifacts/                         ignored local builds, package, logs and previews
+  AethertekUI/                      Core, Drawing, Components, Data
+  AethertekUI.Dalamud/              optional lifecycle-free WindowSystem adapter
+  AethertekUI.Demo/                 AethertekUI Showcase, /aethertekui
+samples/ConsumerContract/           independent integration example
+tests/AethertekUI.Tests/           pure logic, native input and render tests
+eng/                               existing local environment and checks
+docs/                              API, sizing, integration and historical context
+PROJECT_MISSION.md                 original machine-specific mission, historical
+artifacts/                         ignored logs, test results and diagnostic previews
 .cache/                            ignored repository-local tool caches
 ```
 
-## Build
-Prerequisites: Windows x64, .NET SDK 10.0.401 (latest patch allowed), and installed Dalamud API 15 assemblies. GBR's local csproj was verified as Dalamud.NET.Sdk/15.0.0 and net10.0-windows. The library uses Microsoft.NET.Sdk; only the demo uses the Dalamud SDK.
+## Build and verify
+
+Prerequisites: Windows x64, installed .NET SDK **10.0.201** (latest patch allowed),
+and an installed Dalamud API 15 distribution. Core and adapter use
+Microsoft.NET.Sdk; only the showcase uses Dalamud.NET.Sdk/15.0.0.
 
 ```powershell
-Set-Location 'C:\Users\pscho\OneDrive\Documents\GitRepos\CombatReborn.MaterialUI'
-pwsh -NoProfile -File .\eng\Build.ps1 -Previews
+Set-Location 'Z:\aethertekUI'
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\eng\Build.ps1 -Previews
 ```
 
-The script sets DOTNET_CLI_HOME, NuGet package/HTTP/plugin caches, TEMP/TMP, APPDATA and LOCALAPPDATA under .cache before tooling runs. It disables first-run/telemetry/workload notices and shared build servers. No SDK/plugin installation or remote publication occurs.
-It uses an existing DALAMUD_HOME override or the usual installed XIVLauncher dev directory. To select another installed API 15 distribution:
+The normal route builds the solution once in Debug/x64, runs the existing tests,
+and builds/checks the independent project-reference consumer. The command sets
+execution-policy bypass only for that child process, without changing machine or
+user policy, and dot-sources `Enter-RepoEnv.ps1` before tooling runs. It does not pack
+release artifacts or run legacy GBR tooling. Showcase build packaging is disabled;
+its source manifest is copied beside its DLL. The existing environment keeps
+DOTNET_CLI_HOME, NuGet caches, TEMP/TMP, APPDATA and LOCALAPPDATA under `.cache/`.
+
+`Enter-RepoEnv.ps1` honors an existing `DalamudLibPath` or `DALAMUD_HOME`, otherwise
+uses the installed XIVLauncher dev distribution. To choose another distribution,
+set `$env:DalamudLibPath` before entering the environment. Tooling reads installed
+host assemblies and does not install or control a client.
+
+For targeted checks, open a child shell with
+`powershell.exe -NoProfile -ExecutionPolicy Bypass`, then enter the environment:
 
 ```powershell
-$env:DalamudLibPath = 'C:\path\to\installed\Dalamud\dev'
 . .\eng\Enter-RepoEnv.ps1
-.\eng\Build.ps1 -Previews
+dotnet build AethertekUI.sln -c Debug -p:Platform=x64 --disable-build-servers -m:1
+dotnet test tests/AethertekUI.Tests -c Debug --no-build --no-restore
+.\eng\Verify-Consumer.ps1
 ```
 
-For one project/check:
-```powershell
-. .\eng\Enter-RepoEnv.ps1
-dotnet build CombatReborn.MaterialUI.sln -c Debug --disable-build-servers -m:1
-dotnet test tests/CombatReborn.MaterialUI.Tests -c Debug --disable-build-servers
-.\eng\Verify-Gbr.ps1
-```
+NuGet.Config clears inherited feeds; existing dependency lock files remain
+tracked. NuGet auditing is disabled by the inherited build configuration.
 
-Always enter the local environment first, including before restore/pack/new tooling. NuGet.Config clears inherited sources; dependency lock files are committed. NuGet vulnerability auditing is disabled for this isolated prototype build; no production security review is claimed.
+## Use in a consumer
 
-## Outputs
-All paths below are relative to this repository:
-- Reusable DLL: artifacts/lib/Release/CombatReborn.MaterialUI.dll
-- Debug DLL: artifacts/lib/Debug/CombatReborn.MaterialUI.dll
-- Demo: artifacts/demo/Release/CombatReborn.MaterialUI.Demo.dll (with manifest, library and PDBs beside it)
-- Optional adapter DLL: artifacts/lib/Release/CombatReborn.MaterialUI.Dalamud.dll
-- Local packages: artifacts/CombatReborn.MaterialUI.0.3.0.nupkg and artifacts/CombatReborn.MaterialUI.Dalamud.0.3.0.nupkg
-- Package consumer proof: artifacts/consumer-package/ConsumerContract.dll
-- Normal library output: src/CombatReborn.MaterialUI/bin/{Debug|Release}/net10.0-windows/
-- Normal demo output: src/CombatReborn.MaterialUI.Demo/bin/{Debug|Release}/
-- Build/test logs: artifacts/build-*.log, artifacts/test-*.log, artifacts/TestResults/
-- Visual previews: artifacts/previews/page-0.png through page-7.png, settings-150-percent.png, integration density/scale previews
+Prefer local project references, adjusting these paths relative to the csproj:
 
-## Use from a plugin
-A normal ProjectReference is the preferred local development arrangement:
 ```xml
 <ItemGroup>
-  <ProjectReference Include="../CombatReborn.MaterialUI/src/CombatReborn.MaterialUI/CombatReborn.MaterialUI.csproj" />
+  <ProjectReference Include="../aethertekUI/src/AethertekUI/AethertekUI.csproj" />
+  <ProjectReference Include="../aethertekUI/src/AethertekUI.Dalamud/AethertekUI.Dalamud.csproj" />
 </ItemGroup>
 ```
-Adjust the path for the consumer. Alternatively reference the ordinary DLL with Copy Local enabled, or use the local NuGet package. The package contains the class library, not copies of Dalamud assemblies. A consuming Dalamud.NET.Sdk/15.0.0 project supplies the normal bindings. Microsoft.NET.Sdk consumers must also resolve Dalamud.Bindings.ImGui from the same installed distribution.
 
-Cache the theme and options outside Draw:
+The adapter is optional and reserved for Dalamud hosts. Compatible C# ImGui
+applications can use core when they supply the same managed binding and matching
+native runtime/context. A different ImGui binding requires an explicit port.
+
 ```csharp
-using System.Numerics;
-using CombatReborn.MaterialUI;
+using AethertekUI;
 using Dalamud.Bindings.ImGui;
-using Dalamud.Interface.Utility;
 
-private readonly MaterialTheme theme = new(new Vector3(.36f, .72f, .46f));
-private static readonly MaterialSegment<int>[] Modes =
-    [new(0, "Auto"), new(1, "Manual"), new(2, "Off")];
-private int mode;
+// Cache this outside Draw.
+private readonly MaterialTheme theme = new(new(.36f, .72f, .46f));
 private bool enabled;
-private string search = "";
 
-public void Draw()
+public void Draw(float hostScale)
 {
-    using var scope = MaterialTheme.Push(theme, ImGuiHelpers.GlobalScale);
-    // If owning raw ImGui windows, enter the scope BEFORE Begin and keep it through End.
-    if (ImGui.Begin("Example"))
-    {
+    using var scope = MaterialTheme.Push(theme, hostScale, MaterialStyleMode.Material);
+    if (ImGui.Begin("Example###example-window"))
         MaterialSwitch.Draw("enabled", "Enabled", ref enabled);
-        MaterialSegmented.Draw<int>("mode", Modes, ref mode);
-        MaterialTextField.SearchField("search", ref search);
-        if (MaterialButton.FilledButton("start", "Start", leading: MaterialIcon.Play))
-        {
-            // Consumer action.
-        }
-        if (ImGui.IsItemHovered())
-            ImGui.SetTooltip("Consumer-owned tooltip");
-    }
     ImGui.End();
 }
 ```
-If using Dalamud WindowSystem, the consumer owns its lifecycle. Wrap WindowSystem.Draw when outer window styling is desired; a theme scope inside a Window.Draw method styles content after the window has already begun.
 
-Pass logical (unscaled) explicit sizes to components. Zero means automatic; negative button/field width fills available space. Metrics exposed by MaterialTheme.Metrics are already scaled pixels. Child Surface sizes preserve native zero/negative conventions. Do not scale twice. Cache themes; regenerate only when the seed changes. SurfaceOpacity and Density can change without generating palettes.
+Wrap the complete Begin/End lifecycle. For WindowSystem, use
+`MaterialWindowHost.Draw(windows)` or a `BeginFrame` scope around `windows.Draw()`.
+The default Compatible mode preserves host layout; Material applies full geometry.
+Consumers own lifecycle, configuration, actions, domain colors, fonts and textures.
+Ship the library DLLs beside the plugin while keeping Dalamud assemblies host-owned.
 
-## Components
-Filled, filled-tonal, outlined and text buttons; vector icon buttons; generic segmented controls with disabled options; animated switch; checkbox/radio helpers; surface/card scopes and clickable cards; filter/action chips; search with clear and native text editing; filled text fields with read-only/error/icon support; expanded/compact navigation rail and items; list items; native secondary tabs; action tiles; badges; rounded linear progress; modal scope; section/window headers; native table style and row-state helpers.
+Use stable IDs independent of translated labels, host-provided CJK fonts, and
+content-aware sizing for longer translations. Component type names and signatures
+remain Material-prefixed, and internal ImGui IDs are preserved. Read the
+[usage skill](skills/aethertek-ui/SKILL.md),
+[integration guide](docs/INTEGRATION_GUIDE.md),
+[adaptive sizing guide](docs/ADAPTIVE_SIZING.md) and
+[component API](docs/COMPONENT_API.md).
 
-Core generates primary/secondary/tertiary/neutral/error tonal palettes in OKLCH with gamut chroma reduction, then caches 33 semantic roles. Alpha is independent from RGB. Motion state uses stable IDs and bounded pruning. This is MD3-inspired, not exact HCT.
+## Showcase and outputs
 
-## Demo
-/crmaterial opens:
-1. Component gallery, accent/opacity/density, native secondary tabs, disabled states and dialog.
-2. Compact automation preview and a separate floating overlay with shared Auto/Manual/Off state.
-3. Dense mock gathering table: search/filter, native sorting/resizing and selected/hover rows. Semantic status colors remain fixed when the accent changes.
-4. Action dashboard: mock Start/Pause/Stop, Move/Return/Repair, progress/status.
-5. Realistic settings: switches, route combo, segmented mode, slider, preset field and nested dependency card.
-6. List editor: resizable panels, tree/folder drag-and-drop, context menu, job bit filters, searchable 500-option combo, quantity/delay editors, inherited setting and multiline import.
-7. Large catalog: 10,000 cached mock rows, native sorting/resizing/reordering/hiding, clipped rendering, key-based multiselection and semantic statuses.
-8. Sizing lab: Regular/Toolbar/Dense contexts, aligned native and custom controls, compact table editors, independent popup widths and wrapping action tiles.
+**AethertekUI Showcase**, command `/aethertekui`, contains eight mock-data pages:
+Gallery, Automation, Gathering data, Dashboard, Settings, List editor,
+Large catalog and Sizing lab. It includes a floating automation overlay.
+No game actions run from the showcase.
 
-## Manually load later
-No plugin was installed by this task.
-1. Build first. Leave the entire artifacts/demo/Release directory together, including CombatReborn.MaterialUI.dll and the demo JSON manifest.
-2. In a compatible API 15 Dalamud installation, open developer plugin settings (commonly /xlsettings → Experimental → Dev Plugin Locations).
-3. Add the full path to artifacts/demo/Release/CombatReborn.MaterialUI.Demo.dll as a local development plugin location; save, then use the Dev Tools/development plugin list to scan/reload and enable it. Labels can vary by Dalamud build.
-4. Run /crmaterial. Do not add the library DLL itself as a plugin.
-5. Disable/unload the demo before replacing locked DLLs or rebuilding. Remove the dev plugin entry when done.
+Debug outputs relative to this repository:
 
-These are later manual actions, not steps performed here. Follow docs/PROTOTYPE_SMOKE_TEST.md for in-game acceptance.
-The dev-plugin location workflow is described in the [official Dalamud getting-started FAQ](https://dalamud.dev/faq/getting-started/).
+- Core: `src/AethertekUI/bin/Debug/net10.0-windows/AethertekUI.dll`.
+- Adapter: `src/AethertekUI.Dalamud/bin/Debug/net10.0-windows/AethertekUI.Dalamud.dll`.
+- Showcase: `src/AethertekUI.Demo/bin/Debug/AethertekUI.Demo.dll` and its JSON manifest.
+- Consumer: `samples/ConsumerContract/bin/Debug/net10.0-windows/ConsumerContract.dll`,
+  with both renamed library DLLs beside it.
+- Logs/results: `artifacts/build-Debug.log`, `artifacts/test-Debug.log`,
+  `artifacts/consumer-project.log`, `artifacts/TestResults/`.
+- Diagnostic previews: `artifacts/previews/page-0.png` through `page-7.png`,
+  plus existing density/scale and narrow-field previews.
 
-## Evidence and next steps
-- [UI audit](docs/GBR_UI_REQUIREMENTS.md) and complete per-file [survey](docs/GBR_GUI_SURVEY.txt).
-- [Architecture](docs/ARCHITECTURE.md), [design system](docs/DESIGN_SYSTEM.md), [API guide](docs/COMPONENT_API.md).
-- Original prototype [read-only baseline](docs/GBR_BASELINE.md) and [comparison](docs/GBR_FINAL_VERIFICATION.json); current library pass [validation](docs/LIBRARY_SIZING_VALIDATION.md).
-- [GBR integration plan](docs/GBR_INTEGRATION_PLAN.md) — planning reference predating the separately authorized UITest wiring.
-- [Known limitations](docs/KNOWN_LIMITATIONS.md) and [smoke test](docs/PROTOTYPE_SMOKE_TEST.md).
+Previews are CPU diagnostic renders of actual native ImGui meshes using a default
+font and fixed background. They are not game screenshots or GPU acceptance.
+Real game/CJK fonts, GPU compositing, controller routing and unload/reload remain
+for later selected plugin integrations. See [known limitations](docs/KNOWN_LIMITATIONS.md)
+and the [smoke-test guide](docs/PROTOTYPE_SMOKE_TEST.md).
 
-The integration kit covers the audited common patterns across GBR, including non-Gui overlays. Native/domain-specific rendering remains composable under the theme. The [compiled consumer example](samples/ConsumerContract/ConsumerUi.cs) demonstrates adoption without game services. The v0.3 library pass preserves the existing GBR working tree and does not deploy this revision into GBR; evaluating its remaining application layout choices is a separate pass.
+## Evolution and provenance
+
+Implement approved plugin mockups faithfully. When a design exposes a component
+or layout gap, improve AethertekUI and demonstrate the addition in the showcase.
+Update the skill when real integrations establish better practices. AutoParty
+remains skipped; this delivery establishes the foundation without plugin edits,
+client installation, live-game tests, release packaging or publication.
+Publication remains David's responsibility; this repository has no remote.
+
+Imported from the supplied `CombatReborn.MaterialUI.zip`, retaining its two
+upstream Git commits and the newer working-tree source. The incoming state is
+preserved in commit `1f65827` before rebranding. Original showcase attribution to
+**CombatReborn** remains in project/manifest metadata. The implementation is
+independent of GBR, ElliLib, RSR and game-specific plugin code. OKLab/OKLCH uses
+[Bjorn Ottosson's published matrices](https://bottosson.github.io/posts/oklab/).
+No root license was supplied; this conversion adds no licensing terms.
+
+`PROJECT_MISSION.md`, GBR documents and prior verification reports remain intact
+as historical context from another machine. Their paths, authorizations and test
+claims do not apply to this repository. `eng/*Gbr*`, `eng/GbrUiProbe/` and
+`eng/Record-GbrOutputs.targets` are legacy tooling outside the normal route.
+`eng/Verify-Artifacts.ps1` retains the old release-artifact workflow separately;
+normal checks do not invoke it. No GBR source is needed for the current build.
