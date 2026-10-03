@@ -3,7 +3,7 @@ using Dalamud.Bindings.ImGui;
 
 namespace AethertekUI;
 
-public enum MaterialIcon { None, Search, Close, Settings, Check, Play, Pause, Stop, ArrowRight, Return, Edit, Delete, More, ChevronDown, Home, Grid, Table, Sliders, Info, Document, Database, Refresh, Chart, ExternalLink, Download, Palette, Globe }
+public enum MaterialIcon { None, Search, Close, Settings, Check, Play, Pause, Stop, ArrowRight, Return, Edit, Delete, More, ChevronDown, Home, Grid, Table, Sliders, Info, Document, Database, Refresh, Chart, ExternalLink, Download, Palette, Globe, Map, Clock, Link }
 
 /// <summary>Small vector icons; no font or texture dependency.</summary>
 public static class MaterialIcons
@@ -17,6 +17,24 @@ public static class MaterialIcons
         void L(float x,float y,float a,float b) => dl.AddLine(P(x,y),P(a,b),ink,stroke);
         switch(icon)
         {
+            case MaterialIcon.Map:
+                L(.12f,.25f,.36f,.12f); L(.36f,.12f,.64f,.25f); L(.64f,.25f,.88f,.12f);
+                L(.12f,.25f,.12f,.88f); L(.12f,.88f,.36f,.75f); L(.36f,.75f,.64f,.88f);
+                L(.64f,.88f,.88f,.75f); L(.88f,.75f,.88f,.12f); L(.36f,.12f,.36f,.75f); L(.64f,.25f,.64f,.88f); break;
+            case MaterialIcon.Clock:
+                dl.AddCircle(P(.5f,.5f),size*.38f,ink,24,stroke); L(.5f,.25f,.5f,.5f); L(.5f,.5f,.7f,.61f); break;
+            case MaterialIcon.Link:
+                for(var link=0;link<2;link++)
+                {
+                    var center=link==0 ? P(.35f,.65f) : P(.65f,.35f);
+                    for(var i=0;i<24;i++)
+                    {
+                        var t=i*MathF.Tau/24; var x=MathF.Cos(t)*size*.25f; var y=MathF.Sin(t)*size*.13f;
+                        dl.PathLineTo(center+new Vector2((x+y)*.7071f,(-x+y)*.7071f));
+                    }
+                    dl.PathStroke(ink,ImDrawFlags.Closed,stroke);
+                }
+                L(.4f,.6f,.6f,.4f); break;
             case MaterialIcon.Palette:
                 dl.AddCircle(P(.5f,.5f),size*.38f,ink,24,stroke);
                 for(var i=0;i<4;i++) { var angle=i*MathF.PI/3; dl.AddCircleFilled(P(.5f+.24f*MathF.Cos(angle),.5f+.24f*MathF.Sin(angle)),size*.06f,ink); }

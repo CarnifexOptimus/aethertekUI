@@ -33,7 +33,9 @@ languageWidth)` borrows the active font. Preset selection reports immediately;
 custom RGB reports on edit completion. Consumers own the draft, localized
 labels/native language options, semantic colours, configuration/save path and
 next-frame theme/font changes. Palette and Globe icons are appended to the
-existing enum. See the sizing showcase and independent consumer example.
+existing enum. Map, Clock and Link are also appended for area, elapsed-time and
+dependency sections; all use native meshes without font or texture ownership.
+See the sizing showcase and independent consumer example.
 Use MaterialTheme.Push(theme, ImGuiHelpers.GlobalScale) around your window draw. Pass stable IDs separately from visible labels. Scope IDs further with ImGui.PushID for repeated domain objects.
 Button variants share label, leading/trailing MaterialIcon, size and disabled support. Negative width fills available width; positive sizes are logical units; zero selects defaults.
 `MaterialButton.Draw(id, label, cornerRadius, ...)` and `MaterialStatus.Badge(label, cornerRadius, ...)` accept an explicit nonnegative logical radius, clamped to the rendered bounds. Existing overloads keep their pill shapes. Document, Database, Refresh, Chart, ExternalLink and Download extend the texture-free icon set without changing prior enum values.

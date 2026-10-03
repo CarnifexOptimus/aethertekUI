@@ -86,6 +86,9 @@ internal sealed partial class Showcase
             MaterialTextField.SearchField("exact-search",ref sizingText,appearance,width:222);
             MaterialCombo.Draw("exact-choice",sizingOptions,ref sizingChoice,appearance,width:213,searchable:false);
             MaterialSwitch.Draw("exact-switch","44 x 26 track",ref sizingEnabled,new Vector2(44,26));
+            MaterialButton.IconButton("map-example",MaterialIcon.Map);
+            ImGui.SameLine(); MaterialButton.IconButton("clock-example",MaterialIcon.Clock);
+            ImGui.SameLine(); MaterialButton.IconButton("link-example",MaterialIcon.Link);
             MaterialAppearanceSelector.Draw("preferences",ref sizingAccent,ref sizingLanguage,sizingLanguages,
                 new("Color","Language","Teal","Blue","Pink","Custom RGB"));
         }

@@ -41,6 +41,9 @@ public sealed class ConsumerUi : IDisposable
         MaterialTextField.SearchField("measured-search",ref search,appearance,width:222);
         MaterialCombo.Draw("measured-combo",options,ref selected,appearance,width:213);
         MaterialSwitch.Draw("measured-switch","Enabled",ref enabled,new Vector2(44,26));
+        MaterialButton.IconButton("map-example",MaterialIcon.Map);
+        ImGui.SameLine(); MaterialButton.IconButton("clock-example",MaterialIcon.Clock);
+        ImGui.SameLine(); MaterialButton.IconButton("link-example",MaterialIcon.Link);
         var p=ImGui.GetCursorScreenPos();var s=MaterialTheme.Metrics.Scale;
         MaterialCanvas.Surface(p,p+new Vector2(280,36)*s,appearance.Fill,MaterialTheme.Current.Colors.Background,appearance.CornerRadius*s);
         ImGui.Dummy(new Vector2(280,36)*s);

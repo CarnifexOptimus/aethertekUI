@@ -69,6 +69,10 @@ Keep IDs independent of translated labels. Use persistent model keys in
 `MaterialSegment.Key` values. Index segment IDs suit fixed lists only. Raw
 native controls can separate translated text and identity using `###stable-id`.
 Preserve existing internal ImGui IDs during refactors and rebranding.
+Account/profile editors keep their viewed
+selection separate from the runtime active account/character; browsing settings
+must not redirect automation. Key choices by persistent IDs even when displayed
+names are obfuscated or duplicate, and retain in-progress text edits across frames.
 
 Measure translated labels using the active host font. Budget pane, column,
 button and popup widths for longer translations; use wrapping tiles where
@@ -128,7 +132,11 @@ Set `persist-credentials: false` so checkout removes the key before build steps.
 Give the build's `GITHUB_TOKEN` only `contents: read`; grant `contents: write`
 only to an already authorized release job. Never reuse a broad personal token,
 commit a private key, or include it in logs or artifacts. Remove temporary local
-key files after configuring GitHub. A deploy key can be revoked on AethertekUI;
+key files after configuring GitHub. Windows SSH key generation needs a local
+filesystem that supports key permission changes; a mounted drive can fail while
+saving the key. Use a temporary local directory outside repositories, remove it
+after provisioning, and verify read-only key metadata and the consumer secret
+name without printing private material. A deploy key can be revoked on AethertekUI;
 its matching consumer secret must then be replaced or removed.
 
 Public viewers can see a secret's name in the workflow, but cannot read its
