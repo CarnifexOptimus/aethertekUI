@@ -91,6 +91,46 @@ Microsoft.NET.Sdk hosts must resolve the same installed binding/distribution.
 Package identities are `AethertekUI` and `AethertekUI.Dalamud`, version 0.3.0;
 local package generation is separate from normal build verification.
 
+## GitHub Actions provisioning
+
+For every consumer adoption, determine how its CI and release builds will obtain
+AethertekUI. A local sibling checkout does not exist on a fresh Actions runner.
+Keep CI changes within David's selected scope and obtain his persistent-machinery
+choice before adding dependency provisioning or credentials.
+
+When Actions provisioning is selected, use native `actions/checkout` steps with
+the consumer and AethertekUI in sibling folders inside `GITHUB_WORKSPACE`.
+Checkout paths cannot escape that workspace. Run the build from the consumer
+folder and adjust artifact paths to include its checkout folder. Build the plugin
+csproj directly; adopting AethertekUI does not imply running either repository's
+test projects. Install an SDK compatible with the library's `global.json`
+(currently 10.0.201 with `latestPatch` roll-forward). Pass the downloaded API 15
+distribution as `DalamudLibPath` during
+restore and build so Microsoft's SDK-based library project resolves the same
+binding as the plugin. Restore for the same platform/runtime as the build; stop
+on a failed restore. Verify the release ZIP includes `AethertekUI.dll` and the
+adapter when used, while excluding host-owned assemblies.
+
+A public consumer's `GITHUB_TOKEN` cannot read the private AethertekUI repository.
+Prefer a separate read-only AethertekUI deploy key for each consumer, with its
+private key stored only as that consumer repository's Actions secret. Botology
+uses `AETHERTEKUI_DEPLOY_KEY` through the library checkout's `ssh-key` input.
+Set `persist-credentials: false` so checkout removes the key before build steps.
+Give the build's `GITHUB_TOKEN` only `contents: read`; grant `contents: write`
+only to an already authorized release job. Never reuse a broad personal token,
+commit a private key, or include it in logs or artifacts. Remove temporary local
+key files after configuring GitHub. A deploy key can be revoked on AethertekUI;
+its matching consumer secret must then be replaced or removed.
+
+Public viewers can see a secret's name in the workflow, but cannot read its
+value or gain private-repository access merely by viewing or forking the consumer.
+Repository secrets are available only to that repository's authorized workflows;
+fork pull-request runs do not receive them. Workflow editors must be trusted:
+code running with a secret can disclose it despite log masking. Do not run
+untrusted pull-request code with this credential or add `pull_request_target`
+access as part of adoption. Shipping the compiled library DLL makes that binary
+public; it does not publish the source repository or its deploy key.
+
 ## Evolve through approved designs
 
 Before implementation, measure the approved reference's content envelope,
@@ -222,6 +262,11 @@ Botology's first adoption establishes these practices:
   building project references so `DalamudLibPath` is supplied. With a lockfile
   containing DalamudPackager, restore normally and then build with `--no-restore`
   and `-p:Use_DalamudPackager=false` to avoid removing it from the lockfile.
+- When wrapping a native toolbar, compare the last item's right edge with the
+  content region's right edge before `SameLine`. After a widget advances to the
+  next line, `GetContentRegionAvail()` alone describes that next line and can
+  incorrectly keep every subsequent group on an overflowing row. Include the
+  measured translated label, icon, track and gaps in each group width.
 - Offline fonts may differ from the live managed atlas and conceal a broken
   merge. A clean build or CPU render does not prove host font readiness. Give
   loading/error windows containing wrapped text an explicit width every frame,
