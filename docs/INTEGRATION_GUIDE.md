@@ -62,7 +62,7 @@ mode (`AETHERTEKUI_CANDIDATE_DIR`) writes only a separate ignored artifact folde
 review candidates before copying them into the test projects' `Baselines`.
 Normal tests fail on missing images and compare dimensions and RGBA channels
 with tolerance 2. Diagnostic CPU frames cannot establish GPU/game acceptance.
-The selected consumer's final screenshot remains David's acceptance boundary.
+The selected consumer's final screenshot remains mcvaxius's acceptance boundary.
 
 Follow the selected approved mockup faithfully. Add a required missing component
 or layout capability to AethertekUI and demonstrate it in the showcase rather

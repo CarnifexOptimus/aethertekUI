@@ -2,7 +2,12 @@
 
 This is the local, private AethertekUI library at `Z:\aethertekUI`, version
 0.3.0, targeting .NET 10 / Windows x64 and Dalamud API 15. Keep it local;
-publication belongs to David. Do not create or contact a Git remote.
+publication belongs to mcvaxius. Do not create or contact a Git remote.
+
+Use only `mcvaxius` or `dhoggpt` when attributing this work to the user.
+Never put the user's personal name in authored text, changelogs, commits,
+documentation, UI copy, comments, reports, or agent output. Check affected
+text before delivery; report identity matches without repeating the name.
 
 Read [skills/aethertek-ui/SKILL.md](skills/aethertek-ui/SKILL.md) when developing
 the library or adopting it in a compatible C# ImGui consumer. Preserve existing
@@ -31,4 +36,4 @@ release artifact verifier is also separate from the normal build/test route.
 This foundation delivery does not authorize plugin conversions (AutoParty is
 skipped), external repository edits, client installation, live-game tests,
 release packaging or publication. Do not inspect unpublished RSR implementation.
-Later integrations require David's selected plugin and approved design.
+Later integrations require mcvaxius's selected plugin and approved design.

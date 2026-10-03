@@ -64,6 +64,11 @@ behavior. Consumers configure input/navigation and route any controller events.
 
 ## Identity, localization and resources
 
+Use only `mcvaxius` or `dhoggpt` for user attribution. Never include the
+user's personal name in authored UI text, changelogs, commits, documentation,
+comments, reports, or agent output. Inspect affected text before delivery
+and report any identity matches without repeating the private spelling.
+
 Keep IDs independent of translated labels. Use persistent model keys in
 `PushID`, explicit component `id` arguments, `MaterialOption` keys and reordered
 `MaterialSegment.Key` values. Index segment IDs suit fixed lists only. Raw
@@ -111,7 +116,7 @@ local package generation is separate from normal build verification.
 
 For every consumer adoption, determine how its CI and release builds will obtain
 AethertekUI. A local sibling checkout does not exist on a fresh Actions runner.
-Keep CI changes within David's selected scope and obtain his persistent-machinery
+Keep CI changes within mcvaxius's selected scope and obtain his persistent-machinery
 choice before adding dependency provisioning or credentials.
 
 When Actions provisioning is selected, use native `actions/checkout` steps with
@@ -182,8 +187,8 @@ by actual integrations. Keep game behavior in the consumer.
 
 ## Standard UX redesign and deployment
 
-For every David-approved AethertekUI UX redesign, include the nine languages and
-whole-theme colour selection as standard features unless David explicitly changes
+For every mcvaxius-approved AethertekUI UX redesign, include the nine languages and
+whole-theme colour selection as standard features unless mcvaxius explicitly changes
 that scope. Carry them into any separately authorized deployment; they are not
 Botology-only options. Keep implementation in the selected consumer and honor
 explicit limits on builds, tests, packaging and client operations.
@@ -419,7 +424,7 @@ later host acceptance. Historical mission/GBR reports do not prove current
 integration compatibility or grant permission to run legacy tooling.
 
 Keep three kinds of evidence separate: functional native interaction checks,
-diagnostic visual renders, and David's game screenshot acceptance. Extend the
+diagnostic visual renders, and mcvaxius's game screenshot acceptance. Extend the
 existing renderer/runners with supplied snapshots; do not construct the real
 plugin or start game services in offline tests. Fix canvas, scale, data, locale,
 fonts, timestamps, pointer and motion. Missing baselines/fonts fail. Compare
@@ -440,5 +445,5 @@ Auto-sized popups containing wrapped content may need an explicit width each
 frame; an appearing-only width can collapse later. Builds, test counts and
 self-generated baselines alone do not establish completion. Deliver as
 "locally verified; game visual acceptance
-pending" until David supplies and accepts the game screenshot; never auto-accept
+pending" until mcvaxius supplies and accepts the game screenshot; never auto-accept
 or operate clients without explicit authorization.

@@ -140,7 +140,7 @@ or layout gap, improve AethertekUI and demonstrate the addition in the showcase.
 Update the skill when real integrations establish better practices. AutoParty
 remains skipped; this delivery establishes the foundation without plugin edits,
 client installation, live-game tests, release packaging or publication.
-Publication remains David's responsibility; this repository has no remote.
+Publication remains mcvaxius's responsibility; this repository has no remote.
 
 Imported from the supplied `CombatReborn.MaterialUI.zip`, retaining its two
 upstream Git commits and the newer working-tree source. The incoming state is
