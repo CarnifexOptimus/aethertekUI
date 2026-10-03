@@ -13,6 +13,7 @@ internal sealed partial class Showcase
     private string sizingText="";
     private Vector3 sizingAccent=new(28/255f,201/255f,230/255f);
     private string sizingLanguage="en";
+    private int sizingNativeLanguage;
     private readonly MaterialOptions<string> sizingLanguages=new([new("en","en","English"),new("de","de","Deutsch")]);
     private static readonly MaterialControlContext[] SizingContexts =
         [MaterialControlContext.Regular,MaterialControlContext.Toolbar,MaterialControlContext.Dense];
@@ -92,11 +93,21 @@ internal sealed partial class Showcase
             ImGui.SameLine(); MaterialButton.IconButton("calculator-example",MaterialIcon.Calculator);
             ImGui.SameLine(); MaterialButton.IconButton("person-example",MaterialIcon.Person);
             ImGui.SameLine(); MaterialButton.IconButton("shield-example",MaterialIcon.Shield);
+            ImGui.SameLine(); MaterialButton.IconButton("monitor-example",MaterialIcon.Monitor);
+            ImGui.SameLine(); MaterialButton.IconButton("location-example",MaterialIcon.Location);
             MaterialAppearanceSelector.Draw("preferences",ref sizingAccent,ref sizingLanguage,sizingLanguages,
                 new("Color","Language","Teal","Blue","Pink","Custom RGB"));
+            MaterialAppearanceSelector.Draw("native-preferences",ref sizingAccent,
+                new("Color","Language","Teal","Blue","Pink","Custom RGB"),DrawNativeLanguage);
         }
         var origin=ImGui.GetCursorScreenPos();
         MaterialCanvas.Surface(origin,origin+new Vector2(280,36)*MaterialTheme.Metrics.Scale,c.SurfaceContainerHigh,c.Background,4*MaterialTheme.Metrics.Scale);
         ImGui.Dummy(new Vector2(280,36)*MaterialTheme.Metrics.Scale);
+    }
+    private bool DrawNativeLanguage()
+    {
+        // A retained consumer Combo keeps its native label and index/name option IDs.
+        ImGui.SetNextItemWidth(112*MaterialTheme.Metrics.Scale);
+        return ImGui.Combo("Language###retained-language",ref sizingNativeLanguage,["English","Deutsch"],2);
     }
 }

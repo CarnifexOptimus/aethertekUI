@@ -23,6 +23,20 @@ public sealed class ConsumerUi : IDisposable
         finally { ImGui.PopFont(); } // Font lifetime/ownership remains with the consumer.
     }
 
+    // A retained native language editor keeps its own IDs, options and consumer-owned persistence.
+    public static MaterialAppearanceChange DrawRetainedAppearance(ImFontPtr borrowedFont,ref Vector3 accentDraft,
+        MaterialAppearanceLabels labels,Func<bool> drawNativeLanguage,Action save)
+    {
+        ImGui.PushFont(borrowedFont);
+        try
+        {
+            var changed=MaterialAppearanceSelector.Draw("appearance",ref accentDraft,labels,drawNativeLanguage);
+            if(changed.AccentChanged || changed.LanguageChanged)save();
+            return changed;
+        }
+        finally { ImGui.PopFont(); }
+    }
+
     // Cache the returned exact theme outside Draw; the consumer updates it on its own preference changes.
     public static MaterialTheme CreateMeasuredTheme(Vector3 seed)
         => new(new MaterialColorScheme(new OklchPaletteGenerator().Generate(seed))
@@ -47,6 +61,8 @@ public sealed class ConsumerUi : IDisposable
         ImGui.SameLine(); MaterialButton.IconButton("calculator-example",MaterialIcon.Calculator);
         ImGui.SameLine(); MaterialButton.IconButton("person-example",MaterialIcon.Person);
         ImGui.SameLine(); MaterialButton.IconButton("shield-example",MaterialIcon.Shield);
+        ImGui.SameLine(); MaterialButton.IconButton("monitor-example",MaterialIcon.Monitor);
+        ImGui.SameLine(); MaterialButton.IconButton("location-example",MaterialIcon.Location);
         var p=ImGui.GetCursorScreenPos();var s=MaterialTheme.Metrics.Scale;
         MaterialCanvas.Surface(p,p+new Vector2(280,36)*s,appearance.Fill,MaterialTheme.Current.Colors.Background,appearance.CornerRadius*s);
         ImGui.Dummy(new Vector2(280,36)*s);

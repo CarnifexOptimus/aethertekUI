@@ -80,6 +80,11 @@ Account/profile editors keep their viewed
 selection separate from the runtime active account/character; browsing settings
 must not redirect automation. Key choices by persistent IDs even when displayed
 names are obfuscated or duplicate, and retain in-progress text edits across frames.
+Keep account/character selection visible and separate from settings categories.
+At narrow widths, label the profile picker explicitly. Follow a different profile
+from selection through its editor and save path; check both account and character
+identity before exposing runtime-only actions. Inspect runtime/bridge callers
+before changing an active-account helper into an editing-account helper.
 
 Measure translated labels using the active host font. Budget pane, column,
 button and popup widths for longer translations; use wrapping tiles where
@@ -222,6 +227,9 @@ resource loading. Selected C++ or browser companions use their native resource
 mechanisms and controls; do not introduce a managed dependency just for these
 features. Cache the selected resource set. Keep key coverage equal across all
 nine languages; English fallback must not conceal unfinished translations.
+Compare the exact key sets, including existing non-English-only keys, rather
+than counts alone. Resolve every advertised locale's embedded resource set;
+a selector entry does not prove that selecting or restoring that locale works.
 The .NET resource compiler treats key names case-insensitively. Use one canonical
 key for status spellings that differ only by case, and normalize the UI lookup
 without changing runtime messages or native IDs. Check key uniqueness and format
@@ -230,6 +238,33 @@ translation environment; external translation services require explicit approval
 Preserve plugin names, external
 catalog content, command tokens and logs. Format UI numbers and dates using the
 selected locale without changing process-wide culture.
+Translate authored interpolation arguments explicitly. Keep names, IDs and
+already formatted service arguments raw, including leading zeroes; apply locale
+number formatting to typed UI values instead of reparsing arbitrary text.
+Trace displayed service statuses through their getters and helper-returned
+messages; resource parity alone does not prove that those statuses are covered.
+When matching existing service-message templates, preserve empty arguments and
+their numbered identities. Match templates before trimming whitespace: a trailing
+space can represent an empty final argument. Check an actual displayed diagnostic as well as key
+and placeholder parity; complete resource files can still fail to translate it.
+If a producer trims an empty final detail, keep a reachable resource for that
+shortened form as well as the complete template. DAD's completion summary
+established this case. Translate nested captures only at positions traced to
+authored role/module labels or summary/safety getters; arbitrary names, counts
+and IDs remain opaque. Verify both full and empty forms through the compiled
+helper, rather than changing the producer's runtime message to suit UI matching.
+Structured diagnostic events need their producer schema as well as resource
+coverage. AutoParty wake events use `state:wake:<phase>:<summary>`; split at
+the first payload colon, then translate phase and summary separately. Preserve
+colons and empty text inside the summary. In composed status rows, explicitly
+translate authored enum/conditional/summary arguments before formatting; keep
+owner, participant and character identities raw. DAD Mini established this
+distinction through actual compiled helper checks.
+Multiline status matching must tolerate the producer’s LF/CRLF literal line
+breaks without normalizing captured raw details. BFE verified both prefix forms,
+empty arguments, padded values and exact line endings inside the capture. XML
+readers can normalize resource-value line endings; account for that in source
+comparisons while checking raw helper arguments separately.
 
 Reuse the consumer's existing configuration and save path. Prefer `UiLanguage`
 (default `en`) and `UiAccentRgb` (default the approved reference accent), or reuse
@@ -341,10 +376,23 @@ Botology's first adoption establishes these practices:
   next line, `GetContentRegionAvail()` alone describes that next line and can
   incorrectly keep every subsequent group on an overflowing row. Include the
   measured translated label, icon, track and gaps in each group width.
+- Check the installed binding API before choosing newer ImGui helpers. ChokeAbo
+  established that this host lacks `ImGuiChildFlags` and `AddEllipseFilled`: an
+  autosizing native table can provide a balanced card scope, while a closed
+  convex path draws the required ellipse. Retain the previous ID root when
+  introducing the table. A copied helper from another binding is not build evidence.
 - Offline fonts may differ from the live managed atlas and conceal a broken
   merge. A clean build or CPU render does not prove host font readiness. Give
   loading/error windows containing wrapped text an explicit width every frame,
   including after opening; retain their native IDs and balanced Begin/End.
+- A selected server-rendered browser companion can retain a strict script-free
+  CSP while loading a same-origin stylesheet. AutoParty administration uses
+  native GET appearance controls, validated URL preferences and translated
+  embedded resources, preserving those preferences in each POST action and its
+  successful local redirect. Keep anti-forgery fields, exact Host/Origin gates,
+  action bounds, escaped aliases and redacted identities intact. Verify actual
+  compiled HTML/CSS and browser layout without starting production services;
+  a presentation check does not prove a live administrative action.
 
 Read [component API](../../docs/COMPONENT_API.md) for control signatures and
 [integration guide](../../docs/INTEGRATION_GUIDE.md) for host/data boundaries.

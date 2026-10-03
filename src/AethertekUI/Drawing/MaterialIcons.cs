@@ -3,7 +3,7 @@ using Dalamud.Bindings.ImGui;
 
 namespace AethertekUI;
 
-public enum MaterialIcon { None, Search, Close, Settings, Check, Play, Pause, Stop, ArrowRight, Return, Edit, Delete, More, ChevronDown, Home, Grid, Table, Sliders, Info, Document, Database, Refresh, Chart, ExternalLink, Download, Palette, Globe, Map, Clock, Link, Calculator, Person, Shield }
+public enum MaterialIcon { None, Search, Close, Settings, Check, Play, Pause, Stop, ArrowRight, Return, Edit, Delete, More, ChevronDown, Home, Grid, Table, Sliders, Info, Document, Database, Refresh, Chart, ExternalLink, Download, Palette, Globe, Map, Clock, Link, Calculator, Person, Shield, Monitor, Location }
 
 /// <summary>Small vector icons; no font or texture dependency.</summary>
 public static class MaterialIcons
@@ -17,6 +17,26 @@ public static class MaterialIcons
         void L(float x,float y,float a,float b) => dl.AddLine(P(x,y),P(a,b),ink,stroke);
         switch(icon)
         {
+            case MaterialIcon.Location:
+            {
+                // Filled pin triangulated around its transparent circular cutout.
+                const int segments=48;
+                var center=P(.5f,.33f);
+                for(var i=0;i<segments;i++)
+                {
+                    var a=i*MathF.Tau/segments;var b=(i+1)*MathF.Tau/segments;
+                    var u=new Vector2(MathF.Cos(a),MathF.Sin(a));var v=new Vector2(MathF.Cos(b),MathF.Sin(b));
+                    var r=.3f+.31f*MathF.Pow(Math.Max(0,u.Y),6);var s=.3f+.31f*MathF.Pow(Math.Max(0,v.Y),6);
+                    var outerA=center+u*r*size;var outerB=center+v*s*size;
+                    var innerA=center+u*.11f*size;var innerB=center+v*.11f*size;
+                    dl.AddTriangleFilled(outerA,outerB,innerB,ink);
+                    dl.AddTriangleFilled(outerA,innerB,innerA,ink);
+                }
+                break;
+            }
+            case MaterialIcon.Monitor:
+                dl.AddRect(P(.1f,.12f),P(.9f,.68f),ink,size*.04f,ImDrawFlags.None,stroke);
+                L(.5f,.68f,.5f,.86f); L(.3f,.86f,.7f,.86f); break;
             case MaterialIcon.Person:
                 dl.AddCircleFilled(P(.5f,.27f),size*.17f,ink,20);
                 dl.PathArcTo(P(.5f,.82f),size*.33f,MathF.PI,MathF.Tau,20);

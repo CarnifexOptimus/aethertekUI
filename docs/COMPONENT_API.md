@@ -33,10 +33,16 @@ languageWidth)` borrows the active font. Preset selection reports immediately;
 custom RGB reports on edit completion. Consumers own the draft, localized
 labels/native language options, semantic colours, configuration/save path and
 next-frame theme/font changes. Palette and Globe icons are appended to the
-existing enum. Map, Clock, Link, Calculator, Person and Shield are also appended for area,
-elapsed-time, dependency, calculation, identity and privacy controls; all use native meshes without
+existing enum. Map, Clock, Link, Calculator, Person, Shield, Monitor and Location are also appended for area,
+elapsed-time, dependency, calculation, identity, privacy, display and saved-position controls; all use native meshes without
 font or texture ownership.
 See the sizing showcase and independent consumer example.
+For an established native language control, use
+`MaterialAppearanceSelector.Draw(id, ref accent, labels, drawLanguage)`.
+The callback runs after the selector's ID scope is restored and returns whether
+the language changed. The consumer keeps its original native Combo label,
+option ordering/index IDs, localization and disabled state. Accent selection
+and change flags retain the same behavior.
 Use MaterialTheme.Push(theme, ImGuiHelpers.GlobalScale) around your window draw. Pass stable IDs separately from visible labels. Scope IDs further with ImGui.PushID for repeated domain objects.
 Button variants share label, leading/trailing MaterialIcon, size and disabled support. Negative width fills available width; positive sizes are logical units; zero selects defaults.
 `MaterialButton.Draw(id, label, cornerRadius, ...)` and `MaterialStatus.Badge(label, cornerRadius, ...)` accept an explicit nonnegative logical radius, clamped to the rendered bounds. Existing overloads keep their pill shapes. Document, Database, Refresh, Chart, ExternalLink and Download extend the texture-free icon set without changing prior enum values.
