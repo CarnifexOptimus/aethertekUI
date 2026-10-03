@@ -3,7 +3,7 @@ using Dalamud.Bindings.ImGui;
 
 namespace AethertekUI;
 
-public enum MaterialIcon { None, Search, Close, Settings, Check, Play, Pause, Stop, ArrowRight, Return, Edit, Delete, More, ChevronDown, Home, Grid, Table, Sliders, Info, Document, Database, Refresh, Chart, ExternalLink, Download, Palette, Globe, Map, Clock, Link, Calculator }
+public enum MaterialIcon { None, Search, Close, Settings, Check, Play, Pause, Stop, ArrowRight, Return, Edit, Delete, More, ChevronDown, Home, Grid, Table, Sliders, Info, Document, Database, Refresh, Chart, ExternalLink, Download, Palette, Globe, Map, Clock, Link, Calculator, Person, Shield }
 
 /// <summary>Small vector icons; no font or texture dependency.</summary>
 public static class MaterialIcons
@@ -17,6 +17,16 @@ public static class MaterialIcons
         void L(float x,float y,float a,float b) => dl.AddLine(P(x,y),P(a,b),ink,stroke);
         switch(icon)
         {
+            case MaterialIcon.Person:
+                dl.AddCircleFilled(P(.5f,.27f),size*.17f,ink,20);
+                dl.PathArcTo(P(.5f,.82f),size*.33f,MathF.PI,MathF.Tau,20);
+                dl.PathLineTo(P(.83f,.9f));dl.PathLineTo(P(.17f,.9f));
+                dl.PathFillConvex(ink);break;
+            case MaterialIcon.Shield:
+                dl.PathLineTo(P(.5f,.08f));dl.PathLineTo(P(.84f,.21f));dl.PathLineTo(P(.8f,.58f));
+                dl.PathLineTo(P(.68f,.77f));dl.PathLineTo(P(.5f,.92f));dl.PathLineTo(P(.32f,.77f));
+                dl.PathLineTo(P(.2f,.58f));dl.PathLineTo(P(.16f,.21f));
+                dl.PathStroke(ink,ImDrawFlags.Closed,stroke);L(.5f,.22f,.5f,.75f);break;
             case MaterialIcon.Calculator:
                 dl.AddRect(P(.22f,.08f),P(.78f,.92f),ink,size*.05f,ImDrawFlags.None,stroke);
                 dl.AddRect(P(.32f,.19f),P(.68f,.36f),ink,0,ImDrawFlags.None,stroke*.6f);

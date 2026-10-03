@@ -251,10 +251,15 @@ Changing only primary controls while leaving decorative slate colours fixed is
 incomplete. Build and cache the palette on preference changes, outside Draw.
 
 Fonts must cover the selected resource set and all nine native dropdown names,
-including CJK names when English is selected. Prioritize the selected locale's
+including CJK names when English is selected. Build and check the same required
+text set, including English fallback strings and untranslated UI symbols such
+as native favorites and support labels. A symbol-face merge adds only the glyphs
+requested by its ranges. Prioritize the selected locale's
 CJK glyphs and retain Latin/Cyrillic coverage. In Dalamud, use managed atlas
 handles and explicitly merge the host's `DalamudAsset.NotoSansCjkRegular` when
-needed (TTC faces: Japanese 0, Simplified Chinese 2, Korean 3). Do not pass neutral
+needed (verified bundled TTC faces: Japanese 0, Korean 1, Simplified Chinese 2,
+Traditional Chinese 3). Read the collection's PostScript face names when the
+host asset changes; do not guess its face order. Do not pass neutral
 codes such as `ja`, `ko` or `zh-Hans` to `AttachWindowsDefaultFont`: unsupported
 cultures can silently add nothing. Check actual managed-handle readiness, load
 errors and glyph coverage after atlas rebuilds. Dispose consumer-owned handles;
@@ -269,6 +274,9 @@ remain on the host and are never packaged.
 Read/write source and resources as UTF-8. Windows PowerShell's default native
 pipe encoding can replace non-Latin translations and diacritics with `?`; use
 explicit UTF-8 transport and inspect the resulting characters.
+Matching keys and placeholders cannot detect encoding loss. Inspect actual
+resource values for native characters and unexpected literal `?` replacements,
+especially in CJK, Cyrillic and accented Latin resources, before claiming coverage.
 
 Before declaring the redesign ready for deployment, verify embedded resources,
 library payloads, preference persistence, all-language layout/glyph coverage and
@@ -324,6 +332,10 @@ Botology's first adoption establishes these practices:
   building project references so `DalamudLibPath` is supplied. With a lockfile
   containing DalamudPackager, restore normally and then build with `--no-restore`
   and `-p:Use_DalamudPackager=false` to avoid removing it from the lockfile.
+  Already-restored packager targets can still run despite that build flag.
+  For a strictly compilation-only check, also use
+  `-p:ImportNuGetBuildTargets=false`; this skips all NuGet build targets, so
+  reserve it for that check and retain normal imports for release packaging.
 - When wrapping a native toolbar, compare the last item's right edge with the
   content region's right edge before `SameLine`. After a widget advances to the
   next line, `GetContentRegionAvail()` alone describes that next line and can

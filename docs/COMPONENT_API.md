@@ -33,8 +33,8 @@ languageWidth)` borrows the active font. Preset selection reports immediately;
 custom RGB reports on edit completion. Consumers own the draft, localized
 labels/native language options, semantic colours, configuration/save path and
 next-frame theme/font changes. Palette and Globe icons are appended to the
-existing enum. Map, Clock, Link and Calculator are also appended for area,
-elapsed-time, dependency and calculation controls; all use native meshes without
+existing enum. Map, Clock, Link, Calculator, Person and Shield are also appended for area,
+elapsed-time, dependency, calculation, identity and privacy controls; all use native meshes without
 font or texture ownership.
 See the sizing showcase and independent consumer example.
 Use MaterialTheme.Push(theme, ImGuiHelpers.GlobalScale) around your window draw. Pass stable IDs separately from visible labels. Scope IDs further with ImGui.PushID for repeated domain objects.

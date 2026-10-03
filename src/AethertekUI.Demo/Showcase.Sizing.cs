@@ -90,6 +90,8 @@ internal sealed partial class Showcase
             ImGui.SameLine(); MaterialButton.IconButton("clock-example",MaterialIcon.Clock);
             ImGui.SameLine(); MaterialButton.IconButton("link-example",MaterialIcon.Link);
             ImGui.SameLine(); MaterialButton.IconButton("calculator-example",MaterialIcon.Calculator);
+            ImGui.SameLine(); MaterialButton.IconButton("person-example",MaterialIcon.Person);
+            ImGui.SameLine(); MaterialButton.IconButton("shield-example",MaterialIcon.Shield);
             MaterialAppearanceSelector.Draw("preferences",ref sizingAccent,ref sizingLanguage,sizingLanguages,
                 new("Color","Language","Teal","Blue","Pink","Custom RGB"));
         }
