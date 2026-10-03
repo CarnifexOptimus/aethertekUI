@@ -89,6 +89,7 @@ internal sealed partial class Showcase
             MaterialButton.IconButton("map-example",MaterialIcon.Map);
             ImGui.SameLine(); MaterialButton.IconButton("clock-example",MaterialIcon.Clock);
             ImGui.SameLine(); MaterialButton.IconButton("link-example",MaterialIcon.Link);
+            ImGui.SameLine(); MaterialButton.IconButton("calculator-example",MaterialIcon.Calculator);
             MaterialAppearanceSelector.Draw("preferences",ref sizingAccent,ref sizingLanguage,sizingLanguages,
                 new("Color","Language","Teal","Blue","Pink","Custom RGB"));
         }

@@ -44,6 +44,7 @@ public sealed class ConsumerUi : IDisposable
         MaterialButton.IconButton("map-example",MaterialIcon.Map);
         ImGui.SameLine(); MaterialButton.IconButton("clock-example",MaterialIcon.Clock);
         ImGui.SameLine(); MaterialButton.IconButton("link-example",MaterialIcon.Link);
+        ImGui.SameLine(); MaterialButton.IconButton("calculator-example",MaterialIcon.Calculator);
         var p=ImGui.GetCursorScreenPos();var s=MaterialTheme.Metrics.Scale;
         MaterialCanvas.Surface(p,p+new Vector2(280,36)*s,appearance.Fill,MaterialTheme.Current.Colors.Background,appearance.CornerRadius*s);
         ImGui.Dummy(new Vector2(280,36)*s);

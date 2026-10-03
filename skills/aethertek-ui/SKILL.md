@@ -69,6 +69,13 @@ Keep IDs independent of translated labels. Use persistent model keys in
 `MaterialSegment.Key` values. Index segment IDs suit fixed lists only. Raw
 native controls can separate translated text and identity using `###stable-id`.
 Preserve existing internal ImGui IDs during refactors and rebranding.
+IDs include their parent window, table and tree scopes. Moving an established
+control into a presentation child or table can change its ID even when its label
+is unchanged; preserve the prior ID root when retaining that control.
+Appending `###original` to a translated label does not preserve the hash of an
+existing plain `original` label. For those controls, pass the original raw label
+to the native widget and paint the translation from its bounds, sizing for the
+translated text. Retain native arrows, focus and disabled appearance as well.
 Account/profile editors keep their viewed
 selection separate from the runtime active account/character; browsing settings
 must not redirect automation. Key choices by persistent IDs even when displayed
@@ -215,6 +222,11 @@ resource loading. Selected C++ or browser companions use their native resource
 mechanisms and controls; do not introduce a managed dependency just for these
 features. Cache the selected resource set. Keep key coverage equal across all
 nine languages; English fallback must not conceal unfinished translations.
+The .NET resource compiler treats key names case-insensitively. Use one canonical
+key for status spellings that differ only by case, and normalize the UI lookup
+without changing runtime messages or native IDs. Check key uniqueness and format
+placeholders as well as coverage. Keep private source phrases in the approved
+translation environment; external translation services require explicit approval.
 Preserve plugin names, external
 catalog content, command tokens and logs. Format UI numbers and dates using the
 selected locale without changing process-wide culture.
@@ -248,6 +260,15 @@ cultures can silently add nothing. Check actual managed-handle readiness, load
 errors and glyph coverage after atlas rebuilds. Dispose consumer-owned handles;
 never distribute Windows fonts. Temporary host fonts cannot qualify for visual
 acceptance.
+Segoe UI text faces omit some symbols used in existing tooltips, including
+U+26AB (black circle). Merge the installed `seguisym.ttf` through the managed
+atlas for required symbol coverage, alongside the selected CJK merges, in every
+font role that can render those strings. Validate the actual required glyphs;
+report the missing code point/role instead of suppressing the check. Font files
+remain on the host and are never packaged.
+Read/write source and resources as UTF-8. Windows PowerShell's default native
+pipe encoding can replace non-Latin translations and diacritics with `?`; use
+explicit UTF-8 transport and inspect the resulting characters.
 
 Before declaring the redesign ready for deployment, verify embedded resources,
 library payloads, preference persistence, all-language layout/glyph coverage and

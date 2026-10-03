@@ -3,7 +3,7 @@ using Dalamud.Bindings.ImGui;
 
 namespace AethertekUI;
 
-public enum MaterialIcon { None, Search, Close, Settings, Check, Play, Pause, Stop, ArrowRight, Return, Edit, Delete, More, ChevronDown, Home, Grid, Table, Sliders, Info, Document, Database, Refresh, Chart, ExternalLink, Download, Palette, Globe, Map, Clock, Link }
+public enum MaterialIcon { None, Search, Close, Settings, Check, Play, Pause, Stop, ArrowRight, Return, Edit, Delete, More, ChevronDown, Home, Grid, Table, Sliders, Info, Document, Database, Refresh, Chart, ExternalLink, Download, Palette, Globe, Map, Clock, Link, Calculator }
 
 /// <summary>Small vector icons; no font or texture dependency.</summary>
 public static class MaterialIcons
@@ -17,6 +17,12 @@ public static class MaterialIcons
         void L(float x,float y,float a,float b) => dl.AddLine(P(x,y),P(a,b),ink,stroke);
         switch(icon)
         {
+            case MaterialIcon.Calculator:
+                dl.AddRect(P(.22f,.08f),P(.78f,.92f),ink,size*.05f,ImDrawFlags.None,stroke);
+                dl.AddRect(P(.32f,.19f),P(.68f,.36f),ink,0,ImDrawFlags.None,stroke*.6f);
+                for(var row=0;row<3;row++) for(var column=0;column<3;column++)
+                    dl.AddRectFilled(P(.31f+column*.15f,.47f+row*.13f),P(.38f+column*.15f,.54f+row*.13f),ink);
+                break;
             case MaterialIcon.Map:
                 L(.12f,.25f,.36f,.12f); L(.36f,.12f,.64f,.25f); L(.64f,.25f,.88f,.12f);
                 L(.12f,.25f,.12f,.88f); L(.12f,.88f,.36f,.75f); L(.36f,.75f,.64f,.88f);
