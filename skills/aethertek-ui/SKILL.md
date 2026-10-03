@@ -93,12 +93,68 @@ local package generation is separate from normal build verification.
 
 ## Evolve through approved designs
 
+Before implementation, measure the approved reference's content envelope,
+region bounds and gaps, typography roles/weights, representative colours, artwork
+and state assumptions. Keep those inputs in the consumer's existing presentation
+constants and affected documentation. Map every selected window and popup to its
+approved design or explicitly retained layout. New mockups are not implied for
+retained windows. Native chrome, added selectors, real data and agreed semantic
+changes are specific differences; do not use blanket masks to hide discrepancies.
+
 Implement the selected approved mockup faithfully: layout, proportions,
 density, hierarchy, interaction and status semantics. When it exposes a missing
 component or layout capability, improve AethertekUI and demonstrate the addition
 in the showcase. Do not reshape the approved design to fit the current controls.
 Retain the MD3-inspired dark/OKLCH foundation while adding capabilities required
 by actual integrations. Keep game behavior in the consumer.
+
+David's plugin adoptions include a compact top-level colour swatch and language
+selector, mirrored in existing Settings. Use `MaterialAppearanceSelector` with
+teal/blue/pink presets and a custom RGB picker. Supply native language names for
+`en`, `de`, `fr`, `es`, `it`, `ru`, `ja`, `ko`, and `zh-Hans`. The consumer owns
+localized labels, embedded translations, locale formatting, its existing save
+path, draft edits, cached themes, fonts and textures. Commit custom colour on
+edit completion; apply resource changes at the next frame boundary. Check font
+readiness, errors and glyph coverage after atlas rebuilds. Temporary host-font
+rendering or missing glyphs cannot qualify for visual acceptance.
+
+Botology's first adoption establishes these practices:
+
+- `MaterialColorScheme` roles can be assigned during initialization and stay
+  immutable afterward. `MaterialTheme(colors, density)` accepts exact sampled
+  roles; use the OKLCH generator for changed accents while retaining measured
+  slate surfaces and independent semantic colours. A consumer that
+  already owns a cached theme can wrap `WindowSystem.Draw` directly with
+  `MaterialTheme.Push(theme, ImGuiHelpers.GlobalScale, mode)`; the optional
+  adapter is not required for that route.
+- For compact rectangular toolbars and status cells, use
+  `MaterialButton.Draw(id, label, cornerRadius: 4, ...)` and
+  `MaterialStatus.Badge(label, cornerRadius: 4, ...)`. Radius and explicit sizes
+  use logical units; the original overloads retain pill shapes and native IDs.
+  Generic Document, Database, Refresh, Chart, ExternalLink and Download icons
+  use native meshes without font or texture ownership.
+- `MaterialControlAppearance` supplies fill, foreground, border and logical
+  radius to button, badge, search and combo overloads. Badges accept logical
+  dimensions; switches accept an explicit logical track size. Rounded gradient
+  `MaterialCanvas.Surface` keeps pixel coordinates/radius. Explicit
+  `MaterialControls.Push(metrics)` values are already scaled pixels;
+  parameterless nested scopes inherit them, explicit contexts remeasure, and
+  theme/control scope disposal restores the prior state. Showcase and compiled
+  consumer examples accompany demonstrated reusable gaps.
+- Reserve footer height before sizing a scrolling table. Preserve optional
+  columns and allow horizontal scrolling instead of resetting saved preferences.
+  Assign native column user IDs from stable column identities, consume native
+  sorting specs, and include a persistent row-key tie-breaker. Sort captured
+  versions numerically and keep unavailable metadata sortable.
+- A mockup's sample text is not a data contract. Bind source badges to actual
+  provenance, installed cells to captured versions, and update cells to
+  availability unless the host supplies a target version. Keep assessment
+  colours with warnings and DTR controls with actual visibility state.
+- A sibling `ProjectReference` supports local development, but a consumer-only
+  checkout cannot build it. Identify library provisioning as a release
+  prerequisite; do not change publication or CI as part of an approved local
+  UI pass. Use `-p:Use_DalamudPackager=false` for Dalamud SDK build checks when
+  release packaging is outside the selected scope.
 
 Read [component API](../../docs/COMPONENT_API.md) for control signatures and
 [integration guide](../../docs/INTEGRATION_GUIDE.md) for host/data boundaries.
@@ -123,3 +179,24 @@ independent consumer. Inspect `artifacts/previews/page-0.png` through
 a default font and fixed background; GPU compositing and game/CJK fonts require
 later host acceptance. Historical mission/GBR reports do not prove current
 integration compatibility or grant permission to run legacy tooling.
+
+Keep three kinds of evidence separate: functional native interaction checks,
+diagnostic visual renders, and David's game screenshot acceptance. Extend the
+existing renderer/runners with supplied snapshots; do not construct the real
+plugin or start game services in offline tests. Fix canvas, scale, data, locale,
+fonts, timestamps, pointer and motion. Missing baselines/fonts fail. Compare
+RGBA dimensions and channels with tolerance 2; emit expected/actual/difference
+previews under ignored artifacts. Normal runs never overwrite baselines.
+
+Compare actual rendered bounds, typography, colours and artwork with the
+approved design before initializing baselines (Botology: ±2 logical pixels and
+±6 RGB for representative surfaces; glyph antialiasing/raster grain excluded).
+Generate baseline candidates separately, inspect them, resolve discrepancies,
+then deliberately adopt them through a reviewable Git change. Prove the
+comparator catches shifted regions, wrong fills and missing elements. Baselines
+prove regression stability, not initial design fidelity or GPU verification.
+Cover selected windows/popups, all locales, scale/size limits, accents and
+functional states. Builds, test counts and self-generated baselines alone do
+not establish completion. Deliver as "locally verified; game visual acceptance
+pending" until David supplies and accepts the game screenshot; never auto-accept
+or operate clients without explicit authorization.

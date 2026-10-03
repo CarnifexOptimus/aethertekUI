@@ -6,12 +6,34 @@ namespace AethertekUI.Tests;
 
 public class ComponentBehaviorTests
 {
+    [Theory] [InlineData(false)] [InlineData(true)]
+    public void ExplicitRadiusRetainsSizingAndDisabledBehavior(bool disabled)
+    {
+        using var host=new NativeTestContext(scale:1.5f);
+        var theme=new MaterialTheme(new Vector3(.04f,.68f,.84f));
+        var label="Start"; var activated=false; Vector2 center=default;
+        void Draw()
+        {
+            using var scope=MaterialTheme.Push(theme,1.5f);
+            ImGui.SetNextWindowPos(new(0,0)); ImGui.SetNextWindowSize(new(500,300));
+            ImGui.Begin("Radius",ImGuiWindowFlags.NoSavedSettings|ImGuiWindowFlags.NoTitleBar);
+            activated|=MaterialButton.Draw("stable",label,4,MaterialButtonVariant.Outlined,new(120,32),disabled,MaterialIcon.Refresh);
+            Assert.Equal(new Vector2(180,48),ImGui.GetItemRectSize());
+            center=(ImGui.GetItemRectMin()+ImGui.GetItemRectMax())*.5f;
+            MaterialStatus.Badge("Available"); var pillSize=ImGui.GetItemRectSize();
+            MaterialStatus.Badge("Available",4); Assert.Equal(pillSize,ImGui.GetItemRectSize());
+            ImGui.End();
+        }
+        host.Frame(Draw); host.Frame(Draw); label="Reload";
+        host.Click(center,Draw); Assert.Equal(!disabled,activated);
+    }
+
     [Theory]
     [InlineData(MaterialButtonVariant.Filled)] [InlineData(MaterialButtonVariant.Tonal)]
     [InlineData(MaterialButtonVariant.Outlined)] [InlineData(MaterialButtonVariant.Text)]
     public void EachButtonVariantActivatesOnRelease(MaterialButtonVariant variant)
     {
-        using var host=new NativeTestContext(); var theme=new MaterialTheme(new(.3f,.7f,.4f));
+        using var host=new NativeTestContext(); var theme=new MaterialTheme(new Vector3(.3f,.7f,.4f));
         var activated=false;Vector2 center=default;
         void Draw()
         {
@@ -28,7 +50,7 @@ public class ComponentBehaviorTests
     [Fact]
     public void ModalTablesAndChildScopesRestoreStylesEvenWhenClosedOrClipped()
     {
-        using var host=new NativeTestContext(); var theme=new MaterialTheme(new(.3f,.7f,.4f));
+        using var host=new NativeTestContext(); var theme=new MaterialTheme(new Vector3(.3f,.7f,.4f));
         var first=true;var open=true;var seen=false;
         void Draw()
         {
@@ -60,7 +82,7 @@ public class ComponentBehaviorTests
     [Theory] [InlineData(0)] [InlineData(1)] [InlineData(2)] [InlineData(3)] [InlineData(4)]
     public void SelectionAndNavigationControlsActivate(int control)
     {
-        using var host=new NativeTestContext();var theme=new MaterialTheme(new(.3f,.7f,.4f));
+        using var host=new NativeTestContext();var theme=new MaterialTheme(new Vector3(.3f,.7f,.4f));
         var value=false;var choice=0;var activated=false;Vector2 center=default;
         void Draw()
         {
@@ -86,7 +108,7 @@ public class ComponentBehaviorTests
     [Fact]
     public void PerOptionDisableRejectsSelection()
     {
-        using var host=new NativeTestContext();var theme=new MaterialTheme(new(.3f,.7f,.4f));
+        using var host=new NativeTestContext();var theme=new MaterialTheme(new Vector3(.3f,.7f,.4f));
         var selected=0;Vector2 center=default;
         MaterialSegment<int>[] options=[new(0,"Auto"),new(1,"Blocked",Disabled:true),new(2,"Off")];
         void Draw()

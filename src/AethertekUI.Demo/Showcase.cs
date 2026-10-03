@@ -9,7 +9,7 @@ internal sealed partial class Showcase
     public int Page;
     internal MaterialDensity DemoDensity { set { density=(int)value; theme.Density=value; } }
     private Vector3 seed = new(.36f,.72f,.46f);
-    private MaterialTheme theme = new(new(.36f,.72f,.46f));
+    private MaterialTheme theme = new(new Vector3(.36f,.72f,.46f));
     private float opacity=.94f;
     private int density;
     private bool expanded=true;

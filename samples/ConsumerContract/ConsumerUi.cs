@@ -9,6 +9,42 @@ namespace ConsumerContract;
 /// <summary>Compiles against project references AND packages. No GBR source or services.</summary>
 public sealed class ConsumerUi : IDisposable
 {
+    // A consumer stores these using its own existing configuration, and supplies localized labels/options.
+    public static MaterialAppearanceChange DrawAppearance(ImFontPtr borrowedFont, ref Vector3 accentDraft, ref string language,
+        MaterialOptions<string> languages, MaterialAppearanceLabels labels, Action<Vector3,string> save)
+    {
+        ImGui.PushFont(borrowedFont);
+        try
+        {
+            var change=MaterialAppearanceSelector.Draw("appearance",ref accentDraft,ref language,languages,labels);
+            if(change.AccentChanged || change.LanguageChanged) save(accentDraft,language);
+            return change;
+        }
+        finally { ImGui.PopFont(); } // Font lifetime/ownership remains with the consumer.
+    }
+
+    // Cache the returned exact theme outside Draw; the consumer updates it on its own preference changes.
+    public static MaterialTheme CreateMeasuredTheme(Vector3 seed)
+        => new(new MaterialColorScheme(new OklchPaletteGenerator().Generate(seed))
+        {
+            Background=new(17/255f,30/255f,42/255f,1),
+            Surface=new(21/255f,38/255f,51/255f,1),
+            OutlineVariant=new(44/255f,67/255f,85/255f,1),
+        });
+
+    public static void DrawMeasuredControls(MaterialControlMetrics pixelMetrics,MaterialControlAppearance appearance,
+        MaterialOptions<string> options,ref string selected,ref string search,ref bool enabled)
+    {
+        using var controls=MaterialControls.Push(pixelMetrics);
+        MaterialButton.Draw("measured-action","Action",appearance,new(180,52));
+        MaterialStatus.Badge("Available",appearance,new(120,34));
+        MaterialTextField.SearchField("measured-search",ref search,appearance,width:222);
+        MaterialCombo.Draw("measured-combo",options,ref selected,appearance,width:213);
+        MaterialSwitch.Draw("measured-switch","Enabled",ref enabled,new Vector2(44,26));
+        var p=ImGui.GetCursorScreenPos();var s=MaterialTheme.Metrics.Scale;
+        MaterialCanvas.Surface(p,p+new Vector2(280,36)*s,appearance.Fill,MaterialTheme.Current.Colors.Background,appearance.CornerRadius*s);
+        ImGui.Dummy(new Vector2(280,36)*s);
+    }
     private readonly WindowSystem windows = new("Independent consumer example");
     private readonly MaterialWindowHost material;
     public ConsumerUi(MaterialThemeSettings settings)

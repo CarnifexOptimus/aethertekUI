@@ -26,6 +26,11 @@ public sealed class MaterialTheme
         Colors = new((generator ?? new OklchPaletteGenerator()).Generate(seed));
         Density = density;
     }
+    public MaterialTheme(MaterialColorScheme colors, MaterialDensity density = MaterialDensity.Compact)
+    {
+        Colors = colors ?? throw new ArgumentNullException(nameof(colors));
+        Density = density;
+    }
     public Vector4 SurfaceColor(Vector4 role) => MaterialColor.Alpha(role,SurfaceOpacity);
     public static ThemeScope Push(MaterialTheme theme, float globalScale = 1, bool applyMetrics = true)
         => new(theme,globalScale,applyMetrics ? MaterialStyleMode.Compatible : MaterialStyleMode.ColorsOnly);
@@ -37,6 +42,7 @@ public sealed class MaterialTheme
         private readonly MaterialTheme? previous;
         private readonly MaterialMetrics previousMetrics;
         private readonly MaterialControlContext previousContext;
+        private readonly MaterialControlMetrics? previousControls;
         private bool active;
         internal ThemeScope(MaterialTheme theme, float scale, MaterialStyleMode mode)
         {
@@ -48,6 +54,7 @@ public sealed class MaterialTheme
             current = theme;
             metrics = new(theme.Density,scale);
             previousContext = MaterialControls.SetContext(MaterialControlContext.Regular);
+            previousControls = MaterialControls.SetMetrics(null);
             style = new();
             active = true;
             var c = theme.Colors;
@@ -123,6 +130,7 @@ public sealed class MaterialTheme
             current = previous;
             metrics = previousMetrics;
             MaterialControls.SetContext(previousContext);
+            MaterialControls.SetMetrics(previousControls);
             active = false;
         }
     }

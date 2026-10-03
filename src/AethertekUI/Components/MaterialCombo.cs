@@ -1,4 +1,5 @@
 using Dalamud.Bindings.ImGui;
+using System.Numerics;
 
 namespace AethertekUI;
 
@@ -17,10 +18,20 @@ public static class MaterialCombo
 
     public static bool Draw<T>(string id, MaterialOptions<T> options, ref T value, MaterialComboLayout layout, float width = -1,
         bool searchable = true, bool disabled = false, string emptyLabel = "Select...")
+        => DrawCore(id,options,ref value,layout,width,searchable,disabled,emptyLabel,null,"Filter options...","No matching options");
+
+    public static bool Draw<T>(string id, MaterialOptions<T> options, ref T value, MaterialControlAppearance appearance,
+        float width = -1, bool searchable = true, bool disabled = false, string emptyLabel = "Select...",
+        string searchHint = "Filter options...", string noOptionsLabel = "No matching options")
+        => DrawCore(id,options,ref value,MaterialComboLayout.Default,width,searchable,disabled,emptyLabel,appearance,searchHint,noOptionsLabel);
+
+    private static bool DrawCore<T>(string id, MaterialOptions<T> options, ref T value, MaterialComboLayout layout, float width,
+        bool searchable, bool disabled, string emptyLabel, MaterialControlAppearance? appearance, string searchHint, string noOptionsLabel)
     {
         ArgumentNullException.ThrowIfNull(options);
         if (!float.IsFinite(layout.PopupWidth) || layout.PopupWidth < 0 || layout.VisibleRows < 1)
             throw new ArgumentOutOfRangeException(nameof(layout));
+        if(appearance is { } validated) validated.Radius(MaterialTheme.Metrics.Scale);
         using var controls = MaterialControls.Push();
         var scale = MaterialTheme.Metrics.Scale;
         var fieldWidth = MaterialLayout.ResolveWidth(width,200*scale,ImGui.GetContentRegionAvail().X,scale,layout.ConstrainFieldWidth);
@@ -33,15 +44,44 @@ public static class MaterialCombo
         ImGui.SetNextItemWidth(fieldWidth);
         ImGui.SetNextWindowSizeConstraints(new(popupWidth,0),new(popupWidth,popupHeight));
         var changed = false;
-        if (ImGui.BeginCombo("##combo", options.LabelFor(value, emptyLabel), ImGuiComboFlags.HeightLarge))
+        var origin=ImGui.GetCursorScreenPos();
+        var dl=ImGui.GetWindowDrawList();
+        var style=new MaterialStyleScope();
+        if(appearance is { } a)
+        {
+            style.Color(ImGuiCol.FrameBg,a.Fill);
+            style.Color(ImGuiCol.FrameBgHovered,MaterialColor.Layer(a.Fill,a.Foreground,.08f));
+            style.Color(ImGuiCol.FrameBgActive,MaterialColor.Layer(a.Fill,a.Foreground,.14f));
+            style.Color(ImGuiCol.Text,Vector4.Zero);
+            style.Color(ImGuiCol.Border,a.Border);
+            style.Style(ImGuiStyleVar.FrameRounding,a.Radius(scale));
+            style.Style(ImGuiStyleVar.FrameBorderSize,MaterialTheme.Metrics.Border);
+        }
+        var opened=ImGui.BeginCombo("##combo", options.LabelFor(value, emptyLabel), ImGuiComboFlags.HeightLarge |
+            (appearance.HasValue ? ImGuiComboFlags.NoArrowButton : ImGuiComboFlags.None));
+        style.Dispose();
+        if(appearance is { } field)
+        {
+            var height=MaterialControls.Metrics.Height;
+            var gap=MaterialControls.Metrics.Gap;
+            dl.PushClipRect(origin+new Vector2(gap,0),origin+new Vector2(Math.Max(gap,fieldWidth-height),height),true);
+            dl.AddText(origin+new Vector2(gap,(height-ImGui.GetTextLineHeight())*.5f),MaterialDraw.Color(field.Foreground),options.LabelFor(value,emptyLabel));
+            dl.PopClipRect();
+            // Draw into the original field's list even while the popup is current.
+            var center=origin+new Vector2(fieldWidth-height*.5f,height*.5f);
+            var ink=MaterialDraw.Color(field.Foreground);
+            dl.AddLine(center+new Vector2(-4*scale,-2*scale),center+new Vector2(0,2*scale),ink,scale);
+            dl.AddLine(center+new Vector2(0,2*scale),center+new Vector2(4*scale,-2*scale),ink,scale);
+        }
+        if (opened)
         {
             if (searchable)
             {
                 var query = options.Query;
                 if (ImGui.IsWindowAppearing()) ImGui.SetKeyboardFocusHere();
-                if (MaterialTextField.SearchField("search", ref query, "Filter options...")) options.SetQuery(query);
+                if (MaterialTextField.SearchField("search", ref query, searchHint)) options.SetQuery(query);
             }
-            if (options.Count == 0) ImGui.TextDisabled("No matching options");
+            if (options.Count == 0) ImGui.TextDisabled(noOptionsLabel);
             // Native clipping preserves scrolling/navigation without submitting thousands of rows.
             using (var clipper = new MaterialClipper(options.Count))
             {

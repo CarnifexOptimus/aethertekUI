@@ -49,6 +49,21 @@ Compiled consumer compatibility is verified. End-to-end plugin compatibility req
 
 ## Approved designs and localization
 
+Measure geometry, text weights/sizes, sampled colours, artwork and state before
+adoption. Exact roles use initialized `MaterialColorScheme` and
+`MaterialTheme(colors)`; appearance/metric overloads support measured controls.
+Use the standard appearance selector with consumer-owned settings/translations,
+borrowed fonts and next-frame updates. Keep all nine native language names and
+check required glyphs after host atlas rebuilds. Stable IDs include existing
+English-derived helper IDs, even when visible text is translated.
+
+Check design fidelity before adopting deterministic PNG baselines. Candidate
+mode (`AETHERTEKUI_CANDIDATE_DIR`) writes only a separate ignored artifact folder;
+review candidates before copying them into the test projects' `Baselines`.
+Normal tests fail on missing images and compare dimensions and RGBA channels
+with tolerance 2. Diagnostic CPU frames cannot establish GPU/game acceptance.
+The selected consumer's final screenshot remains David's acceptance boundary.
+
 Follow the selected approved mockup faithfully. Add a required missing component
 or layout capability to AethertekUI and demonstrate it in the showcase rather
 than changing the design to fit the existing library. Update

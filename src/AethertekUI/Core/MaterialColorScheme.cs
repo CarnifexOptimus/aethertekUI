@@ -5,39 +5,39 @@ namespace AethertekUI;
 /// <summary>Immutable opaque RGB roles. Apply surface opacity at rendering time.</summary>
 public sealed class MaterialColorScheme
 {
-    public Vector4 Primary { get; }
-    public Vector4 OnPrimary { get; }
-    public Vector4 PrimaryContainer { get; }
-    public Vector4 OnPrimaryContainer { get; }
-    public Vector4 Secondary { get; }
-    public Vector4 OnSecondary { get; }
-    public Vector4 SecondaryContainer { get; }
-    public Vector4 OnSecondaryContainer { get; }
-    public Vector4 Tertiary { get; }
-    public Vector4 OnTertiary { get; }
-    public Vector4 TertiaryContainer { get; }
-    public Vector4 OnTertiaryContainer { get; }
-    public Vector4 Error { get; }
-    public Vector4 OnError { get; }
-    public Vector4 ErrorContainer { get; }
-    public Vector4 OnErrorContainer { get; }
-    public Vector4 Background { get; }
-    public Vector4 OnBackground { get; }
-    public Vector4 Surface { get; }
-    public Vector4 OnSurface { get; }
-    public Vector4 SurfaceVariant { get; }
-    public Vector4 OnSurfaceVariant { get; }
-    public Vector4 SurfaceContainerLowest { get; }
-    public Vector4 SurfaceContainerLow { get; }
-    public Vector4 SurfaceContainer { get; }
-    public Vector4 SurfaceContainerHigh { get; }
-    public Vector4 SurfaceContainerHighest { get; }
-    public Vector4 Outline { get; }
-    public Vector4 OutlineVariant { get; }
-    public Vector4 InverseSurface { get; }
-    public Vector4 InverseOnSurface { get; }
-    public Vector4 InversePrimary { get; }
-    public Vector4 Scrim { get; }
+    public Vector4 Primary { get; init; }
+    public Vector4 OnPrimary { get; init; }
+    public Vector4 PrimaryContainer { get; init; }
+    public Vector4 OnPrimaryContainer { get; init; }
+    public Vector4 Secondary { get; init; }
+    public Vector4 OnSecondary { get; init; }
+    public Vector4 SecondaryContainer { get; init; }
+    public Vector4 OnSecondaryContainer { get; init; }
+    public Vector4 Tertiary { get; init; }
+    public Vector4 OnTertiary { get; init; }
+    public Vector4 TertiaryContainer { get; init; }
+    public Vector4 OnTertiaryContainer { get; init; }
+    public Vector4 Error { get; init; }
+    public Vector4 OnError { get; init; }
+    public Vector4 ErrorContainer { get; init; }
+    public Vector4 OnErrorContainer { get; init; }
+    public Vector4 Background { get; init; }
+    public Vector4 OnBackground { get; init; }
+    public Vector4 Surface { get; init; }
+    public Vector4 OnSurface { get; init; }
+    public Vector4 SurfaceVariant { get; init; }
+    public Vector4 OnSurfaceVariant { get; init; }
+    public Vector4 SurfaceContainerLowest { get; init; }
+    public Vector4 SurfaceContainerLow { get; init; }
+    public Vector4 SurfaceContainer { get; init; }
+    public Vector4 SurfaceContainerHigh { get; init; }
+    public Vector4 SurfaceContainerHighest { get; init; }
+    public Vector4 Outline { get; init; }
+    public Vector4 OutlineVariant { get; init; }
+    public Vector4 InverseSurface { get; init; }
+    public Vector4 InverseOnSurface { get; init; }
+    public Vector4 InversePrimary { get; init; }
+    public Vector4 Scrim { get; init; }
     public MaterialColorScheme(MaterialPalette palette)
     {
         Primary = palette.Primary[80];

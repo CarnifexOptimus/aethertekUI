@@ -20,7 +20,7 @@ public class AdaptiveSizingTests
         MaterialDensity density, MaterialControlContext context, float scale, float fontScale)
     {
         using var host = new NativeTestContext(1600,1500,fontScale);
-        var theme = new MaterialTheme(new(.3f,.7f,.4f),density);
+        var theme = new MaterialTheme(new Vector3(.3f,.7f,.4f),density);
         var text = ""; var number = 10; var selected = 0; var enabled = true;
         var options = new MaterialOptions<int>([new("one",0,"One"),new("two",1,"Two")]);
         host.Frame(() =>
@@ -51,7 +51,7 @@ public class AdaptiveSizingTests
     public void CompatibilityThemePreservesHostLayoutAndNestedScopesRestoreIt()
     {
         using var host = new NativeTestContext();
-        var theme = new MaterialTheme(new(.3f,.7f,.4f));
+        var theme = new MaterialTheme(new Vector3(.3f,.7f,.4f));
         var style = ImGui.GetStyle();
         style.FramePadding=new(3,2); style.WindowPadding=new(7,9);
         style.CellPadding=new(2,1); style.ItemSpacing=new(5,4);
@@ -98,7 +98,7 @@ public class AdaptiveSizingTests
     public void ActionTileMeasuresWrappedContentAndHonorsExplicitFixedMode()
     {
         using var host = new NativeTestContext(1200,1200,2);
-        var theme = new MaterialTheme(new(.3f,.7f,.4f));
+        var theme = new MaterialTheme(new Vector3(.3f,.7f,.4f));
         host.Frame(() =>
         {
             using var scope=MaterialTheme.Push(theme);
@@ -122,7 +122,7 @@ public class AdaptiveSizingTests
     public void NarrowFieldCanOpenWiderSearchablePopup()
     {
         using var host=new NativeTestContext();
-        var theme=new MaterialTheme(new(.3f,.7f,.4f));
+        var theme=new MaterialTheme(new Vector3(.3f,.7f,.4f));
         var options=new MaterialOptions<int>([new("a",0,"First long option"),new("b",1,"Second long option")]);
         var value=0; Vector2 point=default;
         void Draw()
@@ -149,7 +149,7 @@ public class AdaptiveSizingTests
     public void NarrowNumberKeepsEditorWhileWideNumberRetainsStepButtons()
     {
         using var host=new NativeTestContext(1200,800,1.5f);
-        var theme=new MaterialTheme(new(.3f,.7f,.4f),MaterialDensity.Standard);
+        var theme=new MaterialTheme(new Vector3(.3f,.7f,.4f),MaterialDensity.Standard);
         var value=12; var narrow=true; Vector2 right=default;
         void Draw()
         {
@@ -170,7 +170,7 @@ public class AdaptiveSizingTests
     public void TinyExplicitGlyphAndImageButtonsKeepTheirBoundsAndActivate()
     {
         using var host=new NativeTestContext();
-        var theme=new MaterialTheme(new(.3f,.7f,.4f));
+        var theme=new MaterialTheme(new Vector3(.3f,.7f,.4f));
         Vector2 glyph=default; var clicked=false;
         void Draw()
         {
@@ -196,7 +196,7 @@ public class AdaptiveSizingTests
     [Fact]
     public void InvalidScopeAndComboArgumentsDoNotDisturbCurrentContext()
     {
-        using var host=new NativeTestContext(); var theme=new MaterialTheme(new(.3f,.7f,.4f));
+        using var host=new NativeTestContext(); var theme=new MaterialTheme(new Vector3(.3f,.7f,.4f));
         host.Frame(() =>
         {
             using var scope=MaterialTheme.Push(theme);

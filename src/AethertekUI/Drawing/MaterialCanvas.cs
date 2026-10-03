@@ -10,6 +10,24 @@ public static class MaterialCanvas
     public static void Surface(Vector2 min, Vector2 max, Vector4 color, float radius)
         => ImGui.GetWindowDrawList().AddRectFilled(min,max,Color(color),Math.Max(0,radius));
 
+    /// <summary>Rounded vertical gradient; coordinates and radius remain pixels.</summary>
+    public static void Surface(Vector2 min, Vector2 max, Vector4 top, Vector4 bottom, float radius)
+    {
+        var dl=ImGui.GetWindowDrawList();
+        var start=dl.VtxBuffer.Size;
+        dl.AddRectFilled(min,max,Color(Vector4.One),Math.Max(0,radius));
+        for(var i=start;i<dl.VtxBuffer.Size;i++)
+        {
+            var vertex=dl.VtxBuffer[i];
+            var t=Math.Clamp((vertex.Pos.Y-min.Y)/Math.Max(1,max.Y-min.Y),0,1);
+            // Preserve the mesh's antialias fringe coverage.
+            var color=Vector4.Lerp(top,bottom,t);
+            color.W *= ((vertex.Col>>24)&255)/255f;
+            vertex.Col=ImGui.ColorConvertFloat4ToU32(color);
+            dl.VtxBuffer[i]=vertex;
+        }
+    }
+
     /// <summary>Borrowed texture; the caller must keep it alive for the entire rendered frame.</summary>
     public static void Image(ImTextureID texture, Vector2 size, Vector4? tint = null)
         => ImGui.Image(texture,MaterialTheme.Metrics.Scaled(size),Vector2.Zero,Vector2.One,tint ?? Vector4.One);

@@ -71,7 +71,7 @@ public class ColorTests
     [Fact]
     public void RequiredRolesAndContrast()
     {
-        var c=new MaterialTheme(new(.3f,.7f,.4f)).Colors;
+        var c=new MaterialTheme(new Vector3(.3f,.7f,.4f)).Colors;
         var properties=typeof(MaterialColorScheme).GetProperties();
         Assert.Equal(33,properties.Length);
         foreach(var property in properties) Valid((Vector4)property.GetValue(c)!);
@@ -86,7 +86,7 @@ public class ColorTests
     [Fact]
     public void OpacityDoesNotChangeRgbOrScheme()
     {
-        var t=new MaterialTheme(new(.4f,.7f,.3f)); var c=t.Colors;
+        var t=new MaterialTheme(new Vector3(.4f,.7f,.3f)); var c=t.Colors;
         t.SurfaceOpacity=.5f;
         Assert.Same(c,t.Colors);
         Assert.Equal(new Vector4(c.Surface.X,c.Surface.Y,c.Surface.Z,.5f),t.SurfaceColor(c.Surface));

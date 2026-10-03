@@ -9,13 +9,34 @@ See [Adaptive sizing and host compatibility](ADAPTIVE_SIZING.md) for units, owne
 | MaterialStyleMode.Compatible / Material / ColorsOnly | Preserve host layout by default; opt into full metrics or colors alone |
 | MaterialControls.Push(context) | Match native and custom control heights using current font, density and scale |
 | MaterialControlContext.Regular / Toolbar / Dense | Local sizing intent independent of theme density |
+| MaterialControls.Push(metrics) | Explicit already-scaled pixel metrics; parameterless nested scopes inherit, explicit contexts remeasure |
+| MaterialTheme(colors, density) | Exact immutable scheme with initialization-time role assignments; palette/seed constructors remain available |
+| MaterialControlAppearance | Consumer fill, foreground, border, and nonnegative logical corner radius |
+| MaterialAppearanceSelector.Draw | Swatch/presets/RGB picker plus keyed language dropdown; separate AccentChanged / LanguageChanged flags |
 | MaterialTable.PushControls() | Native table styling plus Dense editor sizing |
 | MaterialComboLayout | Independent popup width and visible row limit |
 | MaterialActionTile.Measure / MaterialTileSizing | Content-aware wrapping and grid measurement; explicit fixed-height option |
 
 All controls are immediate-mode; booleans return activation or value change. Consumers own state and lifecycle.
+
+Appearance overloads of `MaterialButton.Draw`, `MaterialStatus.Badge`,
+`MaterialTextField.SearchField`, and `MaterialCombo.Draw` retain native
+interaction and existing IDs. Badge dimensions and the explicit
+`MaterialSwitch.Draw(..., trackSize, ...)` overload use logical units. The new
+search overload hides clear while empty; the old overload retains its slot.
+The combo paints one outlined field/chevron and keeps native popup editing,
+navigation and selection. `MaterialCanvas.Surface(min,max,top,bottom,radius)`
+draws a rounded vertical gradient; coordinates and radius remain pixels.
+
+`MaterialAppearanceSelector.Draw(id, ref accent, ref language, options, labels,
+languageWidth)` borrows the active font. Preset selection reports immediately;
+custom RGB reports on edit completion. Consumers own the draft, localized
+labels/native language options, semantic colours, configuration/save path and
+next-frame theme/font changes. Palette and Globe icons are appended to the
+existing enum. See the sizing showcase and independent consumer example.
 Use MaterialTheme.Push(theme, ImGuiHelpers.GlobalScale) around your window draw. Pass stable IDs separately from visible labels. Scope IDs further with ImGui.PushID for repeated domain objects.
 Button variants share label, leading/trailing MaterialIcon, size and disabled support. Negative width fills available width; positive sizes are logical units; zero selects defaults.
+`MaterialButton.Draw(id, label, cornerRadius, ...)` and `MaterialStatus.Badge(label, cornerRadius, ...)` accept an explicit nonnegative logical radius, clamped to the rendered bounds. Existing overloads keep their pill shapes. Document, Database, Refresh, Chart, ExternalLink and Download extend the texture-free icon set without changing prior enum values.
 MaterialSegment<T> arrays are cached, passed as ReadOnlySpan, and bind ref T. Switch binds ref bool and animates by stable ID.
 Surface/Card and Dialog scopes expose Visible. Always dispose child scopes even when Visible is false; only render child contents when visible. Dialog scopes call EndPopup only on a successful BeginPopupModal.
 Tables remain native BeginTable/EndTable with a MaterialTable.PushStyle scope and optional row coloring. Native combo and slider behavior inherits the theme. Checkbox/radio helpers use stable native button IDs and custom visuals.

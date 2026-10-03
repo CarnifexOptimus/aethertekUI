@@ -27,14 +27,14 @@ public unsafe class ImGuiSmokeTests
             var originalColors=new Vector4[Enum.GetValues<ImGuiCol>().Max(role=>(int)role)];
             for(var i=0;i<originalColors.Length;i++) originalColors[i]=ImGui.GetStyle().Colors[i];
             var padding=ImGui.GetStyle().WindowPadding;
-            var theme=new MaterialTheme(new(.3f,.7f,.4f));
+            var theme=new MaterialTheme(new Vector3(.3f,.7f,.4f));
             ImGui.NewFrame();
             using(var scope=MaterialTheme.Push(theme,1))
             {
                 ImGui.SetNextWindowSize(new(900,700));
                 ImGui.Begin("Native smoke",ImGuiWindowFlags.NoSavedSettings);
                 var beforeNested=ImGui.GetStyle().Colors[(int)ImGuiCol.Button];
-                using(var nested=MaterialTheme.Push(new(new(.7f,.3f,.4f)),1.5f))
+                using(var nested=MaterialTheme.Push(new(new Vector3(.7f,.3f,.4f)),1.5f))
                     Assert.NotEqual(beforeNested,ImGui.GetStyle().Colors[(int)ImGuiCol.Button]);
                 Assert.Equal(beforeNested,ImGui.GetStyle().Colors[(int)ImGuiCol.Button]);
                 MaterialButton.FilledButton("button","Test");

@@ -64,9 +64,17 @@ public readonly record struct MaterialControlMetrics
 public static class MaterialControls
 {
     [ThreadStatic] private static MaterialControlContext context;
+    [ThreadStatic] private static MaterialControlMetrics? explicitMetrics;
     public static MaterialControlContext Context => context;
     public static MaterialControlMetrics Metrics
-        => MaterialControlMetrics.Measure(MaterialTheme.Metrics, ImGui.GetTextLineHeight(), context);
+        => explicitMetrics ?? MaterialControlMetrics.Measure(MaterialTheme.Metrics, ImGui.GetTextLineHeight(), context);
+
+    internal static MaterialControlMetrics? SetMetrics(MaterialControlMetrics? value)
+    {
+        var previous = explicitMetrics;
+        explicitMetrics = value;
+        return previous;
+    }
 
     internal static MaterialControlContext SetContext(MaterialControlContext value)
     {
@@ -75,18 +83,26 @@ public static class MaterialControls
         return previous;
     }
 
-    public static ControlScope Push(MaterialControlContext? value = null) => new(value ?? context);
+    public static ControlScope Push(MaterialControlContext? value = null)
+        => new(value ?? context, value.HasValue ? null : explicitMetrics);
+    /// <summary>Explicit pixel metrics, already scaled. Nested parameterless scopes inherit them.</summary>
+    public static ControlScope Push(MaterialControlMetrics metrics) => new(context, metrics);
 
     public ref struct ControlScope
     {
         private MaterialStyleScope style;
         private readonly MaterialControlContext previous;
+        private readonly MaterialControlMetrics? previousMetrics;
         private bool active;
-        internal ControlScope(MaterialControlContext value)
+        internal ControlScope(MaterialControlContext value, MaterialControlMetrics? supplied)
         {
             // Validate and measure before touching either stack.
-            var m = MaterialControlMetrics.Measure(MaterialTheme.Metrics, ImGui.GetTextLineHeight(), value);
+            var m = supplied ?? MaterialControlMetrics.Measure(MaterialTheme.Metrics, ImGui.GetTextLineHeight(), value);
+            if (!float.IsFinite(m.Height) || m.Height <= 0) throw new ArgumentOutOfRangeException(nameof(supplied));
+            ReadOnlySpan<float> values=[m.Padding.X,m.Padding.Y,m.Gap,m.IconSize,m.Rounding,m.ItemSpacing.X,m.ItemSpacing.Y,m.CellPadding.X,m.CellPadding.Y];
+            foreach(var v in values) if(!float.IsFinite(v) || v<0) throw new ArgumentOutOfRangeException(nameof(supplied));
             previous = SetContext(value);
+            previousMetrics = SetMetrics(supplied);
             style = new();
             style.Style(ImGuiStyleVar.FramePadding, m.NativePadding);
             style.Style(ImGuiStyleVar.FrameRounding, m.Rounding);
@@ -99,6 +115,7 @@ public static class MaterialControls
             if (!active) return;
             style.Dispose();
             SetContext(previous);
+            SetMetrics(previousMetrics);
             active = false;
         }
     }

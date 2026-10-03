@@ -6,8 +6,8 @@ namespace AethertekUI.Tests;
 
 public class IntegrationNativeTests
 {
-    [Fact]
-    public void SearchableComboFiltersCachedOptionsUsingNativeTextEntry()
+    [Theory] [InlineData(false)] [InlineData(true)]
+    public void SearchableComboFiltersCachedOptionsUsingNativeTextEntry(bool appearance)
     {
         using var context=new NativeTestContext();
         var entries=new MaterialOption<int>[500];
@@ -16,7 +16,8 @@ public class IntegrationNativeTests
         var selected=0;Vector2 combo=default;
         void Draw()=>Window(()=>
         {
-            MaterialCombo.Draw("recipes",options,ref selected,width:300);
+            if(appearance) MaterialCombo.Draw("recipes",options,ref selected,new MaterialControlAppearance(theme.Colors.Surface,theme.Colors.OnSurface,theme.Colors.Outline),width:300);
+            else MaterialCombo.Draw("recipes",options,ref selected,width:300);
             if(options.Query.Length==0) combo=(ImGui.GetItemRectMin()+ImGui.GetItemRectMax())*.5f;
         });
         context.Frame(Draw);context.Frame(Draw);context.Click(combo,Draw);
@@ -48,7 +49,7 @@ public class IntegrationNativeTests
         ImGui.GetIO().AddMouseButtonEvent(0,false);context.Frame(Draw);
         Assert.InRange(width,219,221);
     }
-    private readonly MaterialTheme theme=new(new(.3f,.7f,.4f));
+    private readonly MaterialTheme theme=new(new Vector3(.3f,.7f,.4f));
     private void Window(Action content, bool applyMetrics=true)
     {
         using var scope=MaterialTheme.Push(theme,1,applyMetrics);

@@ -29,6 +29,13 @@ using (MaterialControls.Push(MaterialControlContext.Toolbar))
 
 The scope aligns native frame padding with Material controls. Native field padding is intentionally smaller horizontally than text-button padding. Enter a new scope after changing the font; do not expect a previously entered native style scope to remeasure itself. Control metrics are measured without regenerating color palettes.
 
+For an approved measured design, `MaterialControls.Push(MaterialControlMetrics)`
+accepts explicit pixel values already scaled once. Parameterless nested control
+scopes inherit those values. An explicit Regular/Toolbar/Dense scope remeasures
+for that context; nested theme scopes use their own metrics. Disposal restores
+the previous values and native styles. Logical component sizes/radii remain
+separate from these pixel metrics.
+
 For editable tables use `MaterialTable.PushControls()` once around the table. It combines the table colors with Dense control metrics. `PushStyle()` remains available for existing tables that only want table colors/cell padding. Both preserve native table sorting, resizing, clipping and column behavior.
 
 ## Fields and dropdowns

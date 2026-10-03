@@ -11,6 +11,9 @@ internal sealed partial class Showcase
     private int sizingNumber=12;
     private bool sizingEnabled=true;
     private string sizingText="";
+    private Vector3 sizingAccent=new(28/255f,201/255f,230/255f);
+    private string sizingLanguage="en";
+    private readonly MaterialOptions<string> sizingLanguages=new([new("en","en","English"),new("de","de","Deutsch")]);
     private static readonly MaterialControlContext[] SizingContexts =
         [MaterialControlContext.Regular,MaterialControlContext.Toolbar,MaterialControlContext.Dense];
 
@@ -55,5 +58,39 @@ internal sealed partial class Showcase
         MaterialActionTile.Draw("measured-action",MaterialIcon.Play,"Start a longer named action",
             "This status wraps and the tile grows to fit.",new Vector2(240,72));
         ImGui.TextWrapped("Popup width is independent of field width. No plugin-specific geometry is needed.");
+        MaterialStatus.SectionHeader("COMPACT PLUGIN TOOLBAR");
+        using(var controls=MaterialControls.Push(MaterialControlContext.Toolbar))
+        {
+            MaterialButton.Draw("document","Notes",4,MaterialButtonVariant.Outlined,leading:MaterialIcon.Document); ImGui.SameLine();
+            MaterialButton.Draw("data","Data",4,MaterialButtonVariant.Tonal,leading:MaterialIcon.Database); ImGui.SameLine();
+            MaterialButton.Draw("reload","Reload",4,MaterialButtonVariant.Outlined,leading:MaterialIcon.Refresh); ImGui.SameLine();
+            MaterialButton.Draw("status","Status",4,MaterialButtonVariant.Outlined,leading:MaterialIcon.Chart); ImGui.SameLine();
+            MaterialButton.Draw("external","Open",4,MaterialButtonVariant.Text,leading:MaterialIcon.ExternalLink); ImGui.SameLine();
+            MaterialButton.Draw("download","Download",4,MaterialButtonVariant.Text,leading:MaterialIcon.Download);
+        }
+        MaterialStatus.Badge("Available",4); ImGui.SameLine();
+        MaterialStatus.Badge("Warning",4,new Vector4(1,.86f,.35f,1));
+        AppearanceExamples();
+    }
+
+    internal void AppearanceExamples()
+    {
+        MaterialStatus.SectionHeader("EXACT APPEARANCE / CONSUMER PREFERENCES");
+        var c=MaterialTheme.Current.Colors;
+        var appearance=new MaterialControlAppearance(c.SurfaceContainerLow,c.OnSurface,c.OutlineVariant,4);
+        var m=MaterialControlMetrics.Measure(MaterialTheme.Metrics,ImGui.GetTextLineHeight()) with { Height=38*MaterialTheme.Metrics.Scale };
+        using(var pixels=MaterialControls.Push(m))
+        {
+            MaterialButton.Draw("exact","Slate action",appearance,new(180,52));
+            MaterialStatus.Badge("Measured badge",appearance,new(160,34));
+            MaterialTextField.SearchField("exact-search",ref sizingText,appearance,width:222);
+            MaterialCombo.Draw("exact-choice",sizingOptions,ref sizingChoice,appearance,width:213,searchable:false);
+            MaterialSwitch.Draw("exact-switch","44 x 26 track",ref sizingEnabled,new Vector2(44,26));
+            MaterialAppearanceSelector.Draw("preferences",ref sizingAccent,ref sizingLanguage,sizingLanguages,
+                new("Color","Language","Teal","Blue","Pink","Custom RGB"));
+        }
+        var origin=ImGui.GetCursorScreenPos();
+        MaterialCanvas.Surface(origin,origin+new Vector2(280,36)*MaterialTheme.Metrics.Scale,c.SurfaceContainerHigh,c.Background,4*MaterialTheme.Metrics.Scale);
+        ImGui.Dummy(new Vector2(280,36)*MaterialTheme.Metrics.Scale);
     }
 }

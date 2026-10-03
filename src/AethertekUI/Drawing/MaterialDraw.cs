@@ -32,7 +32,7 @@ internal static class MaterialDraw
         => MaterialTheme.Current.Motion.Sample(((ulong)id << 8) | channel,target,ImGui.GetIO().DeltaTime,ImGui.GetFrameCount());
 
     public static void Shape(in MaterialState state, Vector4 background, Vector4 foreground, float radius,
-        bool outline = false, ImDrawFlags corners = ImDrawFlags.RoundCornersAll)
+        bool outline = false, ImDrawFlags corners = ImDrawFlags.RoundCornersAll, Vector4? border = null)
     {
         if (!state.Visible) return;
         var c = MaterialTheme.Current.Colors;
@@ -42,7 +42,7 @@ internal static class MaterialDraw
         dl.AddRectFilled(state.Min,state.Max,Color(MaterialColor.Layer(background,foreground,layer),state.Alpha),radius,corners);
         if (outline || state.Focused)
             dl.AddRect(state.Min+new Vector2(m.Border*.5f),state.Max-new Vector2(m.Border*.5f),
-                Color(state.Focused ? c.Primary : c.OutlineVariant,state.Alpha),radius,corners,state.Focused ? m.Border*2 : m.Border);
+                Color(state.Focused ? c.Primary : border ?? c.OutlineVariant,state.Alpha),radius,corners,state.Focused ? m.Border*2 : m.Border);
     }
     public static void Content(in MaterialState state, string label, Vector4 color, MaterialIcon leading, MaterialIcon trailing,
         bool alignLeft = false)

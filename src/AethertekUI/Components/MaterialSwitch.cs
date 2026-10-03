@@ -6,11 +6,22 @@ namespace AethertekUI;
 public static class MaterialSwitch
 {
     public static bool Draw(string id, string label, ref bool value, bool disabled = false)
+        => DrawCore(id,label,ref value,null,disabled);
+
+    /// <summary>Track dimensions in logical units; retains the native button and original ID.</summary>
+    public static bool Draw(string id, string label, ref bool value, Vector2 trackSize, bool disabled = false)
+    {
+        if(!float.IsFinite(trackSize.X) || !float.IsFinite(trackSize.Y) || trackSize.Y <= 6 || trackSize.X < trackSize.Y)
+            throw new ArgumentOutOfRangeException(nameof(trackSize));
+        return DrawCore(id,label,ref value,trackSize,disabled);
+    }
+
+    private static bool DrawCore(string id, string label, ref bool value, Vector2? trackSize, bool disabled)
     {
         var m=MaterialTheme.Metrics; var c=MaterialTheme.Current.Colors;
         var controls=MaterialControls.Metrics;
-        var height=controls.Height;
-        var track=m.SwitchSize*Math.Min(1,(height-2*m.Scale)/m.SwitchSize.Y);
+        var height=Math.Max(controls.Height,(trackSize?.Y ?? 0)*m.Scale);
+        var track=trackSize.HasValue ? trackSize.Value*m.Scale : m.SwitchSize*Math.Min(1,(height-2*m.Scale)/m.SwitchSize.Y);
         var width=MaterialLayout.ResolveWidth(0,track.X+(label.Length==0?0:controls.Gap+ImGui.CalcTextSize(label).X),
             ImGui.GetContentRegionAvail().X,m.Scale);
         ImGui.PushID(id);

@@ -3,7 +3,7 @@ using Dalamud.Bindings.ImGui;
 
 namespace AethertekUI;
 
-public enum MaterialIcon { None, Search, Close, Settings, Check, Play, Pause, Stop, ArrowRight, Return, Edit, Delete, More, ChevronDown, Home, Grid, Table, Sliders, Info }
+public enum MaterialIcon { None, Search, Close, Settings, Check, Play, Pause, Stop, ArrowRight, Return, Edit, Delete, More, ChevronDown, Home, Grid, Table, Sliders, Info, Document, Database, Refresh, Chart, ExternalLink, Download, Palette, Globe }
 
 /// <summary>Small vector icons; no font or texture dependency.</summary>
 public static class MaterialIcons
@@ -17,7 +17,42 @@ public static class MaterialIcons
         void L(float x,float y,float a,float b) => dl.AddLine(P(x,y),P(a,b),ink,stroke);
         switch(icon)
         {
+            case MaterialIcon.Palette:
+                dl.AddCircle(P(.5f,.5f),size*.38f,ink,24,stroke);
+                for(var i=0;i<4;i++) { var angle=i*MathF.PI/3; dl.AddCircleFilled(P(.5f+.24f*MathF.Cos(angle),.5f+.24f*MathF.Sin(angle)),size*.06f,ink); }
+                break;
+            case MaterialIcon.Globe:
+                dl.AddCircle(P(.5f,.5f),size*.38f,ink,24,stroke); L(.12f,.5f,.88f,.5f); L(.5f,.12f,.5f,.88f);
+                for(var i=0;i<24;i++) { var angle=i*MathF.Tau/24; dl.PathLineTo(P(.5f+.18f*MathF.Cos(angle),.5f+.38f*MathF.Sin(angle))); }
+                dl.PathStroke(ink,ImDrawFlags.Closed,stroke); break;
             case MaterialIcon.None: break;
+            case MaterialIcon.Document:
+                L(.22f,.12f,.62f,.12f); L(.62f,.12f,.8f,.3f); L(.8f,.3f,.8f,.88f); L(.8f,.88f,.22f,.88f); L(.22f,.88f,.22f,.12f);
+                L(.62f,.12f,.62f,.3f); L(.62f,.3f,.8f,.3f); L(.34f,.48f,.68f,.48f); L(.34f,.64f,.68f,.64f); break;
+            case MaterialIcon.Database:
+                L(.18f,.23f,.18f,.77f); L(.82f,.23f,.82f,.77f);
+                for(var band=0;band<3;band++)
+                {
+                    for(var i=0;i<24;i++)
+                    {
+                        var angle=i*MathF.Tau/24;
+                        dl.PathLineTo(P(.5f+.32f*MathF.Cos(angle),.23f+band*.27f+.13f*MathF.Sin(angle)));
+                    }
+                    dl.PathStroke(ink,ImDrawFlags.Closed,stroke);
+                }
+                break;
+            case MaterialIcon.Refresh:
+                dl.PathArcTo(P(.5f,.5f),size*.31f,.2f,MathF.PI*1.7f,20); dl.PathStroke(ink,ImDrawFlags.None,stroke);
+                L(.65f,.1f,.7f,.29f); L(.7f,.29f,.5f,.27f); break;
+            case MaterialIcon.Chart:
+                dl.AddRectFilled(P(.16f,.56f),P(.32f,.86f),ink); dl.AddRectFilled(P(.42f,.34f),P(.58f,.86f),ink);
+                dl.AddRectFilled(P(.68f,.12f),P(.84f,.86f),ink); break;
+            case MaterialIcon.ExternalLink:
+                L(.42f,.2f,.18f,.2f); L(.18f,.2f,.18f,.82f); L(.18f,.82f,.8f,.82f); L(.8f,.82f,.8f,.58f);
+                L(.45f,.55f,.85f,.15f); L(.62f,.15f,.85f,.15f); L(.85f,.15f,.85f,.38f); break;
+            case MaterialIcon.Download:
+                L(.5f,.12f,.5f,.65f); L(.28f,.43f,.5f,.65f); L(.5f,.65f,.72f,.43f);
+                L(.18f,.65f,.18f,.85f); L(.18f,.85f,.82f,.85f); L(.82f,.85f,.82f,.65f); break;
             case MaterialIcon.Search:
                 dl.AddCircle(P(.42f,.42f),size*.26f,ink,16,stroke); L(.62f,.62f,.88f,.88f); break;
             case MaterialIcon.Close: L(.22f,.22f,.78f,.78f); L(.78f,.22f,.22f,.78f); break;

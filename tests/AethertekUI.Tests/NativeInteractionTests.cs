@@ -10,7 +10,7 @@ public unsafe class NativeInteractionTests
     public void MouseActivatesSwitchAndSegmentButDisabledControlsDoNotChange(bool disabled)
     {
         using var host=new NativeTestContext();
-        var theme=new MaterialTheme(new(.3f,.7f,.4f));
+        var theme=new MaterialTheme(new Vector3(.3f,.7f,.4f));
         var enabled=false; var selected=0;
         MaterialSegment<int>[] options=[new(0,"Auto"),new(1,"Manual"),new(2,"Off")];
         Vector2 switchCenter=default,segmentCenter=default;
@@ -31,18 +31,19 @@ public unsafe class NativeInteractionTests
         host.Click(segmentCenter,Draw);
         Assert.Equal(disabled?0:1,selected);
     }
-    [Fact]
-    public void SearchEditingAndInlineClearUseNativeInput()
+    [Theory] [InlineData(false)] [InlineData(true)]
+    public void SearchEditingAndInlineClearUseNativeInput(bool appearance)
     {
         using var host=new NativeTestContext();
-        var theme=new MaterialTheme(new(.3f,.7f,.4f));
+        var theme=new MaterialTheme(new Vector3(.3f,.7f,.4f));
         var query=""; Vector2 min=default,max=default;
         void Draw()
         {
             using var scope=MaterialTheme.Push(theme);
             ImGui.SetNextWindowPos(new(0,0)); ImGui.SetNextWindowSize(new(600,400));
             ImGui.Begin("Search",ImGuiWindowFlags.NoSavedSettings|ImGuiWindowFlags.NoTitleBar);
-            MaterialTextField.SearchField("search",ref query,width:300);
+            if(appearance) MaterialTextField.SearchField("search",ref query,new MaterialControlAppearance(theme.Colors.Surface,theme.Colors.OnSurface,theme.Colors.Outline),width:300);
+            else MaterialTextField.SearchField("search",ref query,width:300);
             min=ImGui.GetItemRectMin(); max=ImGui.GetItemRectMax();
             ImGui.End();
         }
@@ -58,7 +59,7 @@ public unsafe class NativeInteractionTests
     public void SearchHonorsConsumerSuppliedInputLimit()
     {
         using var host=new NativeTestContext();
-        var theme=new MaterialTheme(new(.3f,.7f,.4f));
+        var theme=new MaterialTheme(new Vector3(.3f,.7f,.4f));
         var query=""; Vector2 origin=default;
         void Draw()
         {
@@ -81,7 +82,7 @@ public unsafe class NativeInteractionTests
     {
         using var host=new NativeTestContext();
         ImGui.GetIO().ConfigFlags|=ImGuiConfigFlags.NavEnableKeyboard;
-        var theme=new MaterialTheme(new(.3f,.7f,.4f));
+        var theme=new MaterialTheme(new Vector3(.3f,.7f,.4f));
         var label="Start";var activated=false; var requestFocus=true; uint initialId=0;
         void Draw()
         {
@@ -125,6 +126,11 @@ internal sealed unsafe class NativeTestContext : IDisposable
         byte* pixels=null;int width=0,height=0;
         ImGui.GetIO().Fonts.GetTexDataAsRGBA32(0,&pixels,&width,&height);
         Pixels=pixels;AtlasWidth=width;AtlasHeight=height;
+    }
+    public SoftwarePreview.Texture Texture(ImTextureID id)
+    {
+        if(id.Handle!=1) throw new InvalidOperationException("Unknown diagnostic texture.");
+        return new((nint)Pixels,AtlasWidth,AtlasHeight);
     }
     public void Frame(Action draw)
     {
