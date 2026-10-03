@@ -1,6 +1,6 @@
 ---
 name: aethertek-ui
-description: Build and evolve AethertekUI or adopt it in FFXIV-related C# ImGui applications from approved mockups. Use for library components, layouts, themes, localization, the showcase, and consumer integration; use the optional Dalamud adapter only in Dalamud hosts.
+description: Build and evolve AethertekUI or redesign FFXIV-related C# ImGui applications from approved mockups, with standard nine-language localization and relative colour themes. Use for library components, layouts, the showcase, consumer integration, and UX deployment readiness; use the optional Dalamud adapter only in Dalamud hosts.
 ---
 
 # AethertekUI adoption
@@ -108,23 +108,83 @@ in the showcase. Do not reshape the approved design to fit the current controls.
 Retain the MD3-inspired dark/OKLCH foundation while adding capabilities required
 by actual integrations. Keep game behavior in the consumer.
 
-David's plugin adoptions include a compact top-level colour swatch and language
-selector, mirrored in existing Settings. Use `MaterialAppearanceSelector` with
-teal/blue/pink presets and a custom RGB picker. Supply native language names for
-`en`, `de`, `fr`, `es`, `it`, `ru`, `ja`, `ko`, and `zh-Hans`. The consumer owns
-localized labels, embedded translations, locale formatting, its existing save
-path, draft edits, cached themes, fonts and textures. Commit custom colour on
-edit completion; apply resource changes at the next frame boundary. Check font
-readiness, errors and glyph coverage after atlas rebuilds. Temporary host-font
-rendering or missing glyphs cannot qualify for visual acceptance.
+## Standard UX redesign and deployment
+
+For every David-approved AethertekUI UX redesign, include the nine languages and
+whole-theme colour selection as standard features unless David explicitly changes
+that scope. Carry them into any separately authorized deployment; they are not
+Botology-only options. Keep implementation in the selected consumer and honor
+explicit limits on builds, tests, packaging and client operations.
+
+Place a compact colour swatch and language selector at the top of the main UI,
+mirror them in existing Settings, and share both selections across every window
+and popup. Use `MaterialAppearanceSelector` with teal/blue/pink presets and a
+custom RGB picker. Use these stable codes and native dropdown names:
+
+| Code | Dropdown name |
+| --- | --- |
+| `en` | English |
+| `de` | Deutsch |
+| `fr` | Français |
+| `es` | Español |
+| `it` | Italiano |
+| `ru` | Русский |
+| `ja` | 日本語 |
+| `ko` | 한국어 |
+| `zh-Hans` | 简体中文 |
+
+Translate all consumer-authored windows, headings, controls, tooltips and popup
+text using keyed resources embedded in the assembly and native .NET resource
+loading. Cache the selected resource set. Keep key coverage equal across all
+nine languages; English fallback must not conceal unfinished translations.
+Preserve plugin names, external
+catalog content, command tokens and logs. Format UI numbers and dates using the
+selected locale without changing process-wide culture.
+
+Reuse the consumer's existing configuration and save path. Prefer `UiLanguage`
+(default `en`) and `UiAccentRgb` (default the approved reference accent), or reuse
+equivalent preferences already present. Old configurations receive missing
+defaults without resetting other values or changing their version. Commit
+custom RGB on edit completion, not every draw; apply resource changes at the
+next frame boundary. Consumers own translations, preferences, fonts and textures;
+do not add a shared settings service.
+
+Use relative OKLCH colours for the whole theme: backgrounds, panels, fields,
+table surfaces, borders, foregrounds, gradients and neutral badges. Preserve
+each measured role's lightness and relative hue/chroma; gamut-map the result and
+choose contrasting foregrounds for filled accent controls. Use the existing
+`MaterialColor` conversions, `GamutMap` and `Contrast`; OKLCH hue is in radians.
+Keep the approved default colours exact. Grey seeds produce neutral decorative
+roles; dark and pale seeds must retain a usable light/dark hierarchy. Keep assessment, ignored,
+unavailable, update and DTR status meanings and external brand colours explicit.
+Changing only primary controls while leaving decorative slate colours fixed is
+incomplete. Build and cache the palette on preference changes, outside Draw.
+
+Fonts must cover the selected resource set and all nine native dropdown names,
+including CJK names when English is selected. Prioritize the selected locale's
+CJK glyphs and retain Latin/Cyrillic coverage. In Dalamud, use managed atlas
+handles and explicitly merge the host's `DalamudAsset.NotoSansCjkRegular` when
+needed (TTC faces: Japanese 0, Simplified Chinese 2, Korean 3). Do not pass neutral
+codes such as `ja`, `ko` or `zh-Hans` to `AttachWindowsDefaultFont`: unsupported
+cultures can silently add nothing. Check actual managed-handle readiness, load
+errors and glyph coverage after atlas rebuilds. Dispose consumer-owned handles;
+never distribute Windows fonts. Temporary host fonts cannot qualify for visual
+acceptance.
+
+Before declaring the redesign ready for deployment, verify embedded resources,
+library payloads, preference persistence, all-language layout/glyph coverage and
+theme coverage across the selected windows and popups. Include presets, a custom
+colour, grey/black/white selections and independent semantic status colours in
+the selected verification route. Report deferred checks explicitly; follow the
+separate functional, diagnostic and game acceptance evidence below. Deployment
+readiness does not authorize installing, packaging or publishing anything.
 
 Botology's first adoption establishes these practices:
 
 - `MaterialColorScheme` roles can be assigned during initialization and stay
   immutable afterward. `MaterialTheme(colors, density)` accepts exact sampled
-  roles; use the OKLCH generator for changed accents while retaining measured
-  slate surfaces and independent semantic colours. A consumer that
-  already owns a cached theme can wrap `WindowSystem.Draw` directly with
+  roles. Apply the relative theme requirements above. A consumer that already
+  owns a cached theme can wrap `WindowSystem.Draw` directly with
   `MaterialTheme.Push(theme, ImGuiHelpers.GlobalScale, mode)`; the optional
   adapter is not required for that route.
 - For compact rectangular toolbars and status cells, use
@@ -155,6 +215,17 @@ Botology's first adoption establishes these practices:
   prerequisite; do not change publication or CI as part of an approved local
   UI pass. Use `-p:Use_DalamudPackager=false` for Dalamud SDK build checks when
   release packaging is outside the selected scope.
+- Repair existing consumer build launchers to enter the library's required
+  environment, select its pinned SDK and build the plugin csproj directly.
+  Propagate the build exit code; keep test execution in the explicitly selected
+  verification route. For AethertekUI, enter `eng/Enter-RepoEnv.ps1` before
+  building project references so `DalamudLibPath` is supplied. With a lockfile
+  containing DalamudPackager, restore normally and then build with `--no-restore`
+  and `-p:Use_DalamudPackager=false` to avoid removing it from the lockfile.
+- Offline fonts may differ from the live managed atlas and conceal a broken
+  merge. A clean build or CPU render does not prove host font readiness. Give
+  loading/error windows containing wrapped text an explicit width every frame,
+  including after opening; retain their native IDs and balanced Begin/End.
 
 Read [component API](../../docs/COMPONENT_API.md) for control signatures and
 [integration guide](../../docs/INTEGRATION_GUIDE.md) for host/data boundaries.
@@ -196,7 +267,11 @@ then deliberately adopt them through a reviewable Git change. Prove the
 comparator catches shifted regions, wrong fills and missing elements. Baselines
 prove regression stability, not initial design fidelity or GPU verification.
 Cover selected windows/popups, all locales, scale/size limits, accents and
-functional states. Builds, test counts and self-generated baselines alone do
-not establish completion. Deliver as "locally verified; game visual acceptance
+functional states. Open interactive popups through their native controls and
+check that they remain visible with usable bounds after the opening frame.
+Auto-sized popups containing wrapped content may need an explicit width each
+frame; an appearing-only width can collapse later. Builds, test counts and
+self-generated baselines alone do not establish completion. Deliver as
+"locally verified; game visual acceptance
 pending" until David supplies and accepts the game screenshot; never auto-accept
 or operate clients without explicit authorization.
