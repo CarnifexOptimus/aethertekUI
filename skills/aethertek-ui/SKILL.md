@@ -1,6 +1,6 @@
 ---
 name: aethertek-ui
-description: Build and evolve AethertekUI or redesign FFXIV-related C# ImGui applications from approved mockups, with standard nine-language localization and relative colour themes. Use for library components, layouts, the showcase, consumer integration, and UX deployment readiness; use the optional Dalamud adapter only in Dalamud hosts.
+description: Build and evolve AethertekUI or redesign FFXIV-related C# ImGui applications from approved mockups, with multilingual localization and relative colour themes. Use for library components, layouts, the showcase, consumer integration, and UX deployment readiness; use the optional Dalamud adapter only in Dalamud hosts.
 ---
 
 # AethertekUI adoption
@@ -228,7 +228,7 @@ by actual integrations. Keep game behavior in the consumer.
 
 ## Standard UX redesign and deployment
 
-For every mcvaxius-approved AethertekUI UX redesign, include the nine languages and
+For every mcvaxius-approved AethertekUI UX redesign, include the standard languages below and
 whole-theme colour selection as standard features unless mcvaxius explicitly changes
 that scope. Carry them into any separately authorized deployment; they are not
 Botology-only options. Keep implementation in the selected consumer and honor
@@ -248,7 +248,7 @@ keeping labels readable and actions, semantics, optional columns and saved
 choices available. Use wrapping and scrolling when space is limited. Do not
 treat a separate mini window as the main window's compact mode, shrink the whole
 window with a global scale transform, or reset user widths to fit the mockup.
-Keep fonts/glyphs, nine languages and colour selectors usable in both modes.
+Keep fonts/glyphs, all advertised languages and colour selectors usable in both modes.
 
 Place a compact colour swatch and language selector at the top of the main UI,
 mirror them in existing Settings, and share both selections across every window
@@ -266,6 +266,11 @@ custom RGB picker. Use these stable codes and native dropdown names:
 | `ja` | 日本語 |
 | `ko` | 한국어 |
 | `zh-Hans` | 简体中文 |
+| `vi` | Tiếng Việt |
+| `pt-BR` | Português (Brasil) |
+| `id` | Bahasa Indonesia |
+| `pl` | Polski |
+| `tr` | Türkçe |
 
 The approved cross-plugin expansion selects Vietnamese (`vi`, Tiếng Việt),
 Brazilian Portuguese (`pt-BR`, Português (Brasil)), Indonesian (`id`, Bahasa
@@ -290,7 +295,7 @@ text. C# consumers use keyed resources embedded in the assembly and native .NET
 resource loading. Selected C++ or browser companions use their native resource
 mechanisms and controls; do not introduce a managed dependency just for these
 features. Cache the selected resource set. Keep key coverage equal across all
-nine languages; English fallback must not conceal unfinished translations.
+advertised languages; English fallback must not conceal unfinished translations.
 Check every localized value for nonempty text wherever English is nonempty.
 .NET compiles empty resource values, so matching keys and null-only lookup
 guards can still leave visible controls blank. Reject empty translations in
@@ -309,6 +314,17 @@ selected locale without changing process-wide culture.
 Translate authored interpolation arguments explicitly. Keep names, IDs and
 already formatted service arguments raw, including leading zeroes; apply locale
 number formatting to typed UI values instead of reparsing arbitrary text.
+Match complete authored status wrappers before splitting lines so captured
+LF/CRLF provider or exception detail stays intact. VerMAXion collection also
+requires source-specific composition for intuition/spectral state, readiness,
+cleanup and return suffixes. Use the known outcome and native supply-name
+boundaries, including names containing colons; keep provider-owned detail opaque
+even when it equals a UI label, and avoid translating the completed output twice.
+Verify configuration round trips using the real host's serialization policy.
+A seeded collection can be appended by Newtonsoft during reload: VerMAXion's
+saved task order needed replacement semantics to retain custom order. Offline
+checks may call verified pure serializer helpers; they must not construct host
+storage services or operate clients.
 Check every reached enum member, including failure/readiness values, in the
 resources; localizing an interpolation does not translate a missing Busy label.
 Prefer templates with authored leading text to catch-all leading placeholders.
@@ -329,6 +345,11 @@ to avoid timeouts from ambiguous adjacent captures, as DDuck's compiled status
 checks verified. Check full, empty, nested, padded and LF/CRLF captures after the
 change. Keep source-specific lookaround parsers separate: DAD's leveling patterns
 contain lookaheads and cannot use that option.
+For large status catalogs, create a retained matcher only after its authored
+leading literal applies. DDuck's eager non-backtracking construction exceeded
+the diagnostic memory limit after the atlas was ready; deferring unused matchers
+kept native selector runs below 521 MiB. Retain template order, raw captures and
+LF/CRLF behavior; use a conservative first-line prefix before the existing pattern.
 When hiding a native field label to retain its original ID, remove that label's
 layout contribution as well as its ink. DhogGPT's measured field/card checks
 caught invisible label widths expanding content bounds and scroll ranges.
@@ -376,7 +397,7 @@ unavailable, update and DTR status meanings and external brand colours explicit.
 Changing only primary controls while leaving decorative slate colours fixed is
 incomplete. Build and cache the palette on preference changes, outside Draw.
 
-Fonts must cover the selected resource set and all nine native dropdown names,
+Fonts must cover the selected resource set and every native dropdown name,
 including CJK names when English is selected. Build and check the same required
 text set, including English fallback strings and untranslated UI symbols such
 as native favorites and support labels. A symbol-face merge adds only the glyphs
@@ -400,6 +421,11 @@ remain on the host and are never packaged.
 Read/write source and resources as UTF-8. Windows PowerShell's default native
 pipe encoding can replace non-Latin translations and diacritics with `?`; use
 explicit UTF-8 transport and inspect the resulting characters.
+When integrating a saved translation payload, read it directly as UTF-8 and
+compare the written values with that payload before mirroring shared phrases.
+DAD's tail passed structural checks after PowerShell had changed its accented
+text to question marks; Python UTF-8 mode cannot recover text already damaged
+by the native pipe. Keep the intact payload as the input for the correction.
 Matching keys and placeholders cannot detect encoding loss. Inspect actual
 resource values for native characters and unexpected literal `?` replacements,
 especially in CJK, Cyrillic and accented Latin resources, before claiming coverage.
@@ -524,6 +550,19 @@ atlas textures. Refresh and assign each texture its own ID, then resolve the
 draw command's actual texture when rendering; sampling texture zero for every
 command corrupts otherwise valid glyph UVs. HealBot's Japanese helper diagnostic
 verified this distinction. It does not establish managed-host readiness.
+Give a standalone diagnostic atlas explicit dimensions suitable for its required
+glyphs and roles, and record those dimensions with the result. BFE and
+ChocoboColourized's complete Korean windows passed with their unchanged fonts,
+ranges and merge order at 4096 by 4096, after default packing exceeded its bound.
+Keep finite time and memory bounds; include measured host overhead when setting
+the full-window bound. A successful standalone bake does not prove the managed
+host's atlas configuration or readiness.
+When a complete offline multi-role atlas exceeds its memory bound during font configuration,
+check required glyphs in separate original-role processes and native interaction with
+the actual role used by those controls. ADS's nine roles and four CJK merges used
+763 MiB before baking; separate role checks stayed below 236 MiB. Retain the
+required text, original heights and merge order, and record every process bound.
+Separate glyph checks do not prove combined-atlas, whole-window or managed-host readiness.
 Historical mission/GBR reports do not prove current
 integration compatibility or grant permission to run legacy tooling.
 
@@ -545,6 +584,10 @@ prove regression stability, not initial design fidelity or GPU verification.
 Cover selected windows/popups, all locales, scale/size limits, accents and
 functional states. Open interactive popups through their native controls and
 check that they remain visible with usable bounds after the opening frame.
+Choose click positions after measured native layout bounds have settled. Child
+scrollbar changes can alter available width and move controls over several
+frames; Botology's Indonesian popup check exposed this. Require stable geometry
+with a finite frame limit that fails if layout does not settle.
 Auto-sized popups containing wrapped content may need an explicit width each
 frame; an appearing-only width can collapse later. Builds, test counts and
 self-generated baselines alone do not establish completion. Deliver as
