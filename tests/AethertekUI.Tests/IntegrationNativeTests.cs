@@ -6,6 +6,54 @@ namespace AethertekUI.Tests;
 
 public class IntegrationNativeTests
 {
+    [Theory] [InlineData(14f)] [InlineData(36f)]
+    public void ConsumerActionIconsKeepDistinctMeshesBoundsAndOpacity(float size)
+    {
+        using var context=new NativeTestContext();
+        MaterialIcon[] icons=[MaterialIcon.Save,MaterialIcon.Copy,MaterialIcon.Heart,MaterialIcon.List,MaterialIcon.Sword,MaterialIcon.Star,MaterialIcon.Folder,MaterialIcon.Egg,
+            MaterialIcon.Wrench,MaterialIcon.DoorExit,MaterialIcon.Cube,MaterialIcon.Chest,MaterialIcon.Cart,MaterialIcon.Chat,
+            MaterialIcon.Group,MaterialIcon.Warning,MaterialIcon.Plus,MaterialIcon.Pulse,MaterialIcon.Utensils,MaterialIcon.Crystal,
+            MaterialIcon.Calendar,MaterialIcon.Crown,MaterialIcon.Book,MaterialIcon.Sparkle,MaterialIcon.Bell,MaterialIcon.Terminal,MaterialIcon.Power,MaterialIcon.Target];
+        Assert.Equal(35,(int)MaterialIcon.Send);
+        for(var i=0;i<icons.Length;i++) Assert.Equal(36+i,(int)icons[i]);
+        icons=[..icons,MaterialIcon.Location];
+        var shapes=new List<Vector2[]>();
+        void Draw()=>Window(()=>
+        {
+            shapes.Clear();
+            var list=ImGui.GetWindowDrawList();
+            var flags=list.Flags;
+            var cursor=ImGui.GetCursorScreenPos();
+            var item=ImGui.GetID("retained-action");
+            foreach(var icon in icons)
+            {
+                var origin=new Vector2(40+(size+20)*shapes.Count,80);
+                var firstVertex=list.VtxBuffer.Size;var firstIndex=list.IdxBuffer.Size;
+                MaterialIcons.Draw(icon,origin,size,new(.3f,.5f,.8f,1),.4f);
+                Assert.True(list.IdxBuffer.Size>firstIndex);
+                var shape=new Vector2[list.VtxBuffer.Size-firstVertex];
+                var maximumAlpha=0u;
+                for(var i=0;i<shape.Length;i++)
+                {
+                    var vertex=list.VtxBuffer[firstVertex+i];
+                    var position=vertex.Pos-origin;
+                    Assert.True(float.IsFinite(position.X)&&float.IsFinite(position.Y));
+                    Assert.True(position.X>=0&&position.X<=size&&position.Y>=0&&position.Y<=size,
+                        $"{icon} vertex {i} escaped {size}px bounds: {position}");
+                    maximumAlpha=Math.Max(maximumAlpha,vertex.Col>>24);
+                    shape[i]=position/size;
+                }
+                Assert.InRange(maximumAlpha,101u,103u);
+                Assert.All(shapes,previous=>Assert.False(previous.SequenceEqual(shape)));
+                shapes.Add(shape);
+                Assert.Equal(cursor,ImGui.GetCursorScreenPos());
+                Assert.Equal(item,ImGui.GetID("retained-action"));
+                Assert.Equal(flags,list.Flags);
+            }
+        });
+        context.Frame(Draw);context.Frame(Draw);
+    }
+
     [Theory] [InlineData(false)] [InlineData(true)]
     public void SearchableComboFiltersCachedOptionsUsingNativeTextEntry(bool appearance)
     {

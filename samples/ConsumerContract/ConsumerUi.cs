@@ -23,6 +23,18 @@ public sealed class ConsumerUi : IDisposable
         finally { ImGui.PopFont(); } // Font lifetime/ownership remains with the consumer.
     }
 
+    // Existing header actions can sit between the keyed colour and language controls.
+    public static MaterialAppearanceChange DrawSeparatedAppearance(ref Vector3 accentDraft,ref string language,
+        MaterialOptions<string> languages,MaterialAppearanceLabels labels,Action drawExistingActions,Action<Vector3,string> save)
+    {
+        var accentChanged=MaterialAppearanceSelector.DrawAccent("appearance",ref accentDraft,labels);
+        ImGui.SameLine(); drawExistingActions();
+        ImGui.SameLine();
+        var languageChanged=MaterialAppearanceSelector.DrawLanguage("appearance",ref language,languages);
+        if(accentChanged || languageChanged)save(accentDraft,language);
+        return new(accentChanged,languageChanged);
+    }
+
     // A retained native language editor keeps its own IDs, options and consumer-owned persistence.
     public static MaterialAppearanceChange DrawRetainedAppearance(ImFontPtr borrowedFont,ref Vector3 accentDraft,
         MaterialAppearanceLabels labels,Func<bool> drawNativeLanguage,Action save)
@@ -38,6 +50,13 @@ public sealed class ConsumerUi : IDisposable
     }
 
     // Cache the returned exact theme outside Draw; the consumer updates it on its own preference changes.
+    public static bool DrawReadableNativeNumber(string originalId, ref int value)
+    {
+        var minimum=ImGui.CalcTextSize("00000").X+2*ImGui.GetStyle().FramePadding.X;
+        ImGui.SetNextItemWidth(MaterialLayout.FitNextItemWidth(0,minimum));
+        return ImGui.InputInt(originalId,ref value,0);
+    }
+
     public static MaterialTheme CreateMeasuredTheme(Vector3 seed)
         => new(new MaterialColorScheme(new OklchPaletteGenerator().Generate(seed))
         {
@@ -63,6 +82,24 @@ public sealed class ConsumerUi : IDisposable
         ImGui.SameLine(); MaterialButton.IconButton("shield-example",MaterialIcon.Shield);
         ImGui.SameLine(); MaterialButton.IconButton("monitor-example",MaterialIcon.Monitor);
         ImGui.SameLine(); MaterialButton.IconButton("location-example",MaterialIcon.Location);
+        ImGui.SameLine(); MaterialButton.IconButton("send-example",MaterialIcon.Send);
+        MaterialButton.IconButton("save-example",MaterialIcon.Save);
+        ImGui.SameLine(); MaterialButton.IconButton("copy-example",MaterialIcon.Copy);
+        ImGui.SameLine(); MaterialButton.IconButton("heart-example",MaterialIcon.Heart);
+        ImGui.SameLine(); MaterialButton.IconButton("list-example",MaterialIcon.List);
+        ImGui.SameLine(); MaterialButton.IconButton("sword-example",MaterialIcon.Sword);
+        ImGui.SameLine(); MaterialButton.IconButton("star-example",MaterialIcon.Star);
+        ImGui.SameLine(); MaterialButton.IconButton("folder-example",MaterialIcon.Folder);
+        ImGui.SameLine(); MaterialButton.IconButton("egg-example",MaterialIcon.Egg);
+        foreach(var icon in new[] { MaterialIcon.Wrench, MaterialIcon.DoorExit, MaterialIcon.Cube, MaterialIcon.Chest,
+            MaterialIcon.Cart, MaterialIcon.Chat, MaterialIcon.Group, MaterialIcon.Warning, MaterialIcon.Plus,
+            MaterialIcon.Pulse, MaterialIcon.Utensils, MaterialIcon.Crystal, MaterialIcon.Calendar, MaterialIcon.Crown,
+            MaterialIcon.Book, MaterialIcon.Sparkle, MaterialIcon.Bell, MaterialIcon.Terminal, MaterialIcon.Power, MaterialIcon.Target })
+        {
+            if(icon != MaterialIcon.Wrench && ImGui.GetItemRectMax().X + ImGui.GetStyle().ItemSpacing.X + 40 * MaterialTheme.Metrics.Scale
+                <= ImGui.GetWindowPos().X + ImGui.GetWindowContentRegionMax().X) ImGui.SameLine();
+            MaterialButton.IconButton($"consumer-art-{icon}",icon);
+        }
         var p=ImGui.GetCursorScreenPos();var s=MaterialTheme.Metrics.Scale;
         MaterialCanvas.Surface(p,p+new Vector2(280,36)*s,appearance.Fill,MaterialTheme.Current.Colors.Background,appearance.CornerRadius*s);
         ImGui.Dummy(new Vector2(280,36)*s);

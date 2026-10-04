@@ -42,6 +42,8 @@ For editable tables use `MaterialTable.PushControls()` once around the table. It
 
 Input widths fit the available region, including positive requested widths. Negative width fills the region; zero uses the component's natural width. Positive sizes are logical units, scaled once. Measurement results such as `MaterialActionTile.Measure` and native ImGui coordinates are pixels. Explicit positive button dimensions retain caller sizing.
 
+Natural and fill-width buttons preserve their measured single-line labels and move off an exhausted row before sizing. Native consumer wrappers can call `MaterialLayout.FitNextItemWidth(requestedPixels, minimumPixels)` with a measured readable minimum before `SetNextItemWidth` or `Button`. Both arguments and the result are pixels. This opt-in helper preserves that minimum even when the pane is narrower; the consumer then supplies horizontal scrolling or a wider pane. It does not change native IDs or configuration.
+
 Dropdown field width and popup width are independent:
 
 ```csharp

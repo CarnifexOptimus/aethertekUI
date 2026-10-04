@@ -3,35 +3,245 @@ using Dalamud.Bindings.ImGui;
 
 namespace AethertekUI;
 
-public enum MaterialIcon { None, Search, Close, Settings, Check, Play, Pause, Stop, ArrowRight, Return, Edit, Delete, More, ChevronDown, Home, Grid, Table, Sliders, Info, Document, Database, Refresh, Chart, ExternalLink, Download, Palette, Globe, Map, Clock, Link, Calculator, Person, Shield, Monitor, Location }
+public enum MaterialIcon { None, Search, Close, Settings, Check, Play, Pause, Stop, ArrowRight, Return, Edit, Delete, More, ChevronDown, Home, Grid, Table, Sliders, Info, Document, Database, Refresh, Chart, ExternalLink, Download, Palette, Globe, Map, Clock, Link, Calculator, Person, Shield, Monitor, Location, Send, Save, Copy, Heart, List, Sword, Star, Folder, Egg, Wrench, DoorExit, Cube, Chest, Cart, Chat, Group, Warning, Plus, Pulse, Utensils, Crystal, Calendar, Crown, Book, Sparkle, Bell, Terminal, Power, Target }
 
 /// <summary>Small vector icons; no font or texture dependency.</summary>
 public static class MaterialIcons
 {
     public static void Draw(MaterialIcon icon, Vector2 origin, float size, Vector4 color, float? alpha = null)
+        => Draw(icon, ImGui.GetWindowDrawList(), origin, size, color, alpha);
+
+    /// <summary>Draw into a borrowed list while a native popup owns the current window.</summary>
+    public static void Draw(MaterialIcon icon, ImDrawListPtr drawList, Vector2 origin, float size, Vector4 color, float? alpha = null)
     {
-        var dl=ImGui.GetWindowDrawList();
+        var dl=drawList;
         var ink=MaterialDraw.Color(color,alpha);
         var stroke=Math.Max(1,size/10);
         Vector2 P(float x,float y) => origin+new Vector2(x,y)*size;
         void L(float x,float y,float a,float b) => dl.AddLine(P(x,y),P(a,b),ink,stroke);
         switch(icon)
         {
+            case MaterialIcon.Wrench:
+                dl.PathLineTo(P(.16f,.74f));dl.PathLineTo(P(.5f,.4f));dl.PathLineTo(P(.49f,.23f));
+                dl.PathLineTo(P(.62f,.1f));dl.PathLineTo(P(.7f,.1f));dl.PathLineTo(P(.64f,.27f));
+                dl.PathLineTo(P(.75f,.37f));dl.PathLineTo(P(.91f,.3f));dl.PathLineTo(P(.91f,.39f));
+                dl.PathLineTo(P(.77f,.51f));dl.PathLineTo(P(.6f,.5f));dl.PathLineTo(P(.26f,.84f));
+                dl.PathStroke(ink,ImDrawFlags.Closed,stroke);break;
+            case MaterialIcon.DoorExit:
+                dl.AddRect(P(.14f,.14f),P(.52f,.87f),ink,0,ImDrawFlags.None,stroke);
+                dl.PathLineTo(P(.16f,.15f));dl.PathLineTo(P(.42f,.24f));dl.PathLineTo(P(.42f,.85f));
+                dl.PathLineTo(P(.16f,.78f));dl.PathFillConvex(ink);
+                L(.57f,.51f,.9f,.51f);L(.77f,.38f,.9f,.51f);L(.77f,.64f,.9f,.51f);break;
+            case MaterialIcon.Cube:
+                dl.PathLineTo(P(.5f,.1f));dl.PathLineTo(P(.88f,.3f));dl.PathLineTo(P(.88f,.73f));
+                dl.PathLineTo(P(.5f,.84f));dl.PathLineTo(P(.12f,.73f));dl.PathLineTo(P(.12f,.3f));
+                dl.PathStroke(ink,ImDrawFlags.Closed,stroke);
+                L(.12f,.3f,.5f,.5f);L(.5f,.5f,.88f,.3f);L(.5f,.5f,.5f,.84f);
+                dl.AddQuadFilled(P(.5f,.22f),P(.64f,.3f),P(.5f,.38f),P(.36f,.3f),ink);break;
+            case MaterialIcon.Chest:
+                dl.AddRect(P(.13f,.16f),P(.87f,.85f),ink,size*.09f,ImDrawFlags.None,stroke);
+                L(.13f,.46f,.87f,.46f);L(.29f,.18f,.29f,.44f);L(.71f,.18f,.71f,.44f);
+                dl.AddRectFilled(P(.42f,.39f),P(.58f,.6f),ink,size*.025f);break;
+            case MaterialIcon.Cart:
+                L(.1f,.16f,.23f,.16f);L(.23f,.16f,.36f,.71f);L(.36f,.71f,.8f,.71f);
+                dl.PathLineTo(P(.28f,.3f));dl.PathLineTo(P(.89f,.3f));dl.PathLineTo(P(.8f,.58f));
+                dl.PathLineTo(P(.34f,.58f));dl.PathFillConvex(ink);
+                dl.AddCircleFilled(P(.41f,.85f),size*.06f,ink,16);dl.AddCircleFilled(P(.75f,.85f),size*.06f,ink,16);break;
+            case MaterialIcon.Chat:
+                dl.AddRect(P(.35f,.34f),P(.91f,.77f),ink,size*.04f,ImDrawFlags.None,stroke);
+                L(.76f,.77f,.84f,.89f);L(.84f,.89f,.84f,.77f);
+                dl.AddRectFilled(P(.09f,.12f),P(.72f,.57f),ink,size*.055f);
+                dl.AddTriangleFilled(P(.2f,.54f),P(.31f,.54f),P(.2f,.69f),ink);break;
+            case MaterialIcon.Group:
+                dl.AddCircleFilled(P(.35f,.29f),size*.12f,ink,24);dl.AddCircleFilled(P(.68f,.31f),size*.105f,ink,24);
+                dl.AddRectFilled(P(.1f,.52f),P(.59f,.82f),ink,size*.1f,ImDrawFlags.RoundCornersTop);
+                dl.AddRectFilled(P(.63f,.54f),P(.9f,.82f),ink,size*.09f,ImDrawFlags.RoundCornersTop);break;
+            case MaterialIcon.Warning:
+            {
+                // Triangulate the outline so the acute tip has no stroke-miter overshoot.
+                Vector2[] outer=[P(.5f,.12f),P(.88f,.88f),P(.12f,.88f)];
+                Vector2[] inner=[P(.5f,.31f),P(.7f,.75f),P(.3f,.75f)];
+                var flags=dl.Flags;dl.Flags &= ~ImDrawListFlags.AntiAliasedFill;
+                try
+                {
+                    for(var i=0;i<3;i++)
+                    {
+                        var next=(i+1)%3;
+                        dl.AddTriangleFilled(outer[i],outer[next],inner[next],ink);
+                        dl.AddTriangleFilled(outer[i],inner[next],inner[i],ink);
+                    }
+                }
+                finally { dl.Flags=flags; }
+                L(.5f,.42f,.5f,.58f);dl.AddCircleFilled(P(.5f,.69f),size*.03f,ink,12);break;
+            }
+            case MaterialIcon.Plus:
+                dl.AddRectFilled(P(.43f,.12f),P(.57f,.88f),ink);dl.AddRectFilled(P(.12f,.43f),P(.88f,.57f),ink);break;
+            case MaterialIcon.Pulse:
+                L(.08f,.52f,.3f,.52f);L(.3f,.52f,.41f,.13f);L(.41f,.13f,.55f,.87f);
+                L(.55f,.87f,.67f,.42f);L(.67f,.42f,.75f,.52f);L(.75f,.52f,.92f,.52f);break;
+            case MaterialIcon.Utensils:
+                L(.19f,.12f,.19f,.4f);L(.3f,.12f,.3f,.88f);L(.41f,.12f,.41f,.4f);
+                dl.PathLineTo(P(.19f,.4f));dl.PathLineTo(P(.3f,.49f));dl.PathLineTo(P(.41f,.4f));dl.PathStroke(ink,ImDrawFlags.None,stroke);
+                dl.PathLineTo(P(.77f,.18f));dl.PathLineTo(P(.62f,.37f));dl.PathLineTo(P(.62f,.57f));
+                dl.PathLineTo(P(.77f,.57f));dl.PathFillConvex(ink);L(.77f,.18f,.77f,.88f);break;
+            case MaterialIcon.Crystal:
+                dl.PathLineTo(P(.48f,.16f));dl.PathLineTo(P(.52f,.16f));dl.PathLineTo(P(.74f,.34f));dl.PathLineTo(P(.7f,.68f));
+                dl.PathLineTo(P(.52f,.84f));dl.PathLineTo(P(.48f,.84f));dl.PathLineTo(P(.3f,.68f));dl.PathLineTo(P(.26f,.34f));
+                dl.PathStroke(ink,ImDrawFlags.Closed,stroke);
+                L(.5f,.16f,.5f,.84f);L(.26f,.34f,.5f,.44f);L(.5f,.44f,.74f,.34f);
+                L(.3f,.68f,.5f,.61f);L(.5f,.61f,.7f,.68f);break;
+            case MaterialIcon.Calendar:
+                dl.AddRect(P(.12f,.23f),P(.88f,.87f),ink,size*.04f,ImDrawFlags.None,stroke);
+                L(.12f,.4f,.88f,.4f);L(.3f,.1f,.3f,.31f);L(.7f,.1f,.7f,.31f);
+                for(var row=0;row<2;row++)for(var column=0;column<3;column++)
+                    dl.AddRectFilled(P(.26f+column*.2f,.51f+row*.19f),P(.32f+column*.2f,.57f+row*.19f),ink);
+                break;
+            case MaterialIcon.Crown:
+                L(.12f,.29f,.32f,.48f);L(.32f,.48f,.5f,.15f);L(.5f,.15f,.68f,.48f);
+                L(.68f,.48f,.88f,.29f);L(.88f,.29f,.77f,.75f);L(.77f,.75f,.23f,.75f);L(.23f,.75f,.12f,.29f);
+                L(.23f,.86f,.77f,.86f);dl.AddCircleFilled(P(.5f,.13f),size*.045f,ink,12);
+                dl.AddCircleFilled(P(.11f,.26f),size*.045f,ink,12);dl.AddCircleFilled(P(.89f,.26f),size*.045f,ink,12);break;
+            case MaterialIcon.Book:
+                dl.PathLineTo(P(.14f,.2f));dl.PathLineTo(P(.33f,.2f));dl.PathLineTo(P(.5f,.3f));
+                dl.PathLineTo(P(.67f,.2f));dl.PathLineTo(P(.86f,.2f));dl.PathLineTo(P(.86f,.83f));
+                dl.PathLineTo(P(.67f,.83f));dl.PathLineTo(P(.5f,.87f));dl.PathLineTo(P(.33f,.83f));
+                dl.PathLineTo(P(.14f,.83f));dl.PathStroke(ink,ImDrawFlags.Closed,stroke);
+                L(.5f,.3f,.5f,.87f);L(.23f,.35f,.23f,.68f);L(.77f,.35f,.77f,.68f);break;
+            case MaterialIcon.Sparkle:
+                void Spark(float x,float y,float radius)
+                {
+                    dl.AddQuadFilled(P(x,y-radius),P(x+radius*.32f,y-radius*.32f),P(x+radius,y),P(x,y),ink);
+                    dl.AddQuadFilled(P(x,y),P(x+radius,y),P(x+radius*.32f,y+radius*.32f),P(x,y+radius),ink);
+                    dl.AddQuadFilled(P(x-radius,y),P(x-radius*.32f,y-radius*.32f),P(x,y-radius),P(x,y),ink);
+                    dl.AddQuadFilled(P(x,y),P(x,y+radius),P(x-radius*.32f,y+radius*.32f),P(x-radius,y),ink);
+                }
+                var sparkleFlags=dl.Flags;dl.Flags &= ~ImDrawListFlags.AntiAliasedFill;
+                try { Spark(.38f,.52f,.3f);Spark(.78f,.23f,.12f);Spark(.78f,.81f,.1f); }
+                finally { dl.Flags=sparkleFlags; }break;
+            case MaterialIcon.Bell:
+                dl.PathLineTo(P(.13f,.76f));dl.PathLineTo(P(.25f,.64f));dl.PathLineTo(P(.25f,.37f));
+                dl.PathBezierCubicCurveTo(P(.25f,.03f),P(.75f,.03f),P(.75f,.37f));
+                dl.PathLineTo(P(.75f,.64f));dl.PathLineTo(P(.87f,.76f));
+                dl.PathStroke(ink,ImDrawFlags.None,stroke);L(.13f,.76f,.87f,.76f);
+                dl.AddCircleFilled(P(.5f,.88f),size*.065f,ink,16);break;
+            case MaterialIcon.Terminal:
+                L(.15f,.23f,.42f,.5f);L(.42f,.5f,.15f,.77f);L(.54f,.78f,.88f,.78f);break;
+            case MaterialIcon.Power:
+                dl.PathArcTo(P(.5f,.55f),size*.32f,-MathF.PI*.5f+.6f,MathF.PI*1.5f-.6f,32);
+                dl.PathStroke(ink,ImDrawFlags.None,stroke);L(.5f,.09f,.5f,.48f);break;
+            case MaterialIcon.Target:
+                dl.AddCircle(P(.5f,.5f),size*.28f,ink,32,stroke);
+                L(.5f,.06f,.5f,.3f);L(.5f,.7f,.5f,.94f);
+                L(.06f,.5f,.3f,.5f);L(.7f,.5f,.94f,.5f);
+                dl.AddCircleFilled(P(.5f,.5f),size*.055f,ink,16);break;
+            case MaterialIcon.Folder:
+                dl.PathLineTo(P(.1f,.22f));dl.PathLineTo(P(.4f,.22f));dl.PathLineTo(P(.5f,.32f));
+                dl.PathLineTo(P(.9f,.32f));dl.PathLineTo(P(.9f,.82f));dl.PathLineTo(P(.1f,.82f));
+                dl.PathStroke(ink,ImDrawFlags.Closed,stroke);L(.1f,.42f,.9f,.42f);break;
+            case MaterialIcon.Egg:
+                for(var i=0;i<48;i++)
+                {
+                    var angle=i*MathF.Tau/48;var y=MathF.Sin(angle);
+                    dl.PathLineTo(P(.5f+MathF.Cos(angle)*(.27f+.065f*y),.5f+.4f*y));
+                }
+                dl.PathFillConvex(ink);break;
+            case MaterialIcon.Sword:
+            {
+                void Blade(bool mirrored)
+                {
+                    Vector2 S(float x,float y)=>P(mirrored?1-x:x,y);
+                    dl.PathLineTo(S(.42f,.5f));dl.PathLineTo(S(.77f,.15f));dl.PathLineTo(S(.9f,.1f));
+                    dl.PathLineTo(S(.85f,.23f));dl.PathLineTo(S(.5f,.58f));dl.PathFillConvex(ink);
+                    dl.AddLine(S(.3f,.43f),S(.6f,.73f),ink,stroke);
+                    dl.AddLine(S(.23f,.81f),S(.44f,.6f),ink,stroke);
+                    dl.AddCircleFilled(S(.2f,.84f),size*.06f,ink,12);
+                }
+                Blade(false);Blade(true);break;
+            }
+            case MaterialIcon.Star:
+            {
+                // The binding lacks concave fills. Avoid antialias fringes on the fan's internal edges.
+                var flags=dl.Flags;dl.Flags &= ~ImDrawListFlags.AntiAliasedFill;
+                try
+                {
+                    for(var i=0;i<10;i++)
+                    {
+                        var angle=-MathF.PI*.5f+i*MathF.Tau/10;
+                        var next=-MathF.PI*.5f+(i+1)*MathF.Tau/10;
+                        var radius=i%2==0?.4f:.17f;var nextRadius=i%2==0?.17f:.4f;
+                        dl.AddTriangleFilled(P(.5f,.5f),P(.5f+MathF.Cos(angle)*radius,.5f+MathF.Sin(angle)*radius),
+                            P(.5f+MathF.Cos(next)*nextRadius,.5f+MathF.Sin(next)*nextRadius),ink);
+                    }
+                }
+                finally { dl.Flags=flags; }
+                break;
+            }
+            case MaterialIcon.Save:
+                dl.PathLineTo(P(.14f,.12f));dl.PathLineTo(P(.72f,.12f));dl.PathLineTo(P(.87f,.27f));
+                dl.PathLineTo(P(.87f,.88f));dl.PathLineTo(P(.14f,.88f));
+                dl.PathStroke(ink,ImDrawFlags.Closed,stroke);
+                dl.AddRect(P(.29f,.12f),P(.66f,.4f),ink,0,ImDrawFlags.None,stroke);
+                dl.AddRect(P(.29f,.57f),P(.72f,.88f),ink,0,ImDrawFlags.None,stroke);break;
+            case MaterialIcon.Copy:
+                L(.22f,.69f,.12f,.69f);L(.12f,.69f,.12f,.12f);L(.12f,.12f,.68f,.12f);L(.68f,.12f,.68f,.23f);
+                dl.AddRect(P(.32f,.32f),P(.88f,.88f),ink,size*.04f,ImDrawFlags.None,stroke);break;
+            case MaterialIcon.Heart:
+            {
+                var center=P(.5f,.55f);var from=P(.5f,.31f);
+                // Keep internal fan edges opaque, as for the concave Star mesh.
+                var flags=dl.Flags;dl.Flags &= ~ImDrawListFlags.AntiAliasedFill;
+                void Curve(Vector2 a,Vector2 b,Vector2 end)
+                {
+                    var start=from;
+                    for(var i=1;i<=12;i++)
+                    {
+                        var t=i/12f;var u=1-t;
+                        var point=u*u*u*start+3*u*u*t*a+3*u*t*t*b+t*t*t*end;
+                        dl.AddTriangleFilled(center,point,from,ink);from=point;
+                    }
+                }
+                try
+                {
+                    Curve(P(.32f,.1f),P(.1f,.14f),P(.12f,.38f));
+                    Curve(P(.12f,.59f),P(.34f,.75f),P(.5f,.86f));
+                    Curve(P(.66f,.75f),P(.88f,.59f),P(.88f,.38f));
+                    Curve(P(.9f,.14f),P(.68f,.1f),P(.5f,.31f));
+                }
+                finally { dl.Flags=flags; }
+                break;
+            }
+            case MaterialIcon.List:
+                for(var i=0;i<3;i++)
+                {
+                    var y=.22f+i*.28f;
+                    dl.AddRectFilled(P(.13f,y-.045f),P(.23f,y+.045f),ink);
+                    L(.35f,y,.87f,y);
+                }
+                break;
+            case MaterialIcon.Send:
+                L(.12f,.13f,.92f,.5f); L(.92f,.5f,.12f,.87f);
+                L(.12f,.87f,.28f,.5f); L(.28f,.5f,.12f,.13f);
+                L(.28f,.5f,.92f,.5f); break;
             case MaterialIcon.Location:
             {
                 // Filled pin triangulated around its transparent circular cutout.
                 const int segments=48;
                 var center=P(.5f,.33f);
-                for(var i=0;i<segments;i++)
+                var flags=dl.Flags;dl.Flags &= ~ImDrawListFlags.AntiAliasedFill;
+                try
                 {
-                    var a=i*MathF.Tau/segments;var b=(i+1)*MathF.Tau/segments;
-                    var u=new Vector2(MathF.Cos(a),MathF.Sin(a));var v=new Vector2(MathF.Cos(b),MathF.Sin(b));
-                    var r=.3f+.31f*MathF.Pow(Math.Max(0,u.Y),6);var s=.3f+.31f*MathF.Pow(Math.Max(0,v.Y),6);
-                    var outerA=center+u*r*size;var outerB=center+v*s*size;
-                    var innerA=center+u*.11f*size;var innerB=center+v*.11f*size;
-                    dl.AddTriangleFilled(outerA,outerB,innerB,ink);
-                    dl.AddTriangleFilled(outerA,innerB,innerA,ink);
+                    for(var i=0;i<segments;i++)
+                    {
+                        var a=i*MathF.Tau/segments;var b=(i+1)*MathF.Tau/segments;
+                        var u=new Vector2(MathF.Cos(a),MathF.Sin(a));var v=new Vector2(MathF.Cos(b),MathF.Sin(b));
+                        var r=.3f+.31f*MathF.Pow(Math.Max(0,u.Y),6);var s=.3f+.31f*MathF.Pow(Math.Max(0,v.Y),6);
+                        var outerA=center+u*r*size;var outerB=center+v*s*size;
+                        var innerA=center+u*.11f*size;var innerB=center+v*.11f*size;
+                        dl.AddTriangleFilled(outerA,outerB,innerB,ink);
+                        dl.AddTriangleFilled(outerA,innerB,innerA,ink);
+                    }
                 }
+                finally { dl.Flags=flags; }
                 break;
             }
             case MaterialIcon.Monitor:

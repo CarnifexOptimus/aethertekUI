@@ -48,6 +48,45 @@ public class AdaptiveSizingTests
     }
 
     [Fact]
+    public void ReadableNativeFieldMovesOffExhaustedRowAndKeepsItsMinimumInNarrowPanes()
+    {
+        using var host=new NativeTestContext();
+        var theme=new MaterialTheme(new Vector3(.3f,.7f,.4f));
+        var number=12345;
+        host.Frame(() =>
+        {
+            using var themeScope=MaterialTheme.Push(theme);
+            ImGui.SetNextWindowSize(new(380,300));
+            ImGui.Begin("Readable row",ImGuiWindowFlags.NoSavedSettings);
+            var rowWidth=ImGui.GetContentRegionAvail().X;
+            ImGui.Button("Long translated action",new(rowWidth-24,0));
+            var actionBottom=ImGui.GetItemRectMax().Y;
+            ImGui.SameLine();
+            var minimum=ImGui.CalcTextSize("00000").X+2*ImGui.GetStyle().FramePadding.X;
+            var width=MaterialLayout.FitNextItemWidth(1,minimum);
+            Assert.True(ImGui.GetCursorScreenPos().Y>=actionBottom);
+            ImGui.SetNextItemWidth(width);
+            ImGui.InputInt("##retained-field",ref number,0);
+            Assert.True(ImGui.GetItemRectSize().X>=minimum);
+            Assert.True(ImGui.GetItemRectMax().X<=ImGui.GetWindowPos().X+ImGui.GetWindowContentRegionMax().X+.1f);
+            ImGui.BeginChild("Narrow pane",new(40,80),false);
+            ImGui.SetNextItemWidth(MaterialLayout.FitNextItemWidth(-1,minimum));
+            ImGui.InputInt("##retained-narrow-field",ref number,0);
+            Assert.True(ImGui.GetItemRectSize().X>=minimum);
+            ImGui.EndChild();
+            ImGui.Button("Filler",new(rowWidth-24,0));
+            var fillerBottom=ImGui.GetItemRectMax().Y;
+            ImGui.SameLine();
+            const string action="Use the default settings for this profile";
+            MaterialButton.FilledButton("retained-action",action);
+            Assert.True(ImGui.GetItemRectMin().Y>=fillerBottom);
+            Assert.True(ImGui.GetItemRectSize().X>=ImGui.CalcTextSize(action).X+2*MaterialControls.Metrics.Padding.X);
+            Assert.Equal(12345,number);
+            ImGui.End();
+        });
+    }
+
+    [Fact]
     public void CompatibilityThemePreservesHostLayoutAndNestedScopesRestoreIt()
     {
         using var host = new NativeTestContext();
@@ -191,6 +230,37 @@ public class AdaptiveSizingTests
         }
         host.Frame(Draw); host.Frame(Draw); host.Click(glyph,Draw);
         Assert.True(clicked);
+    }
+
+    [Fact]
+    public void AppearanceLanguageRetainsReadableLabelAndNativeIdentityInNarrowPanes()
+    {
+        using var host=new NativeTestContext(900,600);
+        var options=new MaterialOptions<string>([new("long","long","A readable language choice")]);
+        var language="long";var accent=new Vector3(.2f,.7f,.8f);
+        foreach(var density in Enum.GetValues<MaterialDensity>()) foreach(var scale in new[]{1f,1.5f})
+        {
+            var theme=new MaterialTheme(accent,density);
+            void Draw()=>Window();
+            void Window()
+            {
+                using var frame=MaterialTheme.Push(theme,scale);
+                ImGui.SetNextWindowSize(new(100*scale,300));
+                ImGui.Begin("Language sizing",ImGuiWindowFlags.NoSavedSettings|ImGuiWindowFlags.HorizontalScrollbar);
+                using var controls=MaterialControls.Push();
+                var minimum=ImGui.CalcTextSize(options.LabelFor(language,"Select...")).X
+                    +MaterialControls.Metrics.Height+3*MaterialControls.Metrics.Gap+Math.Min(MaterialControls.Metrics.IconSize,MaterialControls.Metrics.Height);
+                ImGui.PushID("appearance");ImGui.PushID("language");var expected=ImGui.GetID("##combo");ImGui.PopID();ImGui.PopID();
+                var firstRow=ImGui.GetCursorScreenPos().Y;
+                MaterialAppearanceSelector.Draw("appearance",ref accent,ref language,options,new("Colour","Language","Teal","Blue","Pink","Custom"));
+                Assert.Equal(expected,ImGuiP.GetItemID());
+                Assert.True(ImGui.GetItemRectSize().X>=minimum);
+                Assert.Equal("long",language);
+                Assert.True(ImGui.GetItemRectMin().Y>=firstRow+28*scale+ImGui.GetStyle().ItemSpacing.Y-.1f);
+                ImGui.End();
+            }
+            host.Frame(Draw);host.Frame(Draw);
+        }
     }
 
     [Fact]

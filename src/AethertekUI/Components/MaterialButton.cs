@@ -46,6 +46,7 @@ public static class MaterialButton
         if(leading!=MaterialIcon.None) width+=m.IconSize+m.Gap;
         if(trailing!=MaterialIcon.None) width+=m.IconSize+m.Gap;
         var actual=MaterialDraw.Size(size,width,m.Height);
+        if(size.X<=0) actual.X=MaterialLayout.FitNextItemWidth(size.X,width);
         ImGui.PushID(id);
         var clicked=MaterialDraw.Hit("##button",actual,disabled,out var state);
         var bg=variant switch { MaterialButtonVariant.Filled=>c.Primary, MaterialButtonVariant.Tonal=>c.SecondaryContainer, _=>Vector4.Zero };

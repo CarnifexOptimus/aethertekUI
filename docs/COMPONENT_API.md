@@ -14,7 +14,7 @@ See [Adaptive sizing and host compatibility](ADAPTIVE_SIZING.md) for units, owne
 | MaterialControlAppearance | Consumer fill, foreground, border, and nonnegative logical corner radius |
 | MaterialAppearanceSelector.Draw | Swatch/presets/RGB picker plus keyed language dropdown; separate AccentChanged / LanguageChanged flags |
 | MaterialTable.PushControls() | Native table styling plus Dense editor sizing |
-| MaterialComboLayout | Independent popup width and visible row limit |
+| MaterialComboLayout | Independent popup width and visible row limit; optional native LeadingIcon in the field |
 | MaterialActionTile.Measure / MaterialTileSizing | Content-aware wrapping and grid measurement; explicit fixed-height option |
 
 All controls are immediate-mode; booleans return activation or value change. Consumers own state and lifecycle.
@@ -35,14 +35,40 @@ labels/native language options, semantic colours, configuration/save path and
 next-frame theme/font changes. Palette and Globe icons are appended to the
 existing enum. Map, Clock, Link, Calculator, Person, Shield, Monitor and Location are also appended for area,
 elapsed-time, dependency, calculation, identity, privacy, display and saved-position controls; all use native meshes without
-font or texture ownership.
+font or texture ownership. Send appends a paper-plane icon for message composers
+without changing existing enum values. Save, Copy, Heart and List append native
+meshes for saving, copying, support and ordered-list affordances; consumers keep
+the action, stable control ID and localized tooltip.
+Sword (crossed blades) and Star append native combat/action and rule-priority artwork, preserving
+all prior enum values. Their meshes need no font or texture resources.
+Folder and Egg append native workspace/preset and breeding artwork for ChokeAbo
+with the same ownership and stable-identity rules.
+Wrench, DoorExit, Cube, Chest, Cart, Chat, Group, Warning and Plus supply ADS's
+approved action/status artwork. Pulse, Utensils and Crystal supply LootGoblin's
+summaries and Alexandrite action. Calendar, Crown, Book, Sparkle, Bell and Terminal
+supply DAD's schedule, guide and command artwork. These append after Egg, preserving
+every earlier ordinal, and retain the same font-free drawing and identity rules.
+Power appends at ordinal 62 for FrenRider's account-wide enable action; consumers
+retain their existing callbacks, state and native control identity.
+Target appends at ordinal 63 for LootGoblin's Current Run crosshair; the existing
+Location pin and every preceding mesh and ordinal remain available.
 See the sizing showcase and independent consumer example.
 For an established native language control, use
 `MaterialAppearanceSelector.Draw(id, ref accent, labels, drawLanguage)`.
 The callback runs after the selector's ID scope is restored and returns whether
-the language changed. The consumer keeps its original native Combo label,
+the language changed. The standard selector preserves the measured selected-label,
+arrow and padding minimum at narrow widths; consumers reflow the whole header group.
+The consumer keeps its original native Combo label,
 option ordering/index IDs, localization and disabled state. Accent selection
 and change flags retain the same behavior.
+The standard language field contains its Globe mesh. When an approved header
+places existing actions between colour and language, call
+`DrawAccent(id, ref accent, labels)` and
+`DrawLanguage(id, ref language, options, languageWidth)` using the same ID.
+Both retain the combined selector's native identities and change semantics;
+the consumer still owns placement and saving. `MaterialComboLayout.LeadingIcon`
+uses the current control metrics, and `MaterialIcons.Draw(icon, drawList, ...)`
+borrows the field's draw list so its mesh stays in the field when a popup opens.
 Use MaterialTheme.Push(theme, ImGuiHelpers.GlobalScale) around your window draw. Pass stable IDs separately from visible labels. Scope IDs further with ImGui.PushID for repeated domain objects.
 Button variants share label, leading/trailing MaterialIcon, size and disabled support. Negative width fills available width; positive sizes are logical units; zero selects defaults.
 `MaterialButton.Draw(id, label, cornerRadius, ...)` and `MaterialStatus.Badge(label, cornerRadius, ...)` accept an explicit nonnegative logical radius, clamped to the rendered bounds. Existing overloads keep their pill shapes. Document, Database, Refresh, Chart, ExternalLink and Download extend the texture-free icon set without changing prior enum values.
@@ -137,6 +163,7 @@ Every style/child/tab/dialog scope is a ref struct. Do not copy, box, store or d
 | MaterialTheme.Push(...,applyMetrics:false) | Native colors only; preserves existing ImGui geometry styles |
 | MaterialOptions<T> / MaterialCombo.Draw | Cached keyed options, filtered on SetQuery/Replace; disabled options, native editing/selection |
 | MaterialInput | Integer, Number, Slider, Multiline; stable IDs, native flags, logical size, disabled and bounds |
+| MaterialLayout.FitNextItemWidth | Native pixel widths; moves an exhausted row and preserves the measured readable minimum. Negative fills; zero uses the minimum; consumer owns narrow-pane scrolling. |
 | MaterialOverride.Switch | Nullable bool with Inherit/On/Off |
 | MaterialFlags | Explicit ulong masks; preserves unrelated bits; Draw, IsSet and Set |
 | MaterialTree.Node / MaterialContextMenu.Begin | Native scopes; Visible gates contents; lexical disposal |

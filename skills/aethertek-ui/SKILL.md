@@ -62,6 +62,12 @@ Zero/negative sizing conventions vary by component; consult
 Retain native ImGui editing, focus, navigation, clipping, sorting and disabled
 behavior. Consumers configure input/navigation and route any controller events.
 
+Set an auto-sized window's required width before native Begin, using the
+consumer's PreDraw hook where available. Calling SetWindowSize from Draw can
+leave that frame's work rectangle narrow and feed a collapsed width back into
+the next frame, as FrenRider Mini demonstrated. Verify the actual window flags,
+reopening and density changes without supplying a fixed diagnostic size.
+
 ## Identity, localization and resources
 
 Use only `mcvaxius` or `dhoggpt` for user attribution. Never include the
@@ -90,6 +96,35 @@ At narrow widths, label the profile picker explicitly. Follow a different profil
 from selection through its editor and save path; check both account and character
 identity before exposing runtime-only actions. Inspect runtime/bridge callers
 before changing an active-account helper into an editing-account helper.
+
+Keep ordinary control and profile labels on one line. Measure translated text,
+icons, gaps and padding; move whole controls to another row instead of squeezing
+them into a letter-width cell. For native wrappers, use
+`MaterialLayout.FitNextItemWidth(requestedPixels, minimumPixels)` before sizing
+the widget. Its widths are already pixels; preserve a measured readable field
+minimum and provide horizontal scrolling or a wider pane when that minimum
+exceeds the pane. Capture pending field widths before drawing a separate label,
+which consumes native NextItemWidth. Retain existing helper IDs when changing
+wrapping; do not derive a new control identity from the resized label.
+Numeric fields must budget the readable editor plus both retained native step
+buttons and their gaps. Round native field minima upward: ImGui's item-width
+calculation floors fractional pixels. Verify presses across the original and
+wrapped widgets, including the subcontrol IDs and release, rather than checking
+only an idle numeric group's ID. ImGui may report that group's idle ID as zero.
+Inspect the installed binding's argument defaults before wrapping: its current
+`InputInt` defaults to zero steps. Preserve that behavior and reserve step-button
+space only when the caller actually enables steps; interaction fixtures must
+pass explicit steps when testing those buttons.
+Natural and fill-width library buttons now reflow while preserving their full label;
+positive explicit sizes retain caller control. Keep the current assembly version
+visible in main title bars while preserving native window IDs. Distinguish the
+runtime character from the selected settings profile.
+Paint a retained title outside the native body's clip rectangle; intersecting that
+clip can make the entire version invisible. Reserve native close/collapse controls
+and check actual title glyph vertices or a render, as ChokeAbo established.
+The standard appearance selector measures the selected language plus its arrow
+and padding and retains that minimum in narrow panes. Reflow the entire selector
+group in consumer headers; native callback overloads still own their field sizing.
 
 Measure translated labels using the active host font. Budget pane, column,
 button and popup widths for longer translations; use wrapping tiles where
@@ -226,12 +261,24 @@ custom RGB picker. Use these stable codes and native dropdown names:
 | `ko` | 한국어 |
 | `zh-Hans` | 简体中文 |
 
+When additional locales are requested, the current shortlist is Vietnamese
+(`vi`), wider Brazilian Portuguese (`pt-BR`), Indonesian (`id`), Polish (`pl`) and
+Turkish (`tr`). Verify their accents in the existing Latin font route before
+rollout; retain all existing locale choices and persisted ordinals. Hindi (`hi`)
+requires demonstrated Devanagari shaping and cluster layout in native ImGui,
+beyond glyph presence. A shortlist does not establish supported translations
+or authorize a new shaping dependency.
+
 Translate all consumer-authored windows, headings, controls, tooltips and popup
 text. C# consumers use keyed resources embedded in the assembly and native .NET
 resource loading. Selected C++ or browser companions use their native resource
 mechanisms and controls; do not introduce a managed dependency just for these
 features. Cache the selected resource set. Keep key coverage equal across all
 nine languages; English fallback must not conceal unfinished translations.
+Check every localized value for nonempty text wherever English is nonempty.
+.NET compiles empty resource values, so matching keys and null-only lookup
+guards can still leave visible controls blank. Reject empty translations in
+the existing consumer resource check and inspect actual localized output.
 Compare the exact key sets, including existing non-English-only keys, rather
 than counts alone. Resolve every advertised locale's embedded resource set;
 a selector entry does not prove that selecting or restoring that locale works.
@@ -246,6 +293,29 @@ selected locale without changing process-wide culture.
 Translate authored interpolation arguments explicitly. Keep names, IDs and
 already formatted service arguments raw, including leading zeroes; apply locale
 number formatting to typed UI values instead of reparsing arbitrary text.
+Check every reached enum member, including failure/readiness values, in the
+resources; localizing an interpolation does not translate a missing Busy label.
+Prefer templates with authored leading text to catch-all leading placeholders.
+DDuck's distance template otherwise consumed an entire member/HP diagnostic;
+verify the nested displayed string and its separate empty form through the
+compiled helper, with raw abbreviations and padded numbers retained.
+Keep punctuation-only envelopes such as `{0} {1}: {2}` out of global
+service-template matching. DAD's leveling compiler uses that shape around raw
+slot/character identities; localize it through the source-specific display
+formatter. Parse joined compiler details only within that context and constrain
+slot captures to the producer's slot grammar so a later slot cannot swallow an
+earlier summary. Keep exception details raw even inside an authored wrapper.
+Trace composed statuses through execution/proxy getters as well as direct UI
+calls. ADS verified an ownership wrapper around a Higher/Lower service summary
+and retry/blocked detail. Check displayed row outcomes alongside templates.
+Generated literal/wildcard message templates can use `RegexOptions.NonBacktracking`
+to avoid timeouts from ambiguous adjacent captures, as DDuck's compiled status
+checks verified. Check full, empty, nested, padded and LF/CRLF captures after the
+change. Keep source-specific lookaround parsers separate: DAD's leveling patterns
+contain lookaheads and cannot use that option.
+When hiding a native field label to retain its original ID, remove that label's
+layout contribution as well as its ink. DhogGPT's measured field/card checks
+caught invisible label widths expanding content bounds and scroll ranges.
 Trace displayed service statuses through their getters and helper-returned
 messages; resource parity alone does not prove that those statuses are covered.
 When matching existing service-message templates, preserve empty arguments and
@@ -340,6 +410,19 @@ Botology's first adoption establishes these practices:
   use logical units; the original overloads retain pill shapes and native IDs.
   Generic Document, Database, Refresh, Chart, ExternalLink and Download icons
   use native meshes without font or texture ownership.
+  ChocoboColourized's save, copy, support and feeding-order affordances also use
+  `MaterialIcon.Save`, `Copy`, `Heart` and `List`. Reuse those native meshes in
+  retained controls while preserving their IDs, actions and localized tooltips.
+  HealBot's combat actions and priority rules use appended `Sword` (crossed blades) and `Star`
+  meshes under the same ownership and identity rules.
+  ChokeAbo's preset workspace and breeding affordances use appended `Folder` and
+  `Egg` meshes; preserve their native controls and localized tooltips.
+  ADS uses appended Wrench/DoorExit/Cube/Chest/Cart/Chat/Group/Warning/Plus;
+  LootGoblin uses Pulse/Utensils/Crystal; DAD uses Calendar/Crown/Book/Sparkle/Bell/Terminal.
+  FrenRider's account-wide enable action uses the appended Power mesh.
+  LootGoblin's Current Run uses Target, the appended crosshair; Location stays a pin.
+  Append required artwork without changing existing ordinals. Keep icon drawing
+  independent of font and texture resources, with actions and identities in consumers.
 - `MaterialControlAppearance` supplies fill, foreground, border and logical
   radius to button, badge, search and combo overloads. Badges accept logical
   dimensions; switches accept an explicit logical track size. Rounded gradient
@@ -420,7 +503,12 @@ runs existing library tests and checks the
 independent consumer. Inspect `artifacts/previews/page-0.png` through
 `page-7.png` as diagnostic CPU renders of actual native ImGui meshes. They use
 a default font and fixed background; GPU compositing and game/CJK fonts require
-later host acceptance. Historical mission/GBR reports do not prove current
+later host acceptance. Offline hosts that merge CJK may produce multiple native
+atlas textures. Refresh and assign each texture its own ID, then resolve the
+draw command's actual texture when rendering; sampling texture zero for every
+command corrupts otherwise valid glyph UVs. HealBot's Japanese helper diagnostic
+verified this distinction. It does not establish managed-host readiness.
+Historical mission/GBR reports do not prove current
 integration compatibility or grant permission to run legacy tooling.
 
 Keep three kinds of evidence separate: functional native interaction checks,

@@ -12,15 +12,41 @@ public static class MaterialAppearanceSelector
     public static MaterialAppearanceChange Draw(string id, ref Vector3 accent, ref string language,
         MaterialOptions<string> languages, MaterialAppearanceLabels labels, float languageWidth = 112)
     {
-        ImGui.PushID(id);
-        var accentChanged=DrawAccent(ref accent,labels);
-        var colors=MaterialTheme.Current.Colors;
-        DrawGlobe(labels.Language);
+        var accentChanged=DrawAccent(id,ref accent,labels);
         ImGui.SameLine();
-        var changed=MaterialCombo.Draw("language",languages,ref language,
-            new MaterialControlAppearance(colors.SurfaceContainerLowest,colors.OnSurface,colors.OutlineVariant),languageWidth,searchable:false);
-        ImGui.PopID();
+        var changed=DrawLanguage(id,ref language,languages,languageWidth);
         return new(accentChanged,changed);
+    }
+
+    /// <summary>Place the colour control separately while retaining the combined selector's native identity.</summary>
+    public static bool DrawAccent(string id,ref Vector3 accent,MaterialAppearanceLabels labels)
+    {
+        ImGui.PushID(id);
+        try { return DrawAccent(ref accent,labels); }
+        finally { ImGui.PopID(); }
+    }
+
+    /// <summary>Place the language field separately while retaining its native identity.</summary>
+    public static bool DrawLanguage(string id,ref string language,MaterialOptions<string> languages,float languageWidth=112)
+    {
+        ImGui.PushID(id);
+        try { return DrawLanguage(ref language,languages,languageWidth); }
+        finally { ImGui.PopID(); }
+    }
+
+    private static bool DrawLanguage(ref string language,MaterialOptions<string> languages,float languageWidth)
+    {
+        var colors=MaterialTheme.Current.Colors;
+        using var controls=MaterialControls.Push();
+        var scale=MaterialTheme.Metrics.Scale;
+        var iconSize=Math.Min(MaterialControls.Metrics.IconSize,MaterialControls.Metrics.Height);
+        var minimum=MathF.Ceiling(ImGui.CalcTextSize(languages.LabelFor(language,"Select...")).X
+            + MaterialControls.Metrics.Height + 3*MaterialControls.Metrics.Gap + iconSize);
+        var pixels=MaterialLayout.FitNextItemWidth(languageWidth<0?languageWidth:languageWidth*scale,minimum);
+        var changed=MaterialCombo.Draw("language",languages,ref language,
+            MaterialComboLayout.Default with { ConstrainFieldWidth=false,LeadingIcon=MaterialIcon.Globe },
+            new MaterialControlAppearance(colors.SurfaceContainerLowest,colors.OnSurface,colors.OutlineVariant),pixels/scale,searchable:false);
+        return changed;
     }
 
     /// <summary>Draw the consumer's existing native language widget in its original ID scope.</summary>

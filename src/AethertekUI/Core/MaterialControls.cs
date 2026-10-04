@@ -123,6 +123,22 @@ public static class MaterialControls
 
 public static class MaterialLayout
 {
+    /// <summary>Fit a native item's measured pixel width, moving an exhausted row before preserving its readable minimum.</summary>
+    /// <remarks>Negative fills the row; zero uses the minimum. A pane narrower than the minimum must scroll or grow.</remarks>
+    public static float FitNextItemWidth(float requestedPixels, float minimumPixels)
+    {
+        if (!float.IsFinite(requestedPixels) || !float.IsFinite(minimumPixels) || minimumPixels <= 0)
+            throw new ArgumentOutOfRangeException(nameof(minimumPixels));
+        var available = ImGui.GetContentRegionAvail().X;
+        if (available < minimumPixels && ImGui.GetCursorPosX() > ImGui.GetCursorStartPos().X + .5f)
+        {
+            ImGui.NewLine();
+            available = ImGui.GetContentRegionAvail().X;
+        }
+        var requested = requestedPixels < 0 ? available : requestedPixels == 0 ? minimumPixels : requestedPixels;
+        return Math.Max(minimumPixels, Math.Min(requested, Math.Max(1, available)));
+    }
+
     /// <summary>Resolve a logical width into pixels. Negative fills; zero uses natural width. No double scaling of measured text.</summary>
     public static float ResolveWidth(float requested, float naturalPixels, float availablePixels, float scale,
         bool constrain = true)

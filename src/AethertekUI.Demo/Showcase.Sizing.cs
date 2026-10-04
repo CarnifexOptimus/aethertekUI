@@ -59,6 +59,12 @@ internal sealed partial class Showcase
         MaterialActionTile.Draw("measured-action",MaterialIcon.Play,"Start a longer named action",
             "This status wraps and the tile grows to fit.",new Vector2(240,72));
         ImGui.TextWrapped("Popup width is independent of field width. No plugin-specific geometry is needed.");
+        MaterialStatus.SectionHeader("READABLE NATIVE ROWS");
+        ImGui.Button("A longer translated action");
+        ImGui.SameLine();
+        var editorMinimum=ImGui.CalcTextSize("00000").X+2*ImGui.GetStyle().FramePadding.X;
+        ImGui.SetNextItemWidth(MaterialLayout.FitNextItemWidth(0,editorMinimum));
+        ImGui.InputInt("##readable-native-number",ref sizingNumber,0);
         MaterialStatus.SectionHeader("COMPACT PLUGIN TOOLBAR");
         using(var controls=MaterialControls.Push(MaterialControlContext.Toolbar))
         {
@@ -95,8 +101,30 @@ internal sealed partial class Showcase
             ImGui.SameLine(); MaterialButton.IconButton("shield-example",MaterialIcon.Shield);
             ImGui.SameLine(); MaterialButton.IconButton("monitor-example",MaterialIcon.Monitor);
             ImGui.SameLine(); MaterialButton.IconButton("location-example",MaterialIcon.Location);
+            ImGui.SameLine(); MaterialButton.IconButton("send-example",MaterialIcon.Send);
+            MaterialButton.IconButton("save-example",MaterialIcon.Save);
+            ImGui.SameLine(); MaterialButton.IconButton("copy-example",MaterialIcon.Copy);
+            ImGui.SameLine(); MaterialButton.IconButton("heart-example",MaterialIcon.Heart);
+            ImGui.SameLine(); MaterialButton.IconButton("list-example",MaterialIcon.List);
+            ImGui.SameLine(); MaterialButton.IconButton("sword-example",MaterialIcon.Sword);
+            ImGui.SameLine(); MaterialButton.IconButton("star-example",MaterialIcon.Star);
+            ImGui.SameLine(); MaterialButton.IconButton("folder-example",MaterialIcon.Folder);
+            ImGui.SameLine(); MaterialButton.IconButton("egg-example",MaterialIcon.Egg);
+            foreach(var icon in new[] { MaterialIcon.Wrench, MaterialIcon.DoorExit, MaterialIcon.Cube, MaterialIcon.Chest,
+                MaterialIcon.Cart, MaterialIcon.Chat, MaterialIcon.Group, MaterialIcon.Warning, MaterialIcon.Plus,
+                MaterialIcon.Pulse, MaterialIcon.Utensils, MaterialIcon.Crystal, MaterialIcon.Calendar, MaterialIcon.Crown,
+                MaterialIcon.Book, MaterialIcon.Sparkle, MaterialIcon.Bell, MaterialIcon.Terminal, MaterialIcon.Power, MaterialIcon.Target })
+            {
+                if(icon != MaterialIcon.Wrench && ImGui.GetItemRectMax().X + ImGui.GetStyle().ItemSpacing.X + 40 * MaterialTheme.Metrics.Scale
+                    <= ImGui.GetWindowPos().X + ImGui.GetWindowContentRegionMax().X) ImGui.SameLine();
+                MaterialButton.IconButton($"consumer-art-{icon}",icon);
+            }
             MaterialAppearanceSelector.Draw("preferences",ref sizingAccent,ref sizingLanguage,sizingLanguages,
                 new("Color","Language","Teal","Blue","Pink","Custom RGB"));
+            MaterialAppearanceSelector.DrawAccent("separated-preferences",ref sizingAccent,
+                new("Color","Language","Teal","Blue","Pink","Custom RGB"));
+            ImGui.SameLine(); MaterialButton.Draw("between-preferences","Consumer action");
+            ImGui.SameLine(); MaterialAppearanceSelector.DrawLanguage("separated-preferences",ref sizingLanguage,sizingLanguages);
             MaterialAppearanceSelector.Draw("native-preferences",ref sizingAccent,
                 new("Color","Language","Teal","Blue","Pink","Custom RGB"),DrawNativeLanguage);
         }

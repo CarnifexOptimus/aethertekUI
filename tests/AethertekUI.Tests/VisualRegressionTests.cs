@@ -7,8 +7,8 @@ namespace AethertekUI.Tests;
 
 public unsafe class VisualRegressionTests
 {
-    [Fact]
-    public void AppearanceSelectorReportsAccentAndLanguageSeparately()
+    [Theory] [InlineData(false)] [InlineData(true)]
+    public void AppearanceSelectorReportsAccentAndLanguageSeparately(bool separated)
     {
         using var host=new NativeTestContext();
         ImGui.GetIO().ConfigFlags|=ImGuiConfigFlags.NavEnableKeyboard;
@@ -22,7 +22,17 @@ public unsafe class VisualRegressionTests
             ImGui.SetNextWindowPos(Vector2.Zero);ImGui.SetNextWindowSize(new(700,500));
             ImGui.Begin("Selectors",ImGuiWindowFlags.NoSavedSettings|ImGuiWindowFlags.NoTitleBar);
             var origin=ImGui.GetCursorScreenPos();
-            var changed=MaterialAppearanceSelector.Draw("appearance",ref accent,ref language,options,new("Color","Language","Teal","Blue","Pink","Custom RGB"));
+            var labels=new MaterialAppearanceLabels("Color","Language","Teal","Blue","Pink","Custom RGB");
+            MaterialAppearanceChange changed;
+            if(separated)
+            {
+                var accentChanged=MaterialAppearanceSelector.DrawAccent("appearance",ref accent,labels);
+                ImGui.SameLine(); MaterialButton.Draw("existing-action","Existing action");
+                ImGui.SameLine();
+                var languageChanged=MaterialAppearanceSelector.DrawLanguage("appearance",ref language,options);
+                changed=new(accentChanged,languageChanged);
+            }
+            else changed=MaterialAppearanceSelector.Draw("appearance",ref accent,ref language,options,labels);
             swatch=origin+new Vector2(14,14);combo=(ImGui.GetItemRectMin()+ImGui.GetItemRectMax())*.5f;
             if(changed.AccentChanged) accentChanges++;if(changed.LanguageChanged) languageChanges++;
             ImGui.End();

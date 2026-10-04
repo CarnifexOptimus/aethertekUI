@@ -8,6 +8,7 @@ public readonly record struct MaterialComboLayout(float PopupWidth = 0, int Visi
 {
     public MaterialComboLayout() : this(0,8,true) { }
     public static MaterialComboLayout Default => new(0,8,true);
+    public MaterialIcon? LeadingIcon { get; init; }
 }
 
 public static class MaterialCombo
@@ -24,6 +25,11 @@ public static class MaterialCombo
         float width = -1, bool searchable = true, bool disabled = false, string emptyLabel = "Select...",
         string searchHint = "Filter options...", string noOptionsLabel = "No matching options")
         => DrawCore(id,options,ref value,MaterialComboLayout.Default,width,searchable,disabled,emptyLabel,appearance,searchHint,noOptionsLabel);
+
+    public static bool Draw<T>(string id, MaterialOptions<T> options, ref T value, MaterialComboLayout layout,
+        MaterialControlAppearance appearance, float width = -1, bool searchable = true, bool disabled = false,
+        string emptyLabel = "Select...", string searchHint = "Filter options...", string noOptionsLabel = "No matching options")
+        => DrawCore(id,options,ref value,layout,width,searchable,disabled,emptyLabel,appearance,searchHint,noOptionsLabel);
 
     private static bool DrawCore<T>(string id, MaterialOptions<T> options, ref T value, MaterialComboLayout layout, float width,
         bool searchable, bool disabled, string emptyLabel, MaterialControlAppearance? appearance, string searchHint, string noOptionsLabel)
@@ -46,6 +52,8 @@ public static class MaterialCombo
         var changed = false;
         var origin=ImGui.GetCursorScreenPos();
         var dl=ImGui.GetWindowDrawList();
+        var customPreview=appearance.HasValue || layout.LeadingIcon.HasValue;
+        var previewForeground=appearance?.Foreground ?? ImGui.GetStyle().Colors[(int)ImGuiCol.Text];
         var style=new MaterialStyleScope();
         if(appearance is { } a)
         {
@@ -57,19 +65,30 @@ public static class MaterialCombo
             style.Style(ImGuiStyleVar.FrameRounding,a.Radius(scale));
             style.Style(ImGuiStyleVar.FrameBorderSize,MaterialTheme.Metrics.Border);
         }
+        else if (customPreview) style.Color(ImGuiCol.Text,Vector4.Zero);
         var opened=ImGui.BeginCombo("##combo", options.LabelFor(value, emptyLabel), ImGuiComboFlags.HeightLarge |
-            (appearance.HasValue ? ImGuiComboFlags.NoArrowButton : ImGuiComboFlags.None));
+            (customPreview ? ImGuiComboFlags.NoArrowButton : ImGuiComboFlags.None));
         style.Dispose();
-        if(appearance is { } field)
+        if(customPreview)
         {
             var height=MaterialControls.Metrics.Height;
             var gap=MaterialControls.Metrics.Gap;
-            dl.PushClipRect(origin+new Vector2(gap,0),origin+new Vector2(Math.Max(gap,fieldWidth-height),height),true);
-            dl.AddText(origin+new Vector2(gap,(height-ImGui.GetTextLineHeight())*.5f),MaterialDraw.Color(field.Foreground),options.LabelFor(value,emptyLabel));
+            var textX=gap;
+            if(layout.LeadingIcon is { } icon)
+            {
+                var iconSize=Math.Min(MaterialControls.Metrics.IconSize,height);
+                // BeginCombo can switch to the popup; artwork belongs to the retained field.
+                dl.PushClipRect(origin,origin+new Vector2(fieldWidth,height),true);
+                MaterialIcons.Draw(icon,dl,origin+new Vector2(gap,(height-iconSize)*.5f),iconSize,previewForeground);
+                dl.PopClipRect();
+                textX+=iconSize+gap;
+            }
+            dl.PushClipRect(origin+new Vector2(textX,0),origin+new Vector2(Math.Max(textX,fieldWidth-height),height),true);
+            dl.AddText(origin+new Vector2(textX,(height-ImGui.GetTextLineHeight())*.5f),MaterialDraw.Color(previewForeground),options.LabelFor(value,emptyLabel));
             dl.PopClipRect();
             // Draw into the original field's list even while the popup is current.
             var center=origin+new Vector2(fieldWidth-height*.5f,height*.5f);
-            var ink=MaterialDraw.Color(field.Foreground);
+            var ink=MaterialDraw.Color(previewForeground);
             dl.AddLine(center+new Vector2(-4*scale,-2*scale),center+new Vector2(0,2*scale),ink,scale);
             dl.AddLine(center+new Vector2(0,2*scale),center+new Vector2(4*scale,-2*scale),ink,scale);
         }
