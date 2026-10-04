@@ -123,8 +123,14 @@ Paint a retained title outside the native body's clip rectangle; intersecting th
 clip can make the entire version invisible. Reserve native close/collapse controls
 and check actual title glyph vertices or a render, as ChokeAbo established.
 The standard appearance selector measures the selected language plus its arrow
-and padding and retains that minimum in narrow panes. Reflow the entire selector
+and leading Globe mesh and padding, retaining that minimum in narrow panes.
+Reflow the entire selector
 group in consumer headers; native callback overloads still own their field sizing.
+When the approved header places existing actions between colour and language,
+use MaterialAppearanceSelector.DrawAccent and DrawLanguage with the same
+selector ID. They preserve the combined selector's accent and language IDs.
+MaterialComboLayout.LeadingIcon uses native meshes; retain the field's borrowed
+draw list while BeginCombo makes its popup current, so the icon stays in the field.
 
 Measure translated labels using the active host font. Budget pane, column,
 button and popup widths for longer translations; use wrapping tiles where
@@ -261,13 +267,23 @@ custom RGB picker. Use these stable codes and native dropdown names:
 | `ko` | 한국어 |
 | `zh-Hans` | 简体中文 |
 
-When additional locales are requested, the current shortlist is Vietnamese
-(`vi`), wider Brazilian Portuguese (`pt-BR`), Indonesian (`id`), Polish (`pl`) and
-Turkish (`tr`). Verify their accents in the existing Latin font route before
-rollout; retain all existing locale choices and persisted ordinals. Hindi (`hi`)
-requires demonstrated Devanagari shaping and cluster layout in native ImGui,
-beyond glyph presence. A shortlist does not establish supported translations
-or authorize a new shaping dependency.
+The approved cross-plugin expansion selects Vietnamese (`vi`, Tiếng Việt),
+Brazilian Portuguese (`pt-BR`, Português (Brasil)), Indonesian (`id`, Bahasa
+Indonesia), Polish (`pl`, Polski) and Turkish (`tr`, Türkçe). Add them to every
+selected surface using its existing resource/configuration route. Verify accents,
+all displayed authored messages, embedded catalogs, selection/persistence and
+translated layouts before advertising support. Retain every existing locale and
+persisted ordinal, including existing pt-BR/zh-Hant choices; do not duplicate an
+already supported locale. Apply equal nonempty key/placeholder coverage to all
+advertised languages, including these additions.
+Hindi (`hi`) rendering investigation is also selected, but support requires
+demonstrated Devanagari shaping and cluster layout in native ImGui beyond glyph
+presence. The current native diagnostic with Nirmala UI Regular (verified TTC
+face 0) has every sample glyph yet leaves conjuncts/viramas unjoined and pre-base
+vowels misplaced compared with Windows-shaped text. Glyph merges alone do not
+qualify Hindi support. A future implementation must resolve shaped cluster
+positions and native editing/layout before advertising it. This decision does
+not authorize a new shaping dependency.
 
 Translate all consumer-authored windows, headings, controls, tooltips and popup
 text. C# consumers use keyed resources embedded in the assembly and native .NET
