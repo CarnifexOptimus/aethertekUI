@@ -7,8 +7,8 @@ namespace AethertekUI.Tests;
 
 public unsafe class VisualRegressionTests
 {
-    [Theory] [InlineData(false)] [InlineData(true)]
-    public void AppearanceSelectorReportsAccentAndLanguageSeparately(bool separated)
+    [Theory] [InlineData(false,28f)] [InlineData(true,28f)] [InlineData(true,35f)] [InlineData(true,37f)]
+    public void AppearanceSelectorReportsAccentAndLanguageSeparately(bool separated,float swatchSize)
     {
         using var host=new NativeTestContext();
         ImGui.GetIO().ConfigFlags|=ImGuiConfigFlags.NavEnableKeyboard;
@@ -26,14 +26,18 @@ public unsafe class VisualRegressionTests
             MaterialAppearanceChange changed;
             if(separated)
             {
-                var accentChanged=MaterialAppearanceSelector.DrawAccent("appearance",ref accent,labels);
+                ImGui.PushID("appearance");ImGui.PushID("accent");var expected=ImGui.GetID("##button");ImGui.PopID();ImGui.PopID();
+                var accentChanged=swatchSize==28?MaterialAppearanceSelector.DrawAccent("appearance",ref accent,labels)
+                    :MaterialAppearanceSelector.DrawAccent("appearance",ref accent,labels,swatchSize);
+                Assert.Equal(expected,ImGuiP.GetItemID());
+                Assert.Equal(new Vector2(swatchSize),ImGui.GetItemRectSize());
                 ImGui.SameLine(); MaterialButton.Draw("existing-action","Existing action");
                 ImGui.SameLine();
                 var languageChanged=MaterialAppearanceSelector.DrawLanguage("appearance",ref language,options);
                 changed=new(accentChanged,languageChanged);
             }
             else changed=MaterialAppearanceSelector.Draw("appearance",ref accent,ref language,options,labels);
-            swatch=origin+new Vector2(14,14);combo=(ImGui.GetItemRectMin()+ImGui.GetItemRectMax())*.5f;
+            swatch=origin+new Vector2(swatchSize*.5f);combo=(ImGui.GetItemRectMin()+ImGui.GetItemRectMax())*.5f;
             if(changed.AccentChanged) accentChanges++;if(changed.LanguageChanged) languageChanges++;
             ImGui.End();
         }

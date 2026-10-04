@@ -52,6 +52,8 @@ Power appends at ordinal 62 for FrenRider's account-wide enable action; consumer
 retain their existing callbacks, state and native control identity.
 Target appends at ordinal 63 for LootGoblin's Current Run crosshair; the existing
 Location pin and every preceding mesh and ordinal remain available.
+MapPin (64) and HeartOutline (65) provide BFE's approved map-with-pin and outlined
+support artwork, retaining the separate Map, Location and filled Heart meshes.
 See the sizing showcase and independent consumer example.
 For an established native language control, use
 `MaterialAppearanceSelector.Draw(id, ref accent, labels, drawLanguage)`.
@@ -66,7 +68,14 @@ places existing actions between colour and language, call
 `DrawAccent(id, ref accent, labels)` and
 `DrawLanguage(id, ref language, options, languageWidth)` using the same ID.
 Both retain the combined selector's native identities and change semantics;
-the consumer still owns placement and saving. `MaterialComboLayout.LeadingIcon`
+the consumer still owns placement and saving.
+
+`DrawAccent(id, ref accent, labels, size)` accepts a positive logical swatch size;
+the original overload retains 28 and its native identity. Language field height
+uses the existing explicit `MaterialControls.Push(metrics)` scope; measure its
+width with those same metrics rather than adding another selector implementation.
+
+`MaterialComboLayout.LeadingIcon`
 uses the current control metrics, and `MaterialIcons.Draw(icon, drawList, ...)`
 borrows the field's draw list so its mesh stays in the field when a popup opens.
 Use MaterialTheme.Push(theme, ImGuiHelpers.GlobalScale) around your window draw. Pass stable IDs separately from visible labels. Scope IDs further with ImGui.PushID for repeated domain objects.

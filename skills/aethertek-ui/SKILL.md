@@ -119,6 +119,25 @@ Natural and fill-width library buttons now reflow while preserving their full la
 positive explicit sizes retain caller control. Keep the current assembly version
 visible in main title bars while preserving native window IDs. Distinguish the
 runtime character from the selected settings profile.
+
+FrenRider's translated tabs require SetNextItemWidth for the complete label and
+native FittingPolicyScroll when shrinking would clip it. Padding changed only
+inside BeginTabItem did not preserve translated widths. Verify selected-tab ink
+after native scrolling settles within a finite frame limit. Its selectable rows
+also showed that a clip based on nominal line height or text advance can crop
+fractional-height descenders and glyph bearings; retain native window/table clips
+for those single-row labels. All fourteen locales passed the corrected paths.
+BFE's scrolling tab strip contributed its complete width to a horizontally
+scrollable parent's content size and expanded the next frame's work rectangle.
+Bound that tab strip's contribution and reflow viewport while preserving real
+body overflow and restoring the native work rectangle after drawing. Clip custom
+caption ink to the native scrolling rectangle and verify the complete selected
+caption after scrolling settles. Set tab padding before BeginTabBar so its height
+reserves the full tab frame. Hiding ImGuiCol.Text during the first BeginTabItem
+also hid its native scroll arrows; repaint the retained caption in its actual tab
+background while preserving arrow ink, focus and IDs. Check visible arrow
+triangles and native adjacent-tab presses, as well as widths.
+
 Paint a retained title outside the native body's clip rectangle; intersecting that
 clip can make the entire version invisible. Reserve native close/collapse controls
 and check actual title glyph vertices or a render, as ChokeAbo established.
@@ -131,6 +150,10 @@ use MaterialAppearanceSelector.DrawAccent and DrawLanguage with the same
 selector ID. They preserve the combined selector's accent and language IDs.
 MaterialComboLayout.LeadingIcon uses native meshes; retain the field's borrowed
 draw list while BeginCombo makes its popup current, so the icon stays in the field.
+DrawAccent's explicit positive logical size supports approved larger swatches
+while retaining the same selector/accent IDs and change events. Configure the
+language field's height through an explicit MaterialControls.Push(metrics)
+scope; the existing selector inherits those scaled pixel metrics.
 
 Measure translated labels using the active host font. Budget pane, column,
 button and popup widths for longer translations; use wrapping tiles where
@@ -345,6 +368,11 @@ to avoid timeouts from ambiguous adjacent captures, as DDuck's compiled status
 checks verified. Check full, empty, nested, padded and LF/CRLF captures after the
 change. Keep source-specific lookaround parsers separate: DAD's leveling patterns
 contain lookaheads and cannot use that option.
+Before constructing or running a source-specific lookaround matcher, check a fixed
+authored literal that every successful match must contain. DAD's joined leveling
+blocker otherwise entered unrelated expensive patterns despite its prefix gate.
+Retain template order, lookaheads, capture grammar, raw values and timeout failures;
+the prefilter skips only patterns whose necessary literal is absent.
 For large status catalogs, create a retained matcher only after its authored
 leading literal applies. DDuck's eager non-backtracking construction exceeded
 the diagnostic memory limit after the atlas was ready; deferring unused matchers
@@ -463,6 +491,7 @@ Botology's first adoption establishes these practices:
   LootGoblin uses Pulse/Utensils/Crystal; DAD uses Calendar/Crown/Book/Sparkle/Bell/Terminal.
   FrenRider's account-wide enable action uses the appended Power mesh.
   LootGoblin's Current Run uses Target, the appended crosshair; Location stays a pin.
+  BFE's area heading and support action use appended MapPin and HeartOutline.
   Append required artwork without changing existing ordinals. Keep icon drawing
   independent of font and texture resources, with actions and identities in consumers.
 - `MaterialControlAppearance` supplies fill, foreground, border and logical
@@ -511,6 +540,11 @@ Botology's first adoption establishes these practices:
   autosizing native table can provide a balanced card scope, while a closed
   convex path draws the required ellipse. Retain the previous ID root when
   introducing the table. A copied helper from another binding is not build evidence.
+- Inside native BeginGroup, a positive SameLine offset is relative to the group.
+  Do not include the window-local cursor X again; DDuck Mini stock rows otherwise
+  double-counted the left inset and exceeded the viewport. Use group-relative
+  offsets there and retain window-local coordinates for SetCursorPosX. The fixed
+  rows passed native action, target-edit and width checks in all fourteen locales.
 - Offline fonts may differ from the live managed atlas and conceal a broken
   merge. A clean build or CPU render does not prove host font readiness. Give
   loading/error windows containing wrapped text an explicit width every frame,
@@ -581,6 +615,12 @@ Generate baseline candidates separately, inspect them, resolve discrepancies,
 then deliberately adopt them through a reviewable Git change. Prove the
 comparator catches shifted regions, wrong fills and missing elements. Baselines
 prove regression stability, not initial design fidelity or GPU verification.
+
+Native rounded borders have separate horizontal and vertical extrema. Their
+texture-antialiased vertices also include transparent atlas fringes. Measure the
+connected stroke path or rendered ink; requiring one corner vertex at both
+extrema can fail a correct scaled layout. Retain the reference tolerance and
+prove that shifted regions still fail, as BFE's 100%/150% checks established.
 Cover selected windows/popups, all locales, scale/size limits, accents and
 functional states. Open interactive popups through their native controls and
 check that they remain visible with usable bounds after the opening frame.

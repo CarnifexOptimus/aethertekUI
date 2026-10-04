@@ -20,9 +20,14 @@ public static class MaterialAppearanceSelector
 
     /// <summary>Place the colour control separately while retaining the combined selector's native identity.</summary>
     public static bool DrawAccent(string id,ref Vector3 accent,MaterialAppearanceLabels labels)
+        => DrawAccent(id,ref accent,labels,28);
+
+    /// <summary>Consumer-selected swatch size in logical units; native identity and change semantics are retained.</summary>
+    public static bool DrawAccent(string id,ref Vector3 accent,MaterialAppearanceLabels labels,float size)
     {
+        if(!float.IsFinite(size) || size<=0) throw new ArgumentOutOfRangeException(nameof(size));
         ImGui.PushID(id);
-        try { return DrawAccent(ref accent,labels); }
+        try { return DrawAccent(ref accent,labels,size); }
         finally { ImGui.PopID(); }
     }
 
@@ -65,12 +70,12 @@ public static class MaterialAppearanceSelector
         return new(accentChanged,drawLanguage());
     }
 
-    private static bool DrawAccent(ref Vector3 accent,MaterialAppearanceLabels labels)
+    private static bool DrawAccent(ref Vector3 accent,MaterialAppearanceLabels labels,float size=28)
     {
         var accentChanged=false;
         var colors=MaterialTheme.Current.Colors;
         var swatch=new MaterialControlAppearance(new(accent,1),colors.OnSurface,colors.OutlineVariant);
-        if(MaterialButton.Draw("accent", "", swatch, new(28,28))) ImGui.OpenPopup("color");
+        if(MaterialButton.Draw("accent", "", swatch, new(size,size))) ImGui.OpenPopup("color");
         if(ImGui.IsItemHovered()) ImGui.SetTooltip(labels.Color);
         if(ImGui.BeginPopup("color"))
         {

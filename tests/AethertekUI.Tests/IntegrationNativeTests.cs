@@ -13,7 +13,8 @@ public class IntegrationNativeTests
         MaterialIcon[] icons=[MaterialIcon.Save,MaterialIcon.Copy,MaterialIcon.Heart,MaterialIcon.List,MaterialIcon.Sword,MaterialIcon.Star,MaterialIcon.Folder,MaterialIcon.Egg,
             MaterialIcon.Wrench,MaterialIcon.DoorExit,MaterialIcon.Cube,MaterialIcon.Chest,MaterialIcon.Cart,MaterialIcon.Chat,
             MaterialIcon.Group,MaterialIcon.Warning,MaterialIcon.Plus,MaterialIcon.Pulse,MaterialIcon.Utensils,MaterialIcon.Crystal,
-            MaterialIcon.Calendar,MaterialIcon.Crown,MaterialIcon.Book,MaterialIcon.Sparkle,MaterialIcon.Bell,MaterialIcon.Terminal,MaterialIcon.Power,MaterialIcon.Target];
+            MaterialIcon.Calendar,MaterialIcon.Crown,MaterialIcon.Book,MaterialIcon.Sparkle,MaterialIcon.Bell,MaterialIcon.Terminal,MaterialIcon.Power,MaterialIcon.Target,
+            MaterialIcon.MapPin,MaterialIcon.HeartOutline];
         Assert.Equal(35,(int)MaterialIcon.Send);
         for(var i=0;i<icons.Length;i++) Assert.Equal(36+i,(int)icons[i]);
         icons=[..icons,MaterialIcon.Location];

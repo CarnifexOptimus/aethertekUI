@@ -3,7 +3,7 @@ using Dalamud.Bindings.ImGui;
 
 namespace AethertekUI;
 
-public enum MaterialIcon { None, Search, Close, Settings, Check, Play, Pause, Stop, ArrowRight, Return, Edit, Delete, More, ChevronDown, Home, Grid, Table, Sliders, Info, Document, Database, Refresh, Chart, ExternalLink, Download, Palette, Globe, Map, Clock, Link, Calculator, Person, Shield, Monitor, Location, Send, Save, Copy, Heart, List, Sword, Star, Folder, Egg, Wrench, DoorExit, Cube, Chest, Cart, Chat, Group, Warning, Plus, Pulse, Utensils, Crystal, Calendar, Crown, Book, Sparkle, Bell, Terminal, Power, Target }
+public enum MaterialIcon { None, Search, Close, Settings, Check, Play, Pause, Stop, ArrowRight, Return, Edit, Delete, More, ChevronDown, Home, Grid, Table, Sliders, Info, Document, Database, Refresh, Chart, ExternalLink, Download, Palette, Globe, Map, Clock, Link, Calculator, Person, Shield, Monitor, Location, Send, Save, Copy, Heart, List, Sword, Star, Folder, Egg, Wrench, DoorExit, Cube, Chest, Cart, Chat, Group, Warning, Plus, Pulse, Utensils, Crystal, Calendar, Crown, Book, Sparkle, Bell, Terminal, Power, Target, MapPin, HeartOutline }
 
 /// <summary>Small vector icons; no font or texture dependency.</summary>
 public static class MaterialIcons
@@ -134,6 +134,22 @@ public static class MaterialIcons
                 L(.5f,.06f,.5f,.3f);L(.5f,.7f,.5f,.94f);
                 L(.06f,.5f,.3f,.5f);L(.7f,.5f,.94f,.5f);
                 dl.AddCircleFilled(P(.5f,.5f),size*.055f,ink,16);break;
+            case MaterialIcon.MapPin:
+                L(.13f,.3f,.25f,.26f);L(.13f,.3f,.13f,.85f);L(.13f,.85f,.5f,.75f);
+                L(.5f,.75f,.87f,.85f);L(.87f,.85f,.87f,.3f);L(.87f,.3f,.75f,.26f);
+                L(.5f,.62f,.5f,.75f);
+                dl.PathLineTo(P(.5f,.62f));
+                dl.PathBezierCubicCurveTo(P(.39f,.48f),P(.25f,.34f),P(.25f,.25f));
+                dl.PathBezierCubicCurveTo(P(.25f,.05f),P(.75f,.05f),P(.75f,.25f));
+                dl.PathBezierCubicCurveTo(P(.75f,.34f),P(.61f,.48f),P(.5f,.62f));
+                dl.PathStroke(ink,ImDrawFlags.Closed,stroke);break;
+            case MaterialIcon.HeartOutline:
+                dl.PathLineTo(P(.5f,.31f));
+                dl.PathBezierCubicCurveTo(P(.32f,.1f),P(.1f,.14f),P(.12f,.38f));
+                dl.PathBezierCubicCurveTo(P(.12f,.59f),P(.34f,.75f),P(.5f,.86f));
+                dl.PathBezierCubicCurveTo(P(.66f,.75f),P(.88f,.59f),P(.88f,.38f));
+                dl.PathBezierCubicCurveTo(P(.9f,.14f),P(.68f,.1f),P(.5f,.31f));
+                dl.PathStroke(ink,ImDrawFlags.Closed,stroke);break;
             case MaterialIcon.Folder:
                 dl.PathLineTo(P(.1f,.22f));dl.PathLineTo(P(.4f,.22f));dl.PathLineTo(P(.5f,.32f));
                 dl.PathLineTo(P(.9f,.32f));dl.PathLineTo(P(.9f,.82f));dl.PathLineTo(P(.1f,.82f));

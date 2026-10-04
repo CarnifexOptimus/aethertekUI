@@ -113,7 +113,8 @@ internal sealed partial class Showcase
             foreach(var icon in new[] { MaterialIcon.Wrench, MaterialIcon.DoorExit, MaterialIcon.Cube, MaterialIcon.Chest,
                 MaterialIcon.Cart, MaterialIcon.Chat, MaterialIcon.Group, MaterialIcon.Warning, MaterialIcon.Plus,
                 MaterialIcon.Pulse, MaterialIcon.Utensils, MaterialIcon.Crystal, MaterialIcon.Calendar, MaterialIcon.Crown,
-                MaterialIcon.Book, MaterialIcon.Sparkle, MaterialIcon.Bell, MaterialIcon.Terminal, MaterialIcon.Power, MaterialIcon.Target })
+                MaterialIcon.Book, MaterialIcon.Sparkle, MaterialIcon.Bell, MaterialIcon.Terminal, MaterialIcon.Power, MaterialIcon.Target,
+                MaterialIcon.MapPin, MaterialIcon.HeartOutline })
             {
                 if(icon != MaterialIcon.Wrench && ImGui.GetItemRectMax().X + ImGui.GetStyle().ItemSpacing.X + 40 * MaterialTheme.Metrics.Scale
                     <= ImGui.GetWindowPos().X + ImGui.GetWindowContentRegionMax().X) ImGui.SameLine();
@@ -122,7 +123,7 @@ internal sealed partial class Showcase
             MaterialAppearanceSelector.Draw("preferences",ref sizingAccent,ref sizingLanguage,sizingLanguages,
                 new("Color","Language","Teal","Blue","Pink","Custom RGB"));
             MaterialAppearanceSelector.DrawAccent("separated-preferences",ref sizingAccent,
-                new("Color","Language","Teal","Blue","Pink","Custom RGB"));
+                new("Color","Language","Teal","Blue","Pink","Custom RGB"),37);
             ImGui.SameLine(); MaterialButton.Draw("between-preferences","Consumer action");
             ImGui.SameLine(); MaterialAppearanceSelector.DrawLanguage("separated-preferences",ref sizingLanguage,sizingLanguages);
             MaterialAppearanceSelector.Draw("native-preferences",ref sizingAccent,
