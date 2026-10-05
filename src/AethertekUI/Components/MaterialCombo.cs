@@ -83,7 +83,7 @@ public static class MaterialCombo
                 dl.PopClipRect();
                 textX+=iconSize+gap;
             }
-            dl.PushClipRect(origin+new Vector2(textX,0),origin+new Vector2(Math.Max(textX,fieldWidth-height),height),true);
+            dl.PushClipRect(origin+new Vector2(Math.Max(0,textX-gap),0),origin+new Vector2(Math.Max(textX,fieldWidth-height),height),true);
             dl.AddText(origin+new Vector2(textX,(height-ImGui.GetTextLineHeight())*.5f),MaterialDraw.Color(previewForeground),options.LabelFor(value,emptyLabel));
             dl.PopClipRect();
             // Draw into the original field's list even while the popup is current.

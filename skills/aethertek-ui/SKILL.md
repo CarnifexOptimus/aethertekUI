@@ -50,6 +50,12 @@ Scopes are UI-thread/context-bound, lexical and LIFO. Do not copy or double
 dispose them, or switch contexts before disposal. Preserve balanced native
 Begin/End, popup, table, child, font and ID scopes.
 
+For a borderless native child, pass `ImGuiWindowFlags.AlwaysUseWindowPadding`
+when the design needs inset content; a pushed `WindowPadding` alone is ignored
+by that child. Footballer also needed the job-details cursor aligned explicitly
+with its character-name column. Check actual child padding, narrow-to-wide
+reflow and the complete default-width card row, including a retained scrollbar.
+
 Use Compact density for compact desktop designs, and
 `MaterialControls.Push(MaterialControlContext.Toolbar)` or `Dense` for local
 rows. `MaterialTable.PushControls()` aligns native and custom table editors.
@@ -105,6 +111,13 @@ from selection through its editor and save path; check both account and characte
 identity before exposing runtime-only actions. Inspect runtime/bridge callers
 before changing an active-account helper into an editing-account helper.
 
+A horizontally scrollable native window can expand its work rectangle to prior
+content width on later frames. Wrap explanatory paragraphs to the visible pane,
+accounting for horizontal scroll and narrower native columns, while retaining
+single-line controls and real content overflow. Footballer's Polish Settings
+otherwise clipped complete notes despite using TextWrapped. Verify after content
+expansion over several frames, checking complete paragraph height and glyph ink.
+
 Keep ordinary control and profile labels on one line. Measure translated text,
 icons, gaps and padding; move whole controls to another row instead of squeezing
 them into a letter-width cell. For native wrappers, use
@@ -123,6 +136,12 @@ Inspect the installed binding's argument defaults before wrapping: its current
 `InputInt` defaults to zero steps. Preserve that behavior and reserve step-button
 space only when the caller actually enables steps; interaction fixtures must
 pass explicit steps when testing those buttons.
+For retained two-column detail rows, compare measured translated label widths with
+that column's allocated share. ADS keeps its reference ratio when labels fit,
+otherwise requests a fixed native label minimum including bearing inset and cell
+padding. Labels stay single-line; explanatory values wrap within their own column.
+Check actual glyph ink as well as advance widths at the native column clip.
+
 Natural and fill-width library buttons now reflow while preserving their full label;
 positive explicit sizes retain caller control. Keep the current assembly version
 visible in main title bars while preserving native window IDs. Distinguish the
@@ -135,6 +154,12 @@ after native scrolling settles within a finite frame limit. Its selectable rows
 also showed that a clip based on nominal line height or text advance can crop
 fractional-height descenders and glyph bearings; retain native window/table clips
 for those single-row labels. All fourteen locales passed the corrected paths.
+Custom combo previews also need room for a glyph's negative left bearing inside
+their existing padding. ChokeAbo and Dheacon reproduced clipped leading T ink in
+Vietnamese and Turkish when the preview clip began exactly at the text origin.
+The combo now admits the existing preceding gap, preserving the text origin,
+arrow boundary, field dimensions and native IDs; the native regression checks
+both preview routes, densities and scales with a supplied negative bearing.
 BFE's scrolling tab strip contributed its complete width to a horizontally
 scrollable parent's content size and expanded the next frame's work rectangle.
 Bound that tab strip's contribution and reflow viewport while preserving real
@@ -383,6 +408,12 @@ to avoid timeouts from ambiguous adjacent captures, as DDuck's compiled status
 checks verified. Check full, empty, nested, padded and LF/CRLF captures after the
 change. Keep source-specific lookaround parsers separate: DAD's leveling patterns
 contain lookaheads and cannot use that option.
+For a catalog whose literal/wildcard templates repeatedly time out during Draw,
+consider matching pre-split ordinal literal segments. LootGoblin verified this
+route with ordered templates, raw/empty numbered arguments, repeated placeholders
+and the retained final-newline behavior. Check actual displayed messages and
+native window states; a literal matcher does not replace a parser whose grammar
+needs alternation, lookarounds or other regular-expression semantics.
 Before constructing or running a source-specific lookaround matcher, check a fixed
 authored literal that every successful match must contain. DAD's joined leveling
 blocker otherwise entered unrelated expensive patterns despite its prefix gate.
@@ -408,6 +439,15 @@ established this case. Translate nested captures only at positions traced to
 authored role/module labels or summary/safety getters; arbitrary names, counts
 and IDs remain opaque. Verify both full and empty forms through the compiled
 helper, rather than changing the producer's runtime message to suit UI matching.
+
+Footballer exposed two distinct terminal-newline failures in the installed runtime:
+`$` can leave a final LF outside a capture, while a `NonBacktracking` pattern
+ending in `\z` matched that input but returned empty argument groups. Its
+bounded ordinary matcher with `\A`/`\z` retains both the name and complete
+LF/CRLF detail. Test actual captured values, including an empty argument and a
+terminal newline, before selecting a regex engine; a successful match alone is
+insufficient. Keep this runtime-specific evidence distinct from other hosts.
+
 Structured diagnostic events need their producer schema as well as resource
 coverage. AutoParty wake events use `state:wake:<phase>:<summary>`; split at
 the first payload colon, then translate phase and summary separately. Preserve
@@ -604,7 +644,11 @@ a default font and fixed background; GPU compositing and game/CJK fonts require
 later host acceptance. Offline hosts that merge CJK may produce multiple native
 atlas textures. Refresh and assign each texture its own ID, then resolve the
 draw command's actual texture when rendering; sampling texture zero for every
-command corrupts otherwise valid glyph UVs. HealBot's Japanese helper diagnostic
+command corrupts otherwise valid glyph UVs. Sample RGBA texture colour as well
+as alpha: a font-only alpha sampler turns coloured supplied images into white
+blocks. Footballer exposed this in its job icons; the shared renderer now checks
+opaque colour, tint and transparency. Earlier coloured-image diagnostic renders
+need regeneration before visual acceptance. HealBot's Japanese helper diagnostic
 verified this distinction. It does not establish managed-host readiness.
 Give a standalone diagnostic atlas explicit dimensions suitable for its required
 glyphs and roles, and record those dimensions with the result. BFE and
@@ -619,6 +663,11 @@ the actual role used by those controls. ADS's nine roles and four CJK merges use
 763 MiB before baking; separate role checks stayed below 236 MiB. Retain the
 required text, original heights and merge order, and record every process bound.
 Separate glyph checks do not prove combined-atlas, whole-window or managed-host readiness.
+Later ADS Main/Quick runs retain all nine original roles and merges at 4096x4096
+within a finite 90-second/1536-MiB combined diagnostic bound. The fifteen-locale
+matrix passes; root independently verifies English and Russian, with the latter
+using 1316.922 MiB. Keep the earlier smaller-bound failure distinct and budget
+measured native/render overhead. This still does not establish managed-host readiness.
 For standalone checker references, inspect MSBuild's actual ReferencePath and
 ResolvedFrom after ResolveAssemblyReferences. Retained ignored DLL outputs can
 resolve through {CandidateAssemblyFiles} before an explicit HintPath; the

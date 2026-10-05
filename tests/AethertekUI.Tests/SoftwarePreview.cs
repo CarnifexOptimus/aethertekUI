@@ -162,11 +162,12 @@ internal static unsafe class SoftwarePreview
             var tx=Math.Clamp((int)(uv.X*texture.Width),0,texture.Width-1);
             var ty=Math.Clamp((int)(uv.Y*texture.Height),0,texture.Height-1);
             var color=ca*wa+cb*wb+cc*wc;
-            var alpha=color.W*((byte*)texture.Pixels)[(ty*texture.Width+tx)*4+3]/255f;
+            var sample=(byte*)texture.Pixels+(ty*texture.Width+tx)*4;
+            var alpha=color.W*sample[3]/255f;
             var index=(y*width+x)*4;
-            pixels[index]=(byte)Math.Clamp(color.X*alpha+pixels[index]*(1-alpha),0,255);
-            pixels[index+1]=(byte)Math.Clamp(color.Y*alpha+pixels[index+1]*(1-alpha),0,255);
-            pixels[index+2]=(byte)Math.Clamp(color.Z*alpha+pixels[index+2]*(1-alpha),0,255);
+            pixels[index]=(byte)Math.Clamp(color.X*sample[0]/255f*alpha+pixels[index]*(1-alpha),0,255);
+            pixels[index+1]=(byte)Math.Clamp(color.Y*sample[1]/255f*alpha+pixels[index+1]*(1-alpha),0,255);
+            pixels[index+2]=(byte)Math.Clamp(color.Z*sample[2]/255f*alpha+pixels[index+2]*(1-alpha),0,255);
         }
     }
     // Double precision and a shared-edge ownership rule avoid holes or double blending

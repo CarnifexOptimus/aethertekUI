@@ -7,6 +7,79 @@ namespace AethertekUI.Tests;
 
 public unsafe class VisualRegressionTests
 {
+    [Fact]
+    public void CustomComboPreviewRetainsNegativeGlyphBearing()
+    {
+        using var host=new NativeTestContext();
+        var theme=new MaterialTheme(new Vector3(.2f,.7f,.8f));
+        var options=new MaterialOptions<string>([new("tr","tr","Turkce")]);
+        var selected="tr";
+        var glyph=ImGui.FindGlyphNoFallback(ImGui.GetIO().Fonts.Fonts[0],'T');
+        var original=glyph.Handle->X0;
+        glyph.Handle->X0=-.5f;
+        try
+        {
+            foreach(var density in new[]{MaterialDensity.Standard,MaterialDensity.Compact})
+            foreach(var scale in new[]{1f,1.5f})
+            foreach(var leadingIcon in new[]{false,true})
+            {
+                theme.Density=density;ImGui.GetIO().FontGlobalScale=scale;
+                var found=false;
+                void Draw()
+                {
+                    using var scope=MaterialTheme.Push(theme,scale);
+                    ImGui.SetNextWindowPos(Vector2.Zero);ImGui.SetNextWindowSize(new(700,500));
+                    ImGui.Begin("Combo bearing",ImGuiWindowFlags.NoSavedSettings|ImGuiWindowFlags.NoTitleBar);
+                    ImGui.PushID("preview");var expected=ImGui.GetID("##combo");ImGui.PopID();
+                    var list=ImGui.GetWindowDrawList();var first=list.VtxBuffer.Size;
+                    MaterialCombo.Draw("preview",options,ref selected,
+                        MaterialComboLayout.Default with {LeadingIcon=leadingIcon?MaterialIcon.Globe:null},
+                        new MaterialControlAppearance(theme.Colors.Surface,theme.Colors.OnSurface,theme.Colors.Outline),width:220);
+                    Assert.Equal(expected,ImGuiP.GetItemID());
+                    for(var i=first;i+3<list.VtxBuffer.Size;i++)
+                    {
+                        var a=list.VtxBuffer[i];var c=list.VtxBuffer[i+2];
+                        if(a.Uv!=new Vector2(glyph.Handle->U0,glyph.Handle->V0)
+                            || c.Uv!=new Vector2(glyph.Handle->U1,glyph.Handle->V1)) continue;
+                        for(var n=0;n<list.CmdBuffer.Size;n++)
+                        {
+                            var command=list.CmdBuffer[n];
+                            for(var e=command.IdxOffset;e<command.IdxOffset+command.ElemCount;e++)
+                                if(list.IdxBuffer[(int)e]+command.VtxOffset==i)
+                                {
+                                    Assert.True(a.Pos.X>=command.ClipRect.X && c.Pos.X<=command.ClipRect.Z,
+                                        "The selected caption's leading glyph must remain inside its actual draw clip.");
+                                    found=true;
+                                }
+                        }
+                    }
+                    ImGui.End();
+                }
+                host.Frame(Draw);host.Frame(Draw);Assert.True(found);
+            }
+        }
+        finally {glyph.Handle->X0=original;}
+    }
+
+    [Fact]
+    public void DiagnosticRasterRetainsTextureColourTintAndAlpha()
+    {
+        var raster=typeof(SoftwarePreview).GetMethod("Raster",System.Reflection.BindingFlags.Static|System.Reflection.BindingFlags.NonPublic)!
+            .CreateDelegate<Action<ImDrawVert,ImDrawVert,ImDrawVert,Vector4,byte[],int,int,SoftwarePreview.Texture>>();
+        byte* texel=stackalloc byte[] {70,155,220,255};
+        byte[] Render(uint tint)
+        {
+            var pixels=new byte[] {26,29,33,255};
+            raster(new(){Pos=new(-1,-1),Uv=new(.5f),Col=tint},new(){Pos=new(3,-1),Uv=new(.5f),Col=tint},
+                new(){Pos=new(-1,3),Uv=new(.5f),Col=tint},new(0,0,1,1),pixels,1,1,new((nint)texel,1,1));
+            return pixels;
+        }
+        Assert.Equal(new byte[] {70,155,220,255},Render(0xffffffff));
+        Assert.Equal(new byte[] {70,77,55,255},Render(0xff4080ff));
+        texel[3]=128;
+        Assert.Equal(new byte[] {48,92,126,255},Render(0xffffffff));
+    }
+
     [Theory] [InlineData(false,28f)] [InlineData(true,28f)] [InlineData(true,35f)] [InlineData(true,37f)]
     public void AppearanceSelectorReportsAccentAndLanguageSeparately(bool separated,float swatchSize)
     {
