@@ -82,6 +82,12 @@ verify settling, short-viewport scrolling and fresh reopening with original IDs.
 Its fourteen-locale, two-density, 100%/150% checks retained a stable subpixel
 scroll remainder while all button ink remained visible.
 
+Measure wrapped warning children against their actual inner width, including
+native padding, border and scrollbar reservation; round the full padded height
+upward. DhogNav's narrow Japanese warning otherwise measured as one line but
+rendered two. Use the same reservation when budgeting the enclosing card and
+its table footer, and verify the final native child content and scroll range.
+
 ## Identity, localization and resources
 
 Use only `mcvaxius` or `dhoggpt` for user attribution. Never include the
@@ -136,6 +142,22 @@ Inspect the installed binding's argument defaults before wrapping: its current
 `InputInt` defaults to zero steps. Preserve that behavior and reserve step-button
 space only when the caller actually enables steps; interaction fixtures must
 pass explicit steps when testing those buttons.
+For a native checkbox with an empty visible label, reserve only its rounded-up
+square: there is no label gap. HFH's extra gap pushed rule checkboxes off their
+regular row. Reserve adjacent actions before sizing a retained editor, as its
+name field and K action required.
+For retained native columns, budget the scrolling content from the sum of each
+actual initial width and translated minimum, taking the larger for each column.
+HFH's minimum-only budget left its German Remove column squeezed after wider
+earlier defaults; its strict thirteen-caption native scroll check reproduced the
+failure and passed after the complete width budget was restored. Keep existing
+column initialization and resize identities; do not reset user widths to fit art.
+Keep retained data sections rendered when a small viewport leaves little height;
+reserve a usable native table minimum and let the containing window scroll.
+HealBot Watch otherwise omitted all retained targets at its new default size.
+Budget table content from translated headings and displayed row values, then
+use native horizontal scrolling while retaining existing column resize IDs.
+Its stretch Name column otherwise collapsed to eight pixels.
 For retained two-column detail rows, compare measured translated label widths with
 that column's allocated share. ADS keeps its reference ratio when labels fit,
 otherwise requests a fixed native label minimum including bearing inset and cell
@@ -148,7 +170,12 @@ visible in main title bars while preserving native window IDs. Distinguish the
 runtime character from the selected settings profile.
 
 FrenRider's translated tabs require SetNextItemWidth for the complete label and
-native FittingPolicyScroll when shrinking would clip it. Padding changed only
+native FittingPolicyScroll when shrinking would clip it. With retained close
+controls, also budget the original raw caption's native geometry. HFH's shorter
+Korean caption otherwise crowded the close hit area at 150 percent; reserving
+the larger original/translated width retained native navigation and full ink.
+Check tab-body hover/press separately from the native close control.
+Padding changed only
 inside BeginTabItem did not preserve translated widths. Verify selected-tab ink
 after native scrolling settles within a finite frame limit. Its selectable rows
 also showed that a clip based on nominal line height or text advance can crop
@@ -202,6 +229,16 @@ There is no universal fixed width that fits every language. The host supplies
 and manages fonts with the required CJK glyphs; the library does not load fonts
 or guarantee localization coverage. Test actual host fonts and display scales
 when an integration is selected.
+
+When selected typography work must retain the host atlas, a lexical
+`SetWindowFontScale` scope can adjust presentation while restoring the caller's
+`FontWindowScale`. Leave borrowed `ImFont.Scale` and `FontGlobalScale` unchanged.
+Remeasure fields, cards and translated reflow under that window scale. DhogGPT's
+passive headings reserve measured glyph ink rather than an oversized font line
+box; reference-size English Main/ultra checks fit in both densities. Verify native
+IDs and a non-default caller scale separately. Offline targeting must measure
+the rendered caption and follow wrapped controls through native scrolling;
+pre-Draw font metrics or large wheel jumps can miss a reachable control. Measure each group with its actual local font scale. DhogGPT's ultra preferences use regular-header typography in a separate top row, retaining the original root IDs and approved chat-language field widths instead of squeezing those fields to fit new selectors.
 
 Consumers own plugin subscriptions, commands, windows, disposal, configuration
 storage, game actions, sorting/filter rules and invalidation. Keep domain status
@@ -400,6 +437,9 @@ slot/character identities; localize it through the source-specific display
 formatter. Parse joined compiler details only within that context and constrain
 slot captures to the producer's slot grammar so a later slot cannot swallow an
 earlier summary. Keep exception details raw even inside an authored wrapper.
+HealBot Watch similarly needs exact UI template composition for its retained
+states and an explicitly translated authored prefix. Its complete resources did
+not make leading-placeholder states reachable through the generic label lookup.
 Trace composed statuses through execution/proxy getters as well as direct UI
 calls. ADS verified an ownership wrapper around a Higher/Lower service summary
 and retry/blocked detail. Check displayed row outcomes alongside templates.
@@ -602,6 +642,13 @@ Botology's first adoption establishes these practices:
   autosizing native table can provide a balanced card scope, while a closed
   convex path draws the required ellipse. Retain the previous ID root when
   introducing the table. A copied helper from another binding is not build evidence.
+- For an autosizing card built from a retained native table, measure cell content
+  before `EndTable` and paint its rounded fill/border between
+  `ImGuiP.TablePushBackgroundChannel()` and `TablePopBackgroundChannel()`.
+  DhogNav's public introductions otherwise painted the measured background over
+  the foreground. `PadOuterX` retains the horizontal cell inset; keep the previous
+  ID root and balance the channel/table scopes. Verify translated content and
+  safe native actions at narrow widths, both densities and supported scales.
 - Inside native BeginGroup, a positive SameLine offset is relative to the group.
   Do not include the window-local cursor X again; DDuck Mini stock rows otherwise
   double-counted the left inset and exceeded the viewport. Use group-relative
