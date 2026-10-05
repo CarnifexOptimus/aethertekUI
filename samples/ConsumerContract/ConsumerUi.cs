@@ -148,11 +148,12 @@ public sealed class ConsumerUi : IDisposable
             SizeCondition = ImGuiCond.FirstUseEver;
         }
 
-        public override void PreDraw() => motion.Prepare(this);
+        public override void PreDraw() => motion.Prepare(this, reducedMotion: false, roundedCorners: true);
         public override void PostDraw() => motion.Restore(this);
 
         public override void Draw()
         {
+            motion.DrawChrome();
             MaterialWindowHeader.Draw("Independent plugin", "Consumer owns lifecycle and domain state", []);
             MaterialSwitch.Draw("enabled","Enabled",ref enabled);
             MaterialSegmented.Draw<int>("mode",Modes,ref mode);

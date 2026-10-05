@@ -8,6 +8,10 @@ See [Adaptive sizing and host compatibility](ADAPTIVE_SIZING.md) for units, owne
 |---|---|
 | MaterialStyleMode.Compatible / Material / ColorsOnly | Preserve host layout by default; opt into full metrics or colors alone |
 | MaterialWindowChrome.Push() | Explicit outer-window rounding using the active theme's pixel metrics; retains host padding, spacing, IDs and geometry |
+| MaterialWindowDecorations.Prepare / Paint | Owned-viewport decoration replacement; compose preparation with the final native sizing callback, paint first in Draw and after End when collapsed |
+| MaterialWindowFold.PreDraw / PostDraw | Consumer-owned transition of one native window's existing collapse controls; keeps expanded size, IDs and native resize behavior |
+| MaterialWindowFold.GetLogicalSize() | Expanded pixel geometry for observers inside that window's Draw during a transition |
+| AethertekUI.Dalamud.MaterialWindowMotion.Prepare / DrawChrome / Restore | Bridge for one Dalamud Window; prepares fold and optional owned-viewport chrome before Begin, paints first in Draw and restores managed constraints after End |
 | MaterialControls.Push(context) | Match native and custom control heights using current font, density and scale |
 | MaterialControlContext.Regular / Toolbar / Dense | Local sizing intent independent of theme density |
 | MaterialControls.Push(metrics) | Explicit already-scaled pixel metrics; parameterless nested scopes inherit, explicit contexts remeasure |
@@ -24,6 +28,37 @@ Enter `MaterialWindowChrome.Push()` after the theme and before native Begin,
 and keep it active through End. It supplies outer-window rounding explicitly
 for retained `ColorsOnly` layouts without changing that mode's existing contract.
 The optional adapter also exposes `Draw(windows, applyMetrics, roundedCorners)`.
+Native Begin resets owned-platform and docked window rounding to zero. These
+style scopes alone therefore do not establish visible corners for those windows.
+
+Own one `MaterialWindowFold` per direct native window. Prepare it last before
+Begin and finish it after End, including when Begin returned false. Its returned
+true value means the installed native constraints must not be overwritten by a
+later host setter. Bounds passed to it are pixels. Keep the theme active through
+the complete lifecycle. Native collapse arrows and title double-clicks retain
+their identities; reduced motion and native opt-outs retain native behavior.
+
+For a Dalamud Window, `MaterialWindowMotion.Prepare(this)` belongs last in its
+PreDraw and `Restore(this)` first in PostDraw. The original overload retains
+fold-only behavior. Select owned-viewport corners with the three required
+arguments `Prepare(this, reducedMotion: false, roundedCorners: true)`, and call
+`DrawChrome()` first in Draw. Restore also paints collapsed chrome after End,
+before returning transient animation geometry to its expanded state.
+The bridge scales the owner's
+managed constraints using the host scale and restores them after End. A managed
+constraint assigned during Draw is retained. Geometry observers inside Draw can
+use `GetLogicalSize()` while visible height changes; the fold also preserves an
+explicit native SetWindowSize request made by an existing control during Draw.
+Reference the optional adapter and ship its DLL with this integration.
+
+For a direct native window, compose `MaterialWindowDecorations.Prepare` through
+the fold's five-argument PreDraw overload; cache the delegate per owner.
+Call `Paint()` first in visible content and again after End before PostDraw.
+The replacement uses matched native decoration vertices and emitted colors in
+the owner's draw list. It preserves host alpha/fades and global style stacks;
+title controls, menu dividers, scrollbar grabs and native input remain intact.
+Docked, child, popup and tooltip windows retain their native decoration paths.
+Rendered owned-viewport regression is separate from live platform/GPU acceptance.
 
 Appearance overloads of `MaterialButton.Draw`, `MaterialStatus.Badge`,
 `MaterialTextField.SearchField`, and `MaterialCombo.Draw` retain native

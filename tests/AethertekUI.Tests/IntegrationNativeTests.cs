@@ -4,8 +4,169 @@ using Xunit;
 
 namespace AethertekUI.Tests;
 
-public class IntegrationNativeTests
+public unsafe class IntegrationNativeTests
 {
+    [Theory]
+    [InlineData(MaterialDensity.Compact, 1f)]
+    [InlineData(MaterialDensity.Compact, 1.5f)]
+    [InlineData(MaterialDensity.Standard, 1f)]
+    [InlineData(MaterialDensity.Standard, 1.5f)]
+    public void OwnedViewportChromeRoundsRenderedCornersAndPreservesNativeControls(MaterialDensity density, float scale)
+    {
+        using var host = new NativeTestContext(800, 600, scale);
+        var theme = new MaterialTheme(new Vector3(.3f, .7f, .4f), density);
+        var fold = new MaterialWindowFold();
+        var decorations = new MaterialWindowDecorations();
+        var useDecorations = false;
+        var simulateOwned = true;
+        var collapsed = false;
+        var open = true;
+        uint nativeId = 0, actionId = 0;
+        var presses = 0;
+        var cornerRadius = 0f;
+        Vector2 actionCenter = default;
+        ImGuiWindowPtr window = default;
+        // Exercise the installed native Begin's owned-viewport branch without a platform backend.
+        // The flag is injected after viewport selection; this is not live platform acceptance.
+        var owned = new ImGuiSizeCallback(data => ImGuiP.GetCurrentWindow().Handle->ViewportOwned = (byte)(simulateOwned ? 1 : 0));
+        void Draw()
+        {
+            var context = ImGui.GetCurrentContext();
+            using var themeScope = MaterialTheme.Push(theme, scale, MaterialStyleMode.ColorsOnly);
+            using var chrome = MaterialWindowChrome.Push();
+            cornerRadius = MaterialTheme.Metrics.OuterRadius;
+            var colors = context.ColorStack.Size;
+            ImGui.SetNextWindowSizeConstraints(new(100, 50), new(1000, 1000), owned);
+            if (useDecorations) fold.PreDraw("Owned chrome###owned-chrome", null, null, true, decorations.Prepare);
+            ImGui.SetNextWindowPos(Vector2.Zero);
+            ImGui.SetNextWindowSize(new Vector2(320, 240) * scale);
+            ImGui.SetNextWindowCollapsed(collapsed);
+            ImGui.SetNextWindowBgAlpha(.4f);
+            var titleColor = ImGui.GetStyle().Colors[(int)ImGuiCol.TitleBg];
+            ImGui.PushStyleColor(ImGuiCol.TitleBg, new Vector4(.7f, .2f, .3f, .6f));
+            ImGui.PushStyleColor(ImGuiCol.TitleBgActive, new Vector4(.8f, .2f, .3f, .6f));
+            ImGui.PushStyleColor(ImGuiCol.TitleBgCollapsed, new Vector4(.6f, .2f, .3f, .6f));
+            var visible = ImGui.Begin("Owned chrome###owned-chrome", ref open, ImGuiWindowFlags.HorizontalScrollbar);
+            window = ImGuiP.GetCurrentWindow();
+            try
+            {
+                Assert.Equal(simulateOwned, window.ViewportOwned);
+                Assert.Equal(simulateOwned ? 0 : cornerRadius, window.WindowRounding);
+                if (useDecorations && visible) decorations.Paint();
+                if (nativeId == 0) nativeId = window.ID;
+                Assert.Equal(nativeId, window.ID);
+                Assert.Equal(new Vector2(320, 240) * scale, window.SizeFull);
+                if (visible)
+                {
+                    var id = ImGui.GetID("retained-action");
+                    if (actionId == 0) actionId = id;
+                    Assert.Equal(actionId, id);
+                    if (ImGui.Button("retained-action")) presses++;
+                    actionCenter = (ImGui.GetItemRectMin() + ImGui.GetItemRectMax()) * .5f;
+                    ImGui.Dummy(new Vector2(1000, 900) * scale);
+                }
+            }
+            finally
+            {
+                // Match Dalamud's title override pop before End, including collapsed frames.
+                ImGui.PopStyleColor(3);
+                ImGui.End();
+                if (useDecorations) { decorations.Paint(); fold.PostDraw(); }
+            }
+            Assert.Equal(colors, context.ColorStack.Size);
+            Assert.Equal(titleColor, ImGui.GetStyle().Colors[(int)ImGuiCol.TitleBg]);
+            Assert.True(open);
+        }
+        host.Frame(Draw); host.Frame(Draw);
+        var square = SoftwarePreview.Capture(host);
+        Assert.False(IsBackground(square, window.Pos + Vector2.One));
+        useDecorations = true;
+        host.Frame(Draw); host.Frame(Draw);
+        var rounded = SoftwarePreview.Capture(host);
+        Assert.True(window.ScrollbarX);
+        Assert.True(window.ScrollbarY);
+        AssertCorners(rounded);
+        host.Click(actionCenter, Draw);
+        Assert.Equal(1, presses);
+        collapsed = true;
+        host.Frame(Draw); host.Frame(Draw);
+        Assert.True(window.Collapsed);
+        AssertCorners(SoftwarePreview.Capture(host));
+        collapsed = false;
+        host.Frame(Draw); host.Frame(Draw);
+        Assert.False(window.Collapsed);
+        AssertCorners(SoftwarePreview.Capture(host));
+
+        // Compare the corrected owned-window grip with native rounded decoration ink.
+        // An undersized convex-fill path can clear corners while corrupting the grip.
+        useDecorations = false;
+        simulateOwned = false;
+        host.Frame(Draw); host.Frame(Draw);
+        var nativeRounded = SoftwarePreview.Capture(host);
+        SoftwarePreview.Save(Path.Combine("Z:/aethertekUI/artifacts/window-motion-platform", $"grip-native-{density}-{scale}.png"), host);
+        useDecorations = true;
+        simulateOwned = true;
+        host.Frame(Draw); host.Frame(Draw);
+        var corrected = SoftwarePreview.Capture(host);
+        SoftwarePreview.Save(Path.Combine("Z:/aethertekUI/artifacts/window-motion-platform", $"grip-corrected-{density}-{scale}.png"), host);
+        var gripExtent = (int)MathF.Ceiling(60 * scale);
+        var right = (int)(window.Pos.X + window.Size.X);
+        var bottom = (int)(window.Pos.Y + window.Size.Y);
+        for (var y = bottom - gripExtent; y < bottom; y++)
+        for (var x = right - gripExtent; x < right; x++)
+        for (var channel = 0; channel < 4; channel++)
+        {
+            var pixel = (y * corrected.Width + x) * 4 + channel;
+            var referencePixel = (y * nativeRounded.Width + x) * 4 + channel;
+            Assert.True(Math.Abs(corrected.Rgba[pixel] - nativeRounded.Rgba[referencePixel]) <= 2,
+                $"Resize region ({x},{y}) channel {channel}: corrected {corrected.Rgba[pixel]}, native {nativeRounded.Rgba[referencePixel]}");
+        }
+
+        // Background and menu fills can be identical native rectangles. Match each
+        // separately so an already-cleared background cannot hide the later menu.
+        void DrawMenuOnly()
+        {
+            using var themeScope = MaterialTheme.Push(theme, scale, MaterialStyleMode.ColorsOnly);
+            using var chrome = MaterialWindowChrome.Push();
+            using var geometry = new MaterialStyleScope();
+            geometry.Style(ImGuiStyleVar.WindowBorderSize, 0f);
+            geometry.Style(ImGuiStyleVar.WindowMinSize, Vector2.Zero);
+            ImGui.SetNextWindowPos(Vector2.Zero);
+            ImGui.SetNextWindowSize(new Vector2(320 * scale, ImGui.GetFontSize() + 2 * ImGui.GetStyle().FramePadding.Y));
+            ImGui.SetNextWindowSizeConstraints(Vector2.Zero, new(1000), owned);
+            fold.PreDraw("Menu-only owned chrome", null, null, true, decorations.Prepare);
+            if (ImGui.Begin("Menu-only owned chrome", ImGuiWindowFlags.NoTitleBar | ImGuiWindowFlags.MenuBar |
+                ImGuiWindowFlags.AlwaysAutoResize | ImGuiWindowFlags.NoSavedSettings)) decorations.Paint();
+            window = ImGuiP.GetCurrentWindow();
+            ImGui.End();
+            decorations.Paint();
+            fold.PostDraw();
+        }
+        host.Frame(DrawMenuOnly); host.Frame(DrawMenuOnly);
+        var menuFrame = SoftwarePreview.Capture(host);
+        Assert.Equal(MathF.Floor(ImGuiP.MenuBarHeight(window)), window.Size.Y);
+        Assert.True(IsBackground(menuFrame, window.Pos + Vector2.One));
+        Assert.False(IsBackground(menuFrame, window.Pos + new Vector2(window.Size.X / 2, window.Size.Y / 2)));
+
+        void AssertCorners(SoftwarePreview.Frame frame)
+        {
+            var min = window.Pos;
+            var max = min + window.Size;
+            Assert.True(IsBackground(frame, min + Vector2.One));
+            Assert.True(IsBackground(frame, new(max.X - 2, min.Y + 1)));
+            Assert.True(IsBackground(frame, new(min.X + 1, max.Y - 2)));
+            Assert.True(IsBackground(frame, max - new Vector2(2)));
+            Assert.False(IsBackground(frame, min + new Vector2(cornerRadius + 2, 2)));
+            Assert.False(IsBackground(frame, max - new Vector2(cornerRadius + 2, 3)));
+            Assert.Equal(cornerRadius, window.WindowRounding);
+        }
+        static bool IsBackground(SoftwarePreview.Frame frame, Vector2 point)
+        {
+            var i = ((int)point.Y * frame.Width + (int)point.X) * 4;
+            return frame.Rgba[i] == 26 && frame.Rgba[i + 1] == 29 && frame.Rgba[i + 2] == 33;
+        }
+    }
+
     [Fact]
     public void ExplicitWindowChromePreservesRetainedLayoutAndRestoresOuterStyle()
     {

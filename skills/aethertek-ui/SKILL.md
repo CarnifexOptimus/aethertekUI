@@ -56,8 +56,40 @@ keeping it active through End. It uses the current theme's already-scaled outer
 radius and restores the prior window rounding without changing padding, spacing,
 native IDs or saved geometry. The optional adapter's
 `Draw(windows, applyMetrics, roundedCorners)` overload forwards the same scope.
-Consumer PreDraw styles may override it; verify the actual native window's
-rounding rather than switching the consumer's layout mode.
+Consumer PreDraw styles may override it. Native Begin forces rounding to zero
+for owned platform viewports and docked windows; this style scope alone cannot
+prove their rendered corners.
+
+For selected owned-viewport corners and animated minimize in a Dalamud Window,
+own one `MaterialWindowMotion` per window. Call
+`Prepare(this, reducedMotion: existingPreference, roundedCorners: true)` last in
+PreDraw, `DrawChrome()` first in Draw, and `Restore(this)` first in PostDraw,
+after native End even when collapsed. Keep the theme and corner style scope
+around the full lifecycle. Reference and ship the optional adapter DLL.
+Preserve existing hook work and branch coverage, including font loading/error
+windows. Enter the saved theme and chrome scope before a font-readiness early
+return; linking the same status helper into public and private hosts does not
+supply its caller theme. Keep borrowed body-font and layout scopes after readiness.
+Prepare composes prior native size callbacks and temporarily suppresses
+later managed constraint setters; Restore returns the owner's exact constraints.
+
+For direct native Begin/End, own one `MaterialWindowFold` and one
+`MaterialWindowDecorations`. Pass a cached `decorations.Prepare` delegate to the
+fold's five-argument PreDraw overload after setting existing size constraints.
+Call `decorations.Paint()` first in visible content and again after End, then
+`fold.PostDraw()`. Paint replaces only matched native decoration meshes in that
+owner's draw list, retaining emitted opacity, title controls, scrollbar grabs,
+input and global styles. It does not paint a shared viewport background.
+Docked windows and native popup/child/tooltip windows retain native chrome.
+
+Native collapse arrows and title double-clicks keep their IDs. Existing
+NoCollapse/NoTitleBar flags and disabled theme motion retain native behavior.
+Inside Draw, size observers that save or repair geometry use
+`motion.GetLogicalSize()` or `fold.GetLogicalSize()` to see expanded pixel size
+during animation. Keep explicit resize actions and original position/save paths.
+Verify actual owner hooks, expanded/collapsed/restored corner pixels, resize
+grips, constraints, IDs and saves at both densities/scales. The offline injected
+owned-viewport branch is diagnostic evidence; game/GPU acceptance stays separate.
 
 For a borderless native child, pass `ImGuiWindowFlags.AlwaysUseWindowPadding`
 when the design needs inset content; a pushed `WindowPadding` alone is ignored

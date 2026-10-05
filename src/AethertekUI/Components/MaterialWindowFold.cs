@@ -13,6 +13,7 @@ public sealed unsafe class MaterialWindowFold
     private ImGuiWindowPtr window;
     private ImGuiNextWindowData previousNext;
     private ImGuiSizeCallback? previousCallback;
+    private Action<ImGuiWindowPtr>? beforeBegin;
     private ImGuiWindowFlags originalFlags;
     private ImGuiCond collapsedAllowFlags;
     private uint windowId;
@@ -46,6 +47,11 @@ public sealed unsafe class MaterialWindowFold
     /// </summary>
     public bool PreDraw(string windowName, Vector2? minimumSize = null, Vector2? maximumSize = null,
         bool reducedMotion = false)
+        => PreDraw(windowName, minimumSize, maximumSize, reducedMotion, null);
+
+    /// <summary>Compose preparation after native viewport selection, before decoration rendering.</summary>
+    public bool PreDraw(string windowName, Vector2? minimumSize, Vector2? maximumSize,
+        bool reducedMotion, Action<ImGuiWindowPtr>? prepareDecorations)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(windowName);
         if (minimumSize.HasValue != maximumSize.HasValue)
@@ -73,6 +79,7 @@ public sealed unsafe class MaterialWindowFold
         animate = !reducedMotion && MaterialTheme.Current.Motion.Enabled;
         previousNext = current.NextWindowData;
         previousCallback = null;
+        beforeBegin = prepareDecorations;
 
         if (!native.IsNull)
         {
@@ -96,7 +103,7 @@ public sealed unsafe class MaterialWindowFold
             }
         }
 
-        if (!animate) return false;
+        if (!animate && beforeBegin is null) return false;
         var hasConstraints = previousNext.Flags.HasFlag(ImGuiNextWindowDataFlags.HasSizeConstraint);
         var minimum = minimumSize ?? (hasConstraints ? previousNext.SizeConstraintRect.Min : Vector2.Zero);
         var maximum = maximumSize ?? (hasConstraints ? previousNext.SizeConstraintRect.Max : new Vector2(float.MaxValue));
@@ -146,6 +153,7 @@ public sealed unsafe class MaterialWindowFold
         }
         prepared = false;
         previousCallback = null;
+        beforeBegin = null;
     }
 
     /// <summary>Read inside this window's Draw when observing saved or repairable geometry.</summary>
@@ -166,6 +174,8 @@ public sealed unsafe class MaterialWindowFold
         // and later manual-resize callbacks; do not advance motion on those other calls.
         if (++callbackCount != 2) return;
         window = ImGuiP.GetCurrentWindow();
+        beforeBegin?.Invoke(window);
+        if (!animate) return;
         var flags = window.Flags;
         var collapsed = window.Collapsed;
         const ImGuiWindowFlags excluded = ImGuiWindowFlags.NoCollapse | ImGuiWindowFlags.NoTitleBar |

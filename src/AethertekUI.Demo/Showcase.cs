@@ -15,6 +15,17 @@ internal sealed partial class Showcase
     private bool expanded=true;
     private bool windowMotionOpen;
     private readonly MaterialWindowFold windowFold = new();
+    private readonly MaterialWindowDecorations windowDecorations = new();
+    private readonly MaterialWindowFold showcaseFold = new();
+    private readonly MaterialWindowDecorations showcaseDecorations = new();
+    private readonly Action<ImGuiWindowPtr> prepareWindowDecorations;
+    private readonly Action<ImGuiWindowPtr> prepareShowcaseDecorations;
+
+    public Showcase()
+    {
+        prepareWindowDecorations = windowDecorations.Prepare;
+        prepareShowcaseDecorations = showcaseDecorations.Prepare;
+    }
     private string notice="Ready. All actions use mock state.";
     private static readonly string[] Pages=["Gallery","Automation","Gathering data","Dashboard","Settings","List editor","Large catalog","Sizing lab"];
     private static readonly MaterialIcon[] PageIcons=[MaterialIcon.Grid,MaterialIcon.Play,MaterialIcon.Table,MaterialIcon.Home,MaterialIcon.Settings,MaterialIcon.Edit,MaterialIcon.Table,MaterialIcon.Sliders];
@@ -36,8 +47,10 @@ internal sealed partial class Showcase
             var scale=MaterialTheme.Metrics.Scale;
             ImGui.SetNextWindowSize(new Vector2(1000,760)*scale,ImGuiCond.FirstUseEver);
             ImGui.SetNextWindowSizeConstraints(new Vector2(780,500)*scale,new(float.MaxValue));
+            showcaseFold.PreDraw("AethertekUI Showcase###crmaterial", null, null, true, prepareShowcaseDecorations);
             if(ImGui.Begin("AethertekUI Showcase###crmaterial",ref IsOpen,ImGuiWindowFlags.NoTitleBar|ImGuiWindowFlags.NoSavedSettings))
             {
+                showcaseDecorations.Paint();
                 var action=MaterialWindowHeader.Draw("AethertekUI Showcase","Compact surfaces. Native behavior. Mock data.",HeaderActions);
                 if(action==0) expanded=!expanded;
                 if(action==1) IsOpen=false;
@@ -82,6 +95,8 @@ internal sealed partial class Showcase
                 }
             }
             ImGui.End();
+            showcaseDecorations.Paint();
+            showcaseFold.PostDraw();
         }
         if(overlayOpen) DrawOverlay();
         if(windowMotionOpen) DrawWindowMotion();
@@ -92,15 +107,17 @@ internal sealed partial class Showcase
         var scale=MaterialTheme.Metrics.Scale;
         ImGui.SetNextWindowSize(new Vector2(420,260)*scale,ImGuiCond.FirstUseEver);
         ImGui.SetNextWindowSizeConstraints(new Vector2(320,180)*scale,new Vector2(700,500)*scale);
-        windowFold.PreDraw(name);
+        windowFold.PreDraw(name, null, null, false, prepareWindowDecorations);
         if(ImGui.Begin(name,ref windowMotionOpen))
         {
+            windowDecorations.Paint();
             ImGui.TextWrapped("Use the title arrow or double-click the title to minimize and restore this window.");
             ImGui.TextWrapped("Resize it, then minimize and restore again. The expanded size and native controls are retained.");
             var motion=theme.Motion.Enabled;
             if(ImGui.Checkbox("Animate minimize",ref motion))theme.Motion.Enabled=motion;
         }
         ImGui.End();
+        windowDecorations.Paint();
         windowFold.PostDraw();
     }
     private void Appearance()
