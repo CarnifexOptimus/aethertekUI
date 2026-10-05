@@ -13,14 +13,17 @@ public unsafe class VisualRegressionTests
         using var host=new NativeTestContext();
         ImGui.GetIO().ConfigFlags|=ImGuiConfigFlags.NavEnableKeyboard;
         var theme=new MaterialTheme(new Vector3(.2f,.7f,.8f));
+        theme.Motion.Enabled=false;
         var accent=new Vector3(28/255f,201/255f,230/255f);var language="en";
         var options=new MaterialOptions<string>([new("en","en","English"),new("de","de","Deutsch")]);
         var accentChanges=0;var languageChanges=0;Vector2 swatch=default,combo=default;
+        MaterialControlMetrics presetMetrics=default;Vector2 presetSpacing=default;
         void Draw()
         {
             using var scope=MaterialTheme.Push(theme);
             ImGui.SetNextWindowPos(Vector2.Zero);ImGui.SetNextWindowSize(new(700,500));
             ImGui.Begin("Selectors",ImGuiWindowFlags.NoSavedSettings|ImGuiWindowFlags.NoTitleBar);
+            presetMetrics=MaterialControls.Metrics;presetSpacing=ImGui.GetStyle().ItemSpacing;
             var origin=ImGui.GetCursorScreenPos();
             var labels=new MaterialAppearanceLabels("Color","Language","Teal","Blue","Pink","Custom RGB");
             MaterialAppearanceChange changed;
@@ -43,6 +46,45 @@ public unsafe class VisualRegressionTests
         }
         host.Frame(Draw);host.Frame(Draw);host.Click(swatch,Draw);host.Frame(Draw);
         var popup=new ImGuiWindowPtr(ImGui.GetCurrentContext().OpenPopupStack[0].Window);
+        var contrastFailures=new List<string>();
+        void PresetContrast(int index,string state)
+        {
+            var label=new[]{"Teal","Blue","Pink"}[index];
+            var min=popup.DC.CursorStartPos+new Vector2(0,index*(presetMetrics.Height+presetSpacing.Y));
+            var max=min+new Vector2(ImGui.CalcTextSize(label).X+2*presetMetrics.Padding.X,presetMetrics.Height);
+            var list=popup.DrawList;var vertices=new ImDrawVert[list.VtxBuffer.Size];
+            for(var i=0;i<vertices.Length;i++) vertices[i]=list.VtxBuffer[i];
+            var ink=new List<uint>();
+            for(var i=0;i+3<vertices.Length;i++)
+            {
+                var a=vertices[i];var b=vertices[i+1];var c=vertices[i+2];var d=vertices[i+3];
+                if(a.Pos.X>=min.X && a.Pos.Y>=min.Y && c.Pos.X<=max.X && c.Pos.Y<=max.Y
+                    && a.Uv.X<c.Uv.X && a.Uv.Y<c.Uv.Y && a.Uv.Y==b.Uv.Y && b.Uv.X==c.Uv.X
+                    && c.Uv.Y==d.Uv.Y && d.Uv.X==a.Uv.X && a.Pos.Y==b.Pos.Y && b.Pos.X==c.Pos.X
+                    && c.Pos.Y==d.Pos.Y && d.Pos.X==a.Pos.X) { ink.Add(a.Col);i+=3; }
+            }
+            Assert.Equal(label.Length,ink.Count);Assert.All(ink,color=>Assert.Equal(ink[0],color));
+            var frame=SoftwarePreview.Capture(host);
+            var pixel=((int)(min.Y+presetMetrics.Height*.5f)*frame.Width+(int)(min.X+presetMetrics.Padding.X*.5f))*4;
+            var fill=new Vector4(frame.Rgba[pixel]/255f,frame.Rgba[pixel+1]/255f,frame.Rgba[pixel+2]/255f,1);
+            var foreground=ImGui.ColorConvertU32ToFloat4(ink[0]);
+            var ratio=MaterialColor.Contrast(fill,foreground);
+            if(ratio<4.5f) contrastFailures.Add($"{label} {state} label contrast {ratio:F2}:1 is below 4.5:1.");
+            if(!separated && index==1 && Environment.GetEnvironmentVariable("AETHERTEKUI_PREVIEW_DIR") is { Length:>0 } directory)
+                SoftwarePreview.Write(Path.Combine(directory,$"selector-presets-{state}.png"),frame);
+        }
+        ImGui.GetIO().AddMousePosEvent(-1000,-1000);host.Frame(Draw);
+        for(var i=0;i<3;i++) PresetContrast(i,"idle");
+        for(var i=0;i<3;i++)
+        {
+            var point=popup.DC.CursorStartPos+new Vector2(20,i*(presetMetrics.Height+presetSpacing.Y)+presetMetrics.Height*.5f);
+            ImGui.GetIO().AddMousePosEvent(point.X,point.Y);host.Frame(Draw);PresetContrast(i,"hover");
+            ImGui.GetIO().AddMouseButtonEvent(0,true);host.Frame(Draw);PresetContrast(i,"pressed");
+            ImGui.GetIO().AddMousePosEvent(-1000,-1000);host.Frame(Draw);
+            ImGui.GetIO().AddMouseButtonEvent(0,false);host.Frame(Draw);
+        }
+        Assert.Equal(0,accentChanges);Assert.Equal(0,languageChanges);
+        Assert.True(contrastFailures.Count==0,string.Join(Environment.NewLine,contrastFailures));
         var blue=popup.Pos+ImGui.GetStyle().WindowPadding+new Vector2(20,MaterialControlMetrics.Measure(new(MaterialDensity.Compact,1),ImGui.GetTextLineHeight()).Height*1.5f+ImGui.GetStyle().ItemSpacing.Y);
         host.Click(blue,Draw);
         Assert.Equal(new Vector3(66/255f,133/255f,244/255f),accent);Assert.Equal(1,accentChanges);Assert.Equal(0,languageChanges);

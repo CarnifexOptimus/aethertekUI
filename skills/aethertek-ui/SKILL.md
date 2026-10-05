@@ -68,6 +68,14 @@ leave that frame's work rectangle narrow and feed a collapsed width back into
 the next frame, as FrenRider Mini demonstrated. Verify the actual window flags,
 reopening and density changes without supplying a fixed diagnostic size.
 
+For a retained auto-fit wizard with wrapped content, constrain the native
+auto-fit width to the width selected before Begin. Krangler otherwise measured
+its content using a different width and clipped the final navigation row. Reserve
+the complete fractional lower edge of the last native controls before auto-fit;
+verify settling, short-viewport scrolling and fresh reopening with original IDs.
+Its fourteen-locale, two-density, 100%/150% checks retained a stable subpixel
+scroll remainder while all button ink remained visible.
+
 ## Identity, localization and resources
 
 Use only `mcvaxius` or `dhoggpt` for user attribution. Never include the
@@ -154,6 +162,13 @@ DrawAccent's explicit positive logical size supports approved larger swatches
 while retaining the same selector/accent IDs and change events. Configure the
 language field's height through an explicit MaterialControls.Push(metrics)
 scope; the existing selector inherits those scaled pixel metrics.
+
+DrawAccent's fixed Teal/Blue/Pink preset fills use opaque black labels.
+Use MaterialColor.Contrast on the actual fill/foreground pair in idle,
+hover and pressed states; MaterialButton's .08/.14 foreground layers can
+lower contrast on press. The selector regression checks at least 4.5:1
+with native rendered fill samples and glyph colours while retaining IDs,
+caller sizes and separate change events.
 
 Measure translated labels using the active host font. Budget pane, column,
 button and popup widths for longer translations; use wrapping tiles where
@@ -502,6 +517,13 @@ Botology's first adoption establishes these practices:
   parameterless nested scopes inherit them, explicit contexts remeasure, and
   theme/control scope disposal restores the prior state. Showcase and compiled
   consumer examples accompany demonstrated reusable gaps.
+- Measure retained table columns from translated headings and actual row text.
+  Native fixed-column requests are content widths; budget cell padding and
+  borders separately in the scrolling table's inner width. ChocoboColourized's
+  narrow Timers otherwise starved its stretch column despite a wide inner table.
+  Keep ordinary cells on one line and verify native scrolling reaches the final
+  column. Bound the table height to its rows and viewport instead of filling a
+  mostly empty retained surface; preserve IDs, raw names and model data.
 - Reserve footer height before sizing a scrolling table. Preserve optional
   columns and allow horizontal scrolling instead of resetting saved preferences.
   Assign native column user IDs from stable column identities, consume native
@@ -597,6 +619,12 @@ the actual role used by those controls. ADS's nine roles and four CJK merges use
 763 MiB before baking; separate role checks stayed below 236 MiB. Retain the
 required text, original heights and merge order, and record every process bound.
 Separate glyph checks do not prove combined-atlas, whole-window or managed-host readiness.
+For standalone checker references, inspect MSBuild's actual ReferencePath and
+ResolvedFrom after ResolveAssemblyReferences. Retained ignored DLL outputs can
+resolve through {CandidateAssemblyFiles} before an explicit HintPath; the
+shared checker's search paths exclude those candidates. Use the normal build's
+actual core output, and require identical core bytes in checker and product
+before accepting results. A successful rebuild or equal file sizes is insufficient.
 Historical mission/GBR reports do not prove current
 integration compatibility or grant permission to run legacy tooling.
 

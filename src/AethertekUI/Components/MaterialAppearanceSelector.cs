@@ -82,7 +82,7 @@ public static class MaterialAppearanceSelector
             (string Id,string Label,Vector3 Color)[] presets=[("teal",labels.Teal,new(28/255f,201/255f,230/255f)),
                 ("blue",labels.Blue,new(66/255f,133/255f,244/255f)),("pink",labels.Pink,new(236/255f,92/255f,160/255f))];
             foreach(var p in presets)
-                if(MaterialButton.Draw(p.Id,p.Label,new MaterialControlAppearance(new(p.Color,1),colors.OnSurface,colors.OutlineVariant)))
+                if(MaterialButton.Draw(p.Id,p.Label,new MaterialControlAppearance(new(p.Color,1),new(0,0,0,1),colors.OutlineVariant)))
                 { accent=p.Color; accentChanged=true; }
             ImGui.TextUnformatted(labels.Custom);
             ImGui.ColorPicker3("##rgb",ref accent,ImGuiColorEditFlags.NoAlpha);
