@@ -78,6 +78,8 @@ internal sealed partial class Showcase
         MaterialStatus.Badge("Available",4); ImGui.SameLine();
         MaterialStatus.Badge("Warning",4,new Vector4(1,.86f,.35f,1));
         AppearanceExamples();
+        MaterialStatus.SectionHeader("WINDOW MOTION");
+        if(MaterialButton.FilledTonalButton("show-window-motion","Preview minimize and restore"))windowMotionOpen=true;
     }
 
     internal void AppearanceExamples()

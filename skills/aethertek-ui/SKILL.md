@@ -50,6 +50,15 @@ Scopes are UI-thread/context-bound, lexical and LIFO. Do not copy or double
 dispose them, or switch contexts before disposal. Preserve balanced native
 Begin/End, popup, table, child, font and ID scopes.
 
+For explicitly selected rounded outer chrome on a retained `ColorsOnly` layout,
+enter `MaterialWindowChrome.Push()` after the theme and before native Begin,
+keeping it active through End. It uses the current theme's already-scaled outer
+radius and restores the prior window rounding without changing padding, spacing,
+native IDs or saved geometry. The optional adapter's
+`Draw(windows, applyMetrics, roundedCorners)` overload forwards the same scope.
+Consumer PreDraw styles may override it; verify the actual native window's
+rounding rather than switching the consumer's layout mode.
+
 For a borderless native child, pass `ImGuiWindowFlags.AlwaysUseWindowPadding`
 when the design needs inset content; a pushed `WindowPadding` alone is ignored
 by that child. Footballer also needed the job-details cursor aligned explicitly
@@ -197,6 +206,14 @@ reserves the full tab frame. Hiding ImGuiCol.Text during the first BeginTabItem
 also hid its native scroll arrows; repaint the retained caption in its actual tab
 background while preserving arrow ink, focus and IDs. Check visible arrow
 triangles and native adjacent-tab presses, as well as widths.
+
+DhogGPT retains translucent tab fills by clearing only the original caption's
+glyph alpha in the emitted vertex buffer, then drawing translated ink inside
+the native scrolling bounds. Keep arrow/close geometry intact. Native tab bars
+retain scroll positions after narrowing; verify current-frame bar identity and
+visible arrow hit geometry through each draw command's clip and vertex offset.
+Follow native settling and the actual configuration change when checking saves;
+a display-only adjacent tab may legitimately save nothing and retain composer focus.
 
 Paint a retained title outside the native body's clip rectangle; intersecting that
 clip can make the entire version invisible. Reserve native close/collapse controls
@@ -411,6 +428,13 @@ translation environment; external translation services require explicit approval
 Preserve plugin names, external
 catalog content, command tokens and logs. Format UI numbers and dates using the
 selected locale without changing process-wide culture.
+Include the selected culture's `NumberFormat.NumberGroupSeparator` in required
+glyph text when displayed typed values use grouping. French `N0` uses U+202F,
+which can be absent from resource strings and baseline font ranges. ChokeAbo,
+LootGoblin, TTSL and ADS verified this correction across their advertised catalogs
+and every original French font role, preserving role heights/files/merge order.
+Check formatted samples against production ranges as well as required text;
+digits already covered by baseline ranges are not missing product glyphs.
 Translate authored interpolation arguments explicitly. Keep names, IDs and
 already formatted service arguments raw, including leading zeroes; apply locale
 number formatting to typed UI values instead of reparsing arbitrary text.

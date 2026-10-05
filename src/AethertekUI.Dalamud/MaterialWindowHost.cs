@@ -18,6 +18,19 @@ public sealed class MaterialWindowHost
         windows.Draw();
     }
 
+    /// <summary>Explicit rounded outer chrome while preserving the selected host layout mode.</summary>
+    public void Draw(WindowSystem windows, bool applyMetrics, bool roundedCorners)
+    {
+        ArgumentNullException.ThrowIfNull(windows);
+        using var scope = BeginFrame(applyMetrics);
+        if (roundedCorners)
+        {
+            using var chrome = MaterialWindowChrome.Push();
+            windows.Draw();
+        }
+        else windows.Draw();
+    }
+
     /// <summary>Use around a host's normal draw path. Dispose before leaving the UI thread/frame.</summary>
     public MaterialTheme.ThemeScope BeginFrame(bool applyMetrics = true)
         => MaterialTheme.Push(Controller.Theme, ImGuiHelpers.GlobalScale, applyMetrics ? StyleMode : MaterialStyleMode.ColorsOnly);

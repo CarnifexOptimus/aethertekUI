@@ -13,6 +13,8 @@ internal sealed partial class Showcase
     private float opacity=.94f;
     private int density;
     private bool expanded=true;
+    private bool windowMotionOpen;
+    private readonly MaterialWindowFold windowFold = new();
     private string notice="Ready. All actions use mock state.";
     private static readonly string[] Pages=["Gallery","Automation","Gathering data","Dashboard","Settings","List editor","Large catalog","Sizing lab"];
     private static readonly MaterialIcon[] PageIcons=[MaterialIcon.Grid,MaterialIcon.Play,MaterialIcon.Table,MaterialIcon.Home,MaterialIcon.Settings,MaterialIcon.Edit,MaterialIcon.Table,MaterialIcon.Sliders];
@@ -25,9 +27,10 @@ internal sealed partial class Showcase
 
     public void Draw(float globalScale = 1)
     {
-        if(!IsOpen&&!overlayOpen) return;
+        if(!IsOpen&&!overlayOpen&&!windowMotionOpen) return;
         // The theme scope wraps Begin/End, so it also styles the outer window.
         using var scope=MaterialTheme.Push(theme,globalScale,MaterialStyleMode.Material);
+        using var chrome=MaterialWindowChrome.Push();
         if(IsOpen)
         {
             var scale=MaterialTheme.Metrics.Scale;
@@ -81,6 +84,24 @@ internal sealed partial class Showcase
             ImGui.End();
         }
         if(overlayOpen) DrawOverlay();
+        if(windowMotionOpen) DrawWindowMotion();
+    }
+    private void DrawWindowMotion()
+    {
+        const string name="Window motion preview###aethertek-window-motion";
+        var scale=MaterialTheme.Metrics.Scale;
+        ImGui.SetNextWindowSize(new Vector2(420,260)*scale,ImGuiCond.FirstUseEver);
+        ImGui.SetNextWindowSizeConstraints(new Vector2(320,180)*scale,new Vector2(700,500)*scale);
+        windowFold.PreDraw(name);
+        if(ImGui.Begin(name,ref windowMotionOpen))
+        {
+            ImGui.TextWrapped("Use the title arrow or double-click the title to minimize and restore this window.");
+            ImGui.TextWrapped("Resize it, then minimize and restore again. The expanded size and native controls are retained.");
+            var motion=theme.Motion.Enabled;
+            if(ImGui.Checkbox("Animate minimize",ref motion))theme.Motion.Enabled=motion;
+        }
+        ImGui.End();
+        windowFold.PostDraw();
     }
     private void Appearance()
     {

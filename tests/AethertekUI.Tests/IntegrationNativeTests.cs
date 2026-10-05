@@ -6,6 +6,48 @@ namespace AethertekUI.Tests;
 
 public class IntegrationNativeTests
 {
+    [Fact]
+    public void ExplicitWindowChromePreservesRetainedLayoutAndRestoresOuterStyle()
+    {
+        using var context = new NativeTestContext();
+        var style = ImGui.GetStyle();
+        var rounding = style.WindowRounding;
+        var padding = style.WindowPadding;
+        var framePadding = style.FramePadding;
+        var spacing = style.ItemSpacing;
+        foreach (var density in new[] { MaterialDensity.Compact, MaterialDensity.Standard })
+        foreach (var scale in new[] { 1f, 1.5f })
+        {
+            var chromeTheme = new MaterialTheme(new Vector3(.3f, .7f, .4f), density);
+            void Draw()
+            {
+                using var themeScope = MaterialTheme.Push(chromeTheme, scale, MaterialStyleMode.ColorsOnly);
+                Assert.Equal(rounding, style.WindowRounding);
+                using (var chrome = MaterialWindowChrome.Push())
+                {
+                    ImGui.SetNextWindowSize(new Vector2(400, 260));
+                    ImGui.Begin("Window chrome###retained-chrome", ImGuiWindowFlags.NoSavedSettings);
+                    try
+                    {
+                        Assert.Equal(MaterialTheme.Metrics.OuterRadius, ImGuiP.GetCurrentWindow().WindowRounding);
+                        Assert.Equal(padding, style.WindowPadding);
+                        Assert.Equal(framePadding, style.FramePadding);
+                        Assert.Equal(spacing, style.ItemSpacing);
+                        var retainedId = ImGui.GetID("retained-action");
+                        ImGui.Button("retained-action");
+                        Assert.Equal(retainedId, ImGuiP.GetItemID());
+                        Assert.Equal(new Vector2(400, 260), ImGui.GetWindowSize());
+                    }
+                    finally { ImGui.End(); }
+                }
+                Assert.Equal(rounding, style.WindowRounding);
+            }
+            context.Frame(Draw);
+            context.Frame(Draw);
+        }
+        Assert.Equal(rounding, style.WindowRounding);
+    }
+
     [Theory] [InlineData(14f)] [InlineData(36f)]
     public void ConsumerActionIconsKeepDistinctMeshesBoundsAndOpacity(float size)
     {

@@ -7,6 +7,7 @@ See [Adaptive sizing and host compatibility](ADAPTIVE_SIZING.md) for units, owne
 | API | Purpose |
 |---|---|
 | MaterialStyleMode.Compatible / Material / ColorsOnly | Preserve host layout by default; opt into full metrics or colors alone |
+| MaterialWindowChrome.Push() | Explicit outer-window rounding using the active theme's pixel metrics; retains host padding, spacing, IDs and geometry |
 | MaterialControls.Push(context) | Match native and custom control heights using current font, density and scale |
 | MaterialControlContext.Regular / Toolbar / Dense | Local sizing intent independent of theme density |
 | MaterialControls.Push(metrics) | Explicit already-scaled pixel metrics; parameterless nested scopes inherit, explicit contexts remeasure |
@@ -18,6 +19,11 @@ See [Adaptive sizing and host compatibility](ADAPTIVE_SIZING.md) for units, owne
 | MaterialActionTile.Measure / MaterialTileSizing | Content-aware wrapping and grid measurement; explicit fixed-height option |
 
 All controls are immediate-mode; booleans return activation or value change. Consumers own state and lifecycle.
+
+Enter `MaterialWindowChrome.Push()` after the theme and before native Begin,
+and keep it active through End. It supplies outer-window rounding explicitly
+for retained `ColorsOnly` layouts without changing that mode's existing contract.
+The optional adapter also exposes `Draw(windows, applyMetrics, roundedCorners)`.
 
 Appearance overloads of `MaterialButton.Draw`, `MaterialStatus.Badge`,
 `MaterialTextField.SearchField`, and `MaterialCombo.Draw` retain native
@@ -168,7 +174,7 @@ Every style/child/tab/dialog scope is a ref struct. Do not copy, box, store or d
 | Type | Contract |
 |---|---|
 | MaterialThemeSettings / Controller | Serializable immutable settings; Apply validates, skips unchanged settings, regenerates only for RGB changes |
-| MaterialWindowHost (optional adapter assembly) | Draw(WindowSystem,applyMetrics) or BeginFrame(applyMetrics); no subscriptions or config writes |
+| MaterialWindowHost (optional adapter assembly) | Draw(WindowSystem,applyMetrics), explicit Draw(WindowSystem,applyMetrics,roundedCorners), or BeginFrame(applyMetrics); no subscriptions or config writes |
 | MaterialTheme.Push(...,applyMetrics:false) | Native colors only; preserves existing ImGui geometry styles |
 | MaterialOptions<T> / MaterialCombo.Draw | Cached keyed options, filtered on SetQuery/Replace; disabled options, native editing/selection |
 | MaterialInput | Integer, Number, Slider, Multiline; stable IDs, native flags, logical size, disabled and bounds |

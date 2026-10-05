@@ -115,6 +115,8 @@ public sealed class ConsumerUi : IDisposable
 
     // Consumer calls this from its existing draw subscription.
     public void Draw() => material.Draw(windows);
+    // Retained layout can opt into outer corners without changing its padding or spacing.
+    public void DrawRoundedCorners() => material.Draw(windows, applyMetrics: false, roundedCorners: true);
     // Consumer persists these settings using its own configuration service.
     public void ApplySettings(MaterialThemeSettings settings) => material.Controller.Apply(settings);
 
@@ -129,6 +131,7 @@ public sealed class ConsumerUi : IDisposable
 
     private sealed class ExampleWindow : Window
     {
+        private readonly MaterialWindowMotion motion = new();
         private readonly MaterialOptions<int> routes = new([new("local",0,"Local route"),new("remote",1,"Remote route")]);
         private readonly MaterialSearchState searchFocus = new();
         private static readonly MaterialSegment<int>[] Modes = [new(0,"Auto",Key:"auto"),new(1,"Manual",Key:"manual"),new(2,"Off",Key:"off")];
@@ -144,6 +147,9 @@ public sealed class ConsumerUi : IDisposable
             Size = new(600,500);
             SizeCondition = ImGuiCond.FirstUseEver;
         }
+
+        public override void PreDraw() => motion.Prepare(this);
+        public override void PostDraw() => motion.Restore(this);
 
         public override void Draw()
         {
