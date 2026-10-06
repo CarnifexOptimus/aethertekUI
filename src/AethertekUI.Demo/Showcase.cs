@@ -16,6 +16,12 @@ internal sealed partial class Showcase
     private bool windowMotionOpen;
     private readonly MaterialWindowFold windowFold = new();
     private readonly MaterialWindowDecorations windowDecorations = new();
+    private readonly MaterialWindowOpacity windowOpacity = new();
+    private bool windowOpacityEnabled = true;
+    private bool windowAutoFade = true;
+    private float windowOpacityPercent = 100;
+    private float windowFadePercent = 50;
+    private float windowFadeDelay = 10;
     private readonly MaterialWindowFold showcaseFold = new();
     private readonly MaterialWindowDecorations showcaseDecorations = new();
     private readonly Action<ImGuiWindowPtr> prepareWindowDecorations;
@@ -115,10 +121,17 @@ internal sealed partial class Showcase
             ImGui.TextWrapped("Resize it, then minimize and restore again. The expanded size and native controls are retained.");
             var motion=theme.Motion.Enabled;
             if(ImGui.Checkbox("Animate minimize",ref motion))theme.Motion.Enabled=motion;
+            ImGui.Checkbox("Window opacity",ref windowOpacityEnabled);
+            ImGui.SliderFloat("Normal opacity",ref windowOpacityPercent,10,100,"%.0f%%");
+            ImGui.Checkbox("Fade without focus",ref windowAutoFade);
+            ImGui.SliderFloat("Unfocused opacity",ref windowFadePercent,10,100,"%.0f%%");
+            ImGui.SliderFloat("Unfocused delay",ref windowFadeDelay,0,60,"%.0f seconds");
         }
         ImGui.End();
         windowDecorations.Paint();
         windowFold.PostDraw();
+        windowOpacity.Apply(name,windowOpacityPercent/100,windowOpacityEnabled,windowAutoFade,
+            windowFadePercent/100,windowFadeDelay);
     }
     private void Appearance()
     {

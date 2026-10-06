@@ -217,7 +217,7 @@ public unsafe class IntegrationNativeTests
             MaterialIcon.Wrench,MaterialIcon.DoorExit,MaterialIcon.Cube,MaterialIcon.Chest,MaterialIcon.Cart,MaterialIcon.Chat,
             MaterialIcon.Group,MaterialIcon.Warning,MaterialIcon.Plus,MaterialIcon.Pulse,MaterialIcon.Utensils,MaterialIcon.Crystal,
             MaterialIcon.Calendar,MaterialIcon.Crown,MaterialIcon.Book,MaterialIcon.Sparkle,MaterialIcon.Bell,MaterialIcon.Terminal,MaterialIcon.Power,MaterialIcon.Target,
-            MaterialIcon.MapPin,MaterialIcon.HeartOutline];
+            MaterialIcon.MapPin,MaterialIcon.HeartOutline,MaterialIcon.Discord,MaterialIcon.KoFi];
         Assert.Equal(35,(int)MaterialIcon.Send);
         for(var i=0;i<icons.Length;i++) Assert.Equal(36+i,(int)icons[i]);
         icons=[..icons,MaterialIcon.Location];
@@ -248,6 +248,30 @@ public unsafe class IntegrationNativeTests
                     shape[i]=position/size;
                 }
                 Assert.InRange(maximumAlpha,101u,103u);
+                if(icon==MaterialIcon.Discord)
+                {
+                    foreach(var eye in new[] { new Vector2(.35f,.54f),new Vector2(.65f,.54f) })
+                    {
+                        var point=origin+eye*size;
+                        for(var i=firstIndex;i<list.IdxBuffer.Size;i+=3)
+                        {
+                            var a=list.VtxBuffer[list.IdxBuffer[i]].Pos;
+                            var b=list.VtxBuffer[list.IdxBuffer[i+1]].Pos;
+                            var c=list.VtxBuffer[list.IdxBuffer[i+2]].Pos;
+                            static float Edge(Vector2 from,Vector2 to,Vector2 point)
+                                =>(to.X-from.X)*(point.Y-from.Y)-(to.Y-from.Y)*(point.X-from.X);
+                            if(MathF.Abs(Edge(a,b,c))<.0001f) continue;
+                            var ab=Edge(a,b,point);var bc=Edge(b,c,point);var ca=Edge(c,a,point);
+                            Assert.False((ab>=0&&bc>=0&&ca>=0)||(ab<=0&&bc<=0&&ca<=0),
+                                $"Discord eye {eye} is covered by triangle {(a-origin)/size}, {(b-origin)/size}, {(c-origin)/size}; colors {list.VtxBuffer[list.IdxBuffer[i]].Col:X8}/{list.VtxBuffer[list.IdxBuffer[i+1]].Col:X8}/{list.VtxBuffer[list.IdxBuffer[i+2]].Col:X8}.");
+                        }
+                    }
+                }
+                if(icon==MaterialIcon.KoFi)
+                {
+                    var heart=ImGui.ColorConvertFloat4ToU32(new Vector4(1,.29f,.33f,.4f));
+                    Assert.Contains(Enumerable.Range(firstVertex,shape.Length).Select(i=>list.VtxBuffer[i].Col),color=>color==heart);
+                }
                 Assert.All(shapes,previous=>Assert.False(previous.SequenceEqual(shape)));
                 shapes.Add(shape);
                 Assert.Equal(cursor,ImGui.GetCursorScreenPos());

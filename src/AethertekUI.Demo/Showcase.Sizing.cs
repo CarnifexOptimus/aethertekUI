@@ -116,7 +116,7 @@ internal sealed partial class Showcase
                 MaterialIcon.Cart, MaterialIcon.Chat, MaterialIcon.Group, MaterialIcon.Warning, MaterialIcon.Plus,
                 MaterialIcon.Pulse, MaterialIcon.Utensils, MaterialIcon.Crystal, MaterialIcon.Calendar, MaterialIcon.Crown,
                 MaterialIcon.Book, MaterialIcon.Sparkle, MaterialIcon.Bell, MaterialIcon.Terminal, MaterialIcon.Power, MaterialIcon.Target,
-                MaterialIcon.MapPin, MaterialIcon.HeartOutline })
+                MaterialIcon.MapPin, MaterialIcon.HeartOutline, MaterialIcon.Discord, MaterialIcon.KoFi })
             {
                 if(icon != MaterialIcon.Wrench && ImGui.GetItemRectMax().X + ImGui.GetStyle().ItemSpacing.X + 40 * MaterialTheme.Metrics.Scale
                     <= ImGui.GetWindowPos().X + ImGui.GetWindowContentRegionMax().X) ImGui.SameLine();
@@ -128,6 +128,11 @@ internal sealed partial class Showcase
                 new("Color","Language","Teal","Blue","Pink","Custom RGB"),37);
             ImGui.SameLine(); MaterialButton.Draw("between-preferences","Consumer action");
             ImGui.SameLine(); MaterialAppearanceSelector.DrawLanguage("separated-preferences",ref sizingLanguage,sizingLanguages);
+            if(ImGui.GetItemRectMax().X+ImGui.GetStyle().ItemSpacing.X+144*MaterialTheme.Metrics.Scale
+                <=ImGui.GetWindowPos().X+ImGui.GetWindowContentRegionMax().X) ImGui.SameLine();
+            using(MaterialControls.Push(MaterialControls.Metrics with { IconSize=32*MaterialTheme.Metrics.Scale }))
+                MaterialAppearanceSelector.DrawAccent("rectangular-preferences",ref sizingAccent,
+                    new("Color","Language","Teal","Blue","Pink","Custom RGB"),new Vector2(144,49));
             MaterialAppearanceSelector.Draw("native-preferences",ref sizingAccent,
                 new("Color","Language","Teal","Blue","Pink","Custom RGB"),DrawNativeLanguage);
         }

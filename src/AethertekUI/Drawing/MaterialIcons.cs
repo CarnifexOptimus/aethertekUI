@@ -3,7 +3,7 @@ using Dalamud.Bindings.ImGui;
 
 namespace AethertekUI;
 
-public enum MaterialIcon { None, Search, Close, Settings, Check, Play, Pause, Stop, ArrowRight, Return, Edit, Delete, More, ChevronDown, Home, Grid, Table, Sliders, Info, Document, Database, Refresh, Chart, ExternalLink, Download, Palette, Globe, Map, Clock, Link, Calculator, Person, Shield, Monitor, Location, Send, Save, Copy, Heart, List, Sword, Star, Folder, Egg, Wrench, DoorExit, Cube, Chest, Cart, Chat, Group, Warning, Plus, Pulse, Utensils, Crystal, Calendar, Crown, Book, Sparkle, Bell, Terminal, Power, Target, MapPin, HeartOutline }
+public enum MaterialIcon { None, Search, Close, Settings, Check, Play, Pause, Stop, ArrowRight, Return, Edit, Delete, More, ChevronDown, Home, Grid, Table, Sliders, Info, Document, Database, Refresh, Chart, ExternalLink, Download, Palette, Globe, Map, Clock, Link, Calculator, Person, Shield, Monitor, Location, Send, Save, Copy, Heart, List, Sword, Star, Folder, Egg, Wrench, DoorExit, Cube, Chest, Cart, Chat, Group, Warning, Plus, Pulse, Utensils, Crystal, Calendar, Crown, Book, Sparkle, Bell, Terminal, Power, Target, MapPin, HeartOutline, Discord, KoFi }
 
 /// <summary>Small vector icons; no font or texture dependency.</summary>
 public static class MaterialIcons
@@ -21,6 +21,72 @@ public static class MaterialIcons
         void L(float x,float y,float a,float b) => dl.AddLine(P(x,y),P(a,b),ink,stroke);
         switch(icon)
         {
+            case MaterialIcon.Discord:
+            {
+                var flags=dl.Flags;
+                // Curved rings leave genuine transparent eye openings during window fades.
+                dl.Flags &= ~ImDrawListFlags.AntiAliasedFill;
+                try
+                {
+                    for(var side=0;side<2;side++)
+                    {
+                        Vector2 SidePoint(Vector2 point)=>origin+new Vector2(side==0?point.X:1-point.X,point.Y)*size;
+                        var eye=new Vector2(.35f,.54f);
+                        Vector2 Rim(Vector2 point)
+                        {
+                            var direction=point-eye;
+                            var distance=(direction/new Vector2(.067f,.086f)).Length();
+                            return eye+direction/distance;
+                        }
+                        var from=new Vector2(.5f,.22f);
+                        void Point(Vector2 point,bool outline=true)
+                        {
+                            dl.AddQuadFilled(SidePoint(from),SidePoint(point),SidePoint(Rim(point)),SidePoint(Rim(from)),ink);
+                            if(outline) dl.PathLineTo(SidePoint(point));
+                            from=point;
+                        }
+                        void Curve(Vector2 a,Vector2 b,Vector2 end)
+                        {
+                            var start=from;
+                            for(var i=1;i<=12;i++)
+                            {
+                                var t=i/12f;var u=1-t;
+                                Point(u*u*u*start+3*u*u*t*a+3*u*t*t*b+t*t*t*end);
+                            }
+                        }
+                        dl.PathLineTo(SidePoint(from));
+                        Curve(new(.44f,.20f),new(.42f,.20f),new(.38f,.22f));
+                        Curve(new(.37f,.19f),new(.365f,.17f),new(.36f,.16f));
+                        Curve(new(.29f,.17f),new(.21f,.20f),new(.16f,.23f));
+                        Curve(new(.08f,.34f),new(.035f,.55f),new(.05f,.74f));
+                        Curve(new(.10f,.78f),new(.18f,.82f),new(.25f,.83f));
+                        Curve(new(.27f,.805f),new(.29f,.775f),new(.30f,.755f));
+                        Curve(new(.37f,.79f),new(.43f,.79f),new(.5f,.79f));
+                        dl.PathStroke(ink,ImDrawFlags.None,.7f);
+                        var bottom=from;
+                        for(var i=1;i<=24;i++) Point(Vector2.Lerp(bottom,new(.5f,.22f),i/24f),outline:false);
+                        for(var i=0;i<32;i++)
+                        {
+                            var angle=i*MathF.Tau/32;
+                            dl.PathLineTo(SidePoint(eye+new Vector2(MathF.Cos(angle)*.067f,MathF.Sin(angle)*.086f)));
+                        }
+                        // Native antialias fringes can cover the entire eye at small sizes.
+                        var eyeFlags=dl.Flags;
+                        dl.Flags &= ~ImDrawListFlags.AntiAliasedLines;
+                        try { dl.PathStroke(ink,ImDrawFlags.Closed,Math.Min(.7f,size*.035f)); }
+                        finally { dl.Flags=eyeFlags; }
+                    }
+                }
+                finally { dl.Flags=flags; }
+                break;
+            }
+            case MaterialIcon.KoFi:
+                dl.PathLineTo(P(.69f,.26f));
+                dl.PathBezierCubicCurveTo(P(.97f,.21f),P(.94f,.65f),P(.69f,.65f));
+                dl.PathStroke(ink,ImDrawFlags.None,size*.095f);
+                dl.AddRectFilled(P(.06f,.18f),P(.75f,.84f),ink,size*.08f);
+                Draw(MaterialIcon.Heart,dl,P(.11f,.23f),size*.60f,new Vector4(1,.29f,.33f,color.W),alpha);
+                break;
             case MaterialIcon.Wrench:
                 dl.PathLineTo(P(.16f,.74f));dl.PathLineTo(P(.5f,.4f));dl.PathLineTo(P(.49f,.23f));
                 dl.PathLineTo(P(.62f,.1f));dl.PathLineTo(P(.7f,.1f));dl.PathLineTo(P(.64f,.27f));

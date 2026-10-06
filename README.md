@@ -6,6 +6,11 @@ themes, scoped styles and native ImGui interaction. Version remains **0.3.0**.
 The core targets .NET 10 / Windows x64 and uses Dalamud.Bindings.ImGui; the
 optional adapter integrates with Dalamud API 15 hosts.
 
+`MaterialWindowOpacity` fades an owned window's complete native and custom
+content after its final End, with a focus delay and consumer-owned preferences.
+The window-motion showcase and independent consumer demonstrate its lifecycle;
+see [the component contract](docs/COMPONENT_API.md).
+
 ## Repository
 
 ```text
@@ -98,6 +103,9 @@ Wrap the complete Begin/End lifecycle. For WindowSystem, use
 `MaterialWindowHost.Draw(windows)` or a `BeginFrame` scope around `windows.Draw()`.
 The default Compatible mode preserves host layout; Material applies full geometry.
 Consumers own lifecycle, configuration, actions, domain colors, fonts and textures.
+The appearance selector supports square swatches and rectangular colour fields
+with a Palette mesh, current swatch and chevron, retaining the existing popup IDs.
+Explicit control metrics also size that Palette within the field's available space.
 Ship the library DLLs beside the plugin while keeping Dalamud assemblies host-owned.
 
 Use stable IDs independent of translated labels, host-provided CJK fonts, and

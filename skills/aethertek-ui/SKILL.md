@@ -91,6 +91,25 @@ Verify actual owner hooks, expanded/collapsed/restored corner pixels, resize
 grips, constraints, IDs and saves at both densities/scales. The offline injected
 owned-viewport branch is diagnostic evidence; game/GPU acceptance stays separate.
 
+For selected complete-window transparency, own one `MaterialWindowOpacity` per
+top-level window tree. Call `Apply(windowName, opacity, enabled, autoFade,
+fadedOpacity, unfocusedDelaySeconds)` once under its theme after the final native
+End and motion/decorations restore, before Render, including collapsed windows.
+Fractions clamp to .1–1. Defaults are 1 normal, .5 unfocused, auto-fade enabled
+and a 10-second delay. Focus in owned children/popups restores normal opacity
+immediately; native application focus events retain lost-focus state across idle
+frames. Reopening resets the delay. Theme motion and reduced motion control the
+transition; fade never raises opacity above the selected normal value.
+The component multiplies emitted owner/child/popup/tooltip vertex alpha, covering
+native chrome, custom meshes and image tints while retaining RGB, UVs, indices,
+geometry, IDs and styles. Shared foreground/viewport drawings and independent
+windows retain their own opacity. Avoid separate child instances or another
+style/image alpha multiplier on that tree. SurfaceOpacity alone changes themed
+backgrounds. Consumers own translated toggles/settings and their selected save
+path. Verify native focus loss/gain, delay, raw image alpha, collapsed title,
+native actions and saved geometry; standalone results leave host/GPU acceptance
+separate.
+
 For a borderless native child, pass `ImGuiWindowFlags.AlwaysUseWindowPadding`
 when the design needs inset content; a pushed `WindowPadding` alone is ignored
 by that child. Footballer also needed the job-details cursor aligned explicitly
@@ -122,6 +141,10 @@ the complete fractional lower edge of the last native controls before auto-fit;
 verify settling, short-viewport scrolling and fresh reopening with original IDs.
 Its fourteen-locale, two-density, 100%/150% checks retained a stable subpixel
 scroll remainder while all button ink remained visible.
+TTSL Setup separately needed its existing 560-logical-unit width constrained
+before Begin: at 150% scale, unconstrained auto-fit fed wrapped content back
+into a progressively narrower window. Its fourteen-locale stage/reopen checks
+retain automatic height, draft edits and original navigation identities.
 
 Measure wrapped warning children against their actual inner width, including
 native padding, border and scrollbar reservation; round the full padded height
@@ -164,6 +187,10 @@ accounting for horizontal scroll and narrower native columns, while retaining
 single-line controls and real content overflow. Footballer's Polish Settings
 otherwise clipped complete notes despite using TextWrapped. Verify after content
 expansion over several frames, checking complete paragraph height and glyph ink.
+A helper that pushes wrap position zero overrides its caller's explicit wrap limit.
+DDuck public's failure footer uses translated native text under the visible-width
+limit; an outer wrap scope around its retained helper left that limit ineffective.
+Measure this limit from the native InnerClipRect so scrollbar space is included.
 
 Keep ordinary control and profile labels on one line. Measure translated text,
 icons, gaps and padding; move whole controls to another row instead of squeezing
@@ -204,11 +231,36 @@ that column's allocated share. ADS keeps its reference ratio when labels fit,
 otherwise requests a fixed native label minimum including bearing inset and cell
 padding. Labels stay single-line; explanatory values wrap within their own column.
 Check actual glyph ink as well as advance widths at the native column clip.
+For native captions at a table's left boundary, reserve the leading glyph's
+negative bearing at the active font/scale and include it in the width budget.
+DAD's Chinese Task caption otherwise lost a fraction of its leading glyph.
+Compare text origins or baselines when checking row alignment: accents naturally
+have different ink tops. Retain complete-ink and native-clip assertions.
+Give label/value telemetry tables local row padding instead of inheriting padding
+intended for action or party rows. TTSL's inherited padding inflated its metric
+cards, while its automatically sized label column wrapped Position at the default
+width. Measured translated label minima and local metric padding corrected both
+without changing the Party table's explicit row heights or native table IDs.
+A cursor inset alone leaves a retained panel using its enclosing content width.
+Confine the native work/content bounds and clip to the panel's inner padding,
+keep the prior ID root, and restore those bounds/scopes before sibling content.
+TTSL's heading separators crossed card edges until this boundary was supplied;
+verify caller restoration, native actions and complete ink at narrow sizes.
+
+Measure and wrap translated canvas placeholders at the retained font, centering
+complete glyph ink within the usable square and restoring canvas text state.
+TTSL's 96-pixel empty radar clipped its fixed-x caption; fourteen-locale
+checks of both embedded browser pages verify the correction. A missing origin draws no origin marker;
+retain populated-point coordinates and prove both branches independently.
 
 Natural and fill-width library buttons now reflow while preserving their full label;
 positive explicit sizes retain caller control. Keep the current assembly version
 visible in main title bars while preserving native window IDs. Distinguish the
 runtime character from the selected settings profile.
+For a selected native companion, derive its displayed build version from the
+existing project version authority and retain its window class/control IDs.
+TTSL's existing CMake build reads the managed project's `Version` for its native
+caption instead of maintaining a second release number.
 
 FrenRider's translated tabs require SetNextItemWidth for the complete label and
 native FittingPolicyScroll when shrinking would clip it. With retained close
@@ -260,7 +312,15 @@ selector ID. They preserve the combined selector's accent and language IDs.
 MaterialComboLayout.LeadingIcon uses native meshes; retain the field's borrowed
 draw list while BeginCombo makes its popup current, so the icon stays in the field.
 DrawAccent's explicit positive logical size supports approved larger swatches
-while retaining the same selector/accent IDs and change events. Configure the
+while retaining the same selector/accent IDs and change events. Pass a Vector2
+for a rectangular colour field with Palette mesh, swatch and chevron; the whole
+field opens the existing popup. Use the float overload for a square swatch.
+Both preserve the accent/button identity, preset/custom events and disabled state.
+The rectangular Palette respects the current pixel `IconSize`, bounded by field
+height and the gap before its swatch. Footballer's approved larger field needed
+explicit 30/32 logical icon sizes at compact/regular density; multiply by host
+scale once when supplying metrics and verify the actual rendered icon ink.
+Configure the
 language field's height through an explicit MaterialControls.Push(metrics)
 scope; the existing selector inherits those scaled pixel metrics.
 
@@ -301,6 +361,14 @@ of plugin distributions. Dalamud SDK hosts resolve their normal references;
 Microsoft.NET.Sdk hosts must resolve the same installed binding/distribution.
 Package identities are `AethertekUI` and `AethertekUI.Dalamud`, version 0.3.0;
 local package generation is separate from normal build verification.
+For a protected module host, resolve core and adapter references to the exact
+assemblies already loaded by the public host; retain its dependency allow-list.
+Verify compatibility against the actual deployable host as well as its build-only
+ABI reference. MOM's supplied failure showed that updating the private access
+DLL/JSON pair leaves an outdated installed public loader untouched. Treat public
+host replacement and its version choice as a separate release step; equal version
+metadata cannot distinguish older and rebuilt binaries. Offline compatibility
+verification does not authorize host installation or publication.
 
 ## GitHub Actions provisioning
 
@@ -470,6 +538,14 @@ digits already covered by baseline ranges are not missing product glyphs.
 Translate authored interpolation arguments explicitly. Keep names, IDs and
 already formatted service arguments raw, including leading zeroes; apply locale
 number formatting to typed UI values instead of reparsing arbitrary text.
+Generic label/value renderers need an explicit raw-value path as well. DAD's
+saved preset named Regular party was translated by its KeyValue helper. Translate
+the caption and provenance-known empty-selection prompt separately, then render
+the exact saved name; verify label collisions in both wide and stacked layouts.
+When a metadata lookup also returns an authored fallback, expose the unresolved
+state separately for UI formatting. TTSL retains its public telemetry fallback
+while translating Main's missing-area label; resolved names resembling that
+fallback and published account identifiers remain opaque.
 Match complete authored status wrappers before splitting lines so captured
 LF/CRLF provider or exception detail stays intact. VerMAXion collection also
 requires source-specific composition for intuition/spectral state, readiness,
@@ -515,6 +591,12 @@ authored literal that every successful match must contain. DAD's joined leveling
 blocker otherwise entered unrelated expensive patterns despite its prefix gate.
 Retain template order, lookaheads, capture grammar, raw values and timeout failures;
 the prefilter skips only patterns whose necessary literal is absent.
+For literal/wildcard status catalogs, skip candidates whose authored first-line
+prefix does not match before entering the existing bounded regex. TTSL's
+already-localized Publisher display otherwise timed out in Settings Draw.
+Preserve candidate order and the existing timeout, and verify every reached
+template with raw captures. Absolute ordinary-regex anchors retain terminal
+LF/CRLF details; TTSL checks those captures rather than only match success.
 For large status catalogs, create a retained matcher only after its authored
 leading literal applies. DDuck's eager non-backtracking construction exceeded
 the diagnostic memory limit after the atlas was ready; deferring unused matchers
@@ -536,13 +618,15 @@ authored role/module labels or summary/safety getters; arbitrary names, counts
 and IDs remain opaque. Verify both full and empty forms through the compiled
 helper, rather than changing the producer's runtime message to suit UI matching.
 
-Footballer exposed two distinct terminal-newline failures in the installed runtime:
+Footballer and MOM exposed terminal-newline failures in the installed runtime:
 `$` can leave a final LF outside a capture, while a `NonBacktracking` pattern
 ending in `\z` matched that input but returned empty argument groups. Its
 bounded ordinary matcher with `\A`/`\z` retains both the name and complete
 LF/CRLF detail. Test actual captured values, including an empty argument and a
 terminal newline, before selecting a regex engine; a successful match alone is
-insufficient. Keep this runtime-specific evidence distinct from other hosts.
+insufficient. MOM's fifteen-locale startup checks also verify raw empty/padded
+details and nested readiness wrappers with the bounded ordinary matcher.
+Keep this runtime-specific evidence distinct from other hosts.
 
 Structured diagnostic events need their producer schema as well as resource
 coverage. AutoParty wake events use `state:wake:<phase>:<summary>`; split at
@@ -600,6 +684,10 @@ remain on the host and are never packaged.
 Read/write source and resources as UTF-8. Windows PowerShell's default native
 pipe encoding can replace non-Latin translations and diacritics with `?`; use
 explicit UTF-8 transport and inspect the resulting characters.
+For .NET diagnostic runners, set `Console.OutputEncoding` to UTF-8 before
+capturing text and decode the log accordingly. DhogNav's Japanese captions
+otherwise became question marks despite intact resource values and passing native
+glyph checks. Distinguish diagnostic encoding loss from damaged product catalogs.
 When integrating a saved translation payload, read it directly as UTF-8 and
 compare the written values with that payload before mirroring shared phrases.
 DAD's tail passed structural checks after PowerShell had changed its accented
@@ -608,6 +696,12 @@ by the native pipe. Keep the intact payload as the input for the correction.
 Matching keys and placeholders cannot detect encoding loss. Inspect actual
 resource values for native characters and unexpected literal `?` replacements,
 especially in CJK, Cyrillic and accented Latin resources, before claiming coverage.
+Inspect unexpected single question marks as well as repeated ones: DAD's Duty
+Finder help lost Latin accents while retaining valid keys and placeholders.
+Compare written values with intact UTF-8 input; ordinary question punctuation
+remains valid. Trace a short label's displayed caller when checking semantic
+quality: combat Party means a group, Ready describes readiness, and unrelated
+second lines can survive structural checks in colour presets and status labels.
 
 Before declaring the redesign ready for deployment, verify embedded resources,
 library payloads, preference persistence, all-language layout/glyph coverage and
@@ -643,6 +737,11 @@ Botology's first adoption establishes these practices:
   FrenRider's account-wide enable action uses the appended Power mesh.
   LootGoblin's Current Run uses Target, the appended crosshair; Location stays a pin.
   BFE's area heading and support action use appended MapPin and HeartOutline.
+  Community actions use appended Discord (66) and KoFi (67) meshes, retaining
+  native actions and caller sizing/opacity. The shared Discord has transparent
+  eye openings; Ko-fi retains its red heart. Check the smallest consumer size:
+  antialias fringes can fill a tiny eye, and a Bezier handle's complete stroke can
+  exceed its control-point bounds. Native 14/36-pixel checks cover both cases.
   Append required artwork without changing existing ordinals. Keep icon drawing
   independent of font and texture resources, with actions and identities in consumers.
 - `MaterialControlAppearance` supplies fill, foreground, border and logical
@@ -777,6 +876,11 @@ resolve through {CandidateAssemblyFiles} before an explicit HintPath; the
 shared checker's search paths exclude those candidates. Use the normal build's
 actual core output, and require identical core bytes in checker and product
 before accepting results. A successful rebuild or equal file sizes is insufficient.
+For a retained whole-window fixture, read the owner's actual flags after PreDraw
+and add only the diagnostic NoSavedSettings flag. DAD Shopping and TTSL Main
+otherwise inherited a horizontal scrollbar they do not use in production;
+its prior-content width changed later work rectangles and produced false overflow.
+Keep intentional scrolling helper fixtures separate from actual-window evidence.
 Historical mission/GBR reports do not prove current
 integration compatibility or grant permission to run legacy tooling.
 
@@ -804,10 +908,20 @@ prove that shifted regions still fail, as BFE's 100%/150% checks established.
 Cover selected windows/popups, all locales, scale/size limits, accents and
 functional states. Open interactive popups through their native controls and
 check that they remain visible with usable bounds after the opening frame.
-Choose click positions after measured native layout bounds have settled. Child
+Choose click positions after measured native layout bounds have settled. When an
+action caption also occurs in explanatory prose, find the action through its retained
+native ID and check that occurrence's complete ink; DDuck public's Ko-fi caption
+otherwise selected text in its community paragraph. Child
 scrollbar changes can alter available width and move controls over several
 frames; Botology's Indonesian popup check exposed this. Require stable geometry
 with a finite frame limit that fails if layout does not settle.
+
+Before inspecting a retained table after an exhaustive scrolling text sweep,
+expose its row again and target wheel input inside `InnerRect` intersected with
+`ClipRect`. DhogNav's fresh narrow workflow left its table above the viewport;
+retain the scrollbar, row-access and edit/cancel/save requirements when correcting
+that observation order.
+
 Auto-sized popups containing wrapped content may need an explicit width each
 frame; an appearing-only width can collapse later. Builds, test counts and
 self-generated baselines alone do not establish completion. Deliver as

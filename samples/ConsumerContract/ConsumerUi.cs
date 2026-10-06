@@ -27,7 +27,9 @@ public sealed class ConsumerUi : IDisposable
     public static MaterialAppearanceChange DrawSeparatedAppearance(ref Vector3 accentDraft,ref string language,
         MaterialOptions<string> languages,MaterialAppearanceLabels labels,Action drawExistingActions,Action<Vector3,string> save)
     {
-        var accentChanged=MaterialAppearanceSelector.DrawAccent("appearance",ref accentDraft,labels);
+        bool accentChanged;
+        using(MaterialControls.Push(MaterialControls.Metrics with { IconSize=32*MaterialTheme.Metrics.Scale }))
+            accentChanged=MaterialAppearanceSelector.DrawAccent("appearance",ref accentDraft,labels,new Vector2(144,49));
         ImGui.SameLine(); drawExistingActions();
         ImGui.SameLine();
         var languageChanged=MaterialAppearanceSelector.DrawLanguage("appearance",ref language,languages);
@@ -132,6 +134,7 @@ public sealed class ConsumerUi : IDisposable
     private sealed class ExampleWindow : Window
     {
         private readonly MaterialWindowMotion motion = new();
+        private readonly MaterialWindowOpacity opacity = new();
         private readonly MaterialOptions<int> routes = new([new("local",0,"Local route"),new("remote",1,"Remote route")]);
         private readonly MaterialSearchState searchFocus = new();
         private static readonly MaterialSegment<int>[] Modes = [new(0,"Auto",Key:"auto"),new(1,"Manual",Key:"manual"),new(2,"Off",Key:"off")];
@@ -149,7 +152,12 @@ public sealed class ConsumerUi : IDisposable
         }
 
         public override void PreDraw() => motion.Prepare(this, reducedMotion: false, roundedCorners: true);
-        public override void PostDraw() => motion.Restore(this);
+        public override void PostDraw()
+        {
+            motion.Restore(this);
+            // Consumer-owned preferences can replace these defaults; the theme is still active.
+            opacity.Apply(WindowName);
+        }
 
         public override void Draw()
         {

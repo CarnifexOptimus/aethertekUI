@@ -11,6 +11,7 @@ See [Adaptive sizing and host compatibility](ADAPTIVE_SIZING.md) for units, owne
 | MaterialWindowDecorations.Prepare / Paint | Owned-viewport decoration replacement; compose preparation with the final native sizing callback, paint first in Draw and after End when collapsed |
 | MaterialWindowFold.PreDraw / PostDraw | Consumer-owned transition of one native window's existing collapse controls; keeps expanded size, IDs and native resize behavior |
 | MaterialWindowFold.GetLogicalSize() | Expanded pixel geometry for observers inside that window's Draw during a transition |
+| MaterialWindowOpacity.Apply / CurrentOpacity | One owner-tree alpha multiplier after final End; native focus delay, immediate focus restoration, and consumer-owned preferences |
 | AethertekUI.Dalamud.MaterialWindowMotion.Prepare / DrawChrome / Restore | Bridge for one Dalamud Window; prepares fold and optional owned-viewport chrome before Begin, paints first in Draw and restores managed constraints after End |
 | MaterialControls.Push(context) | Match native and custom control heights using current font, density and scale |
 | MaterialControlContext.Regular / Toolbar / Dense | Local sizing intent independent of theme density |
@@ -50,6 +51,23 @@ constraint assigned during Draw is retained. Geometry observers inside Draw can
 use `GetLogicalSize()` while visible height changes; the fold also preserves an
 explicit native SetWindowSize request made by an existing control during Draw.
 Reference the optional adapter and ship its DLL with this integration.
+
+Own one `MaterialWindowOpacity` for each top-level window tree. Under its theme,
+call `Apply(windowName, opacity, enabled, autoFade, fadedOpacity, unfocusedDelaySeconds)`
+once after the final native End and after motion/decorations restore, before Render.
+Fractions clamp to .1–1; defaults are 1 normal, .5 unfocused, auto-fade enabled and
+10 seconds without focus. Disabling restores original emitted alpha. Focus in an
+owned child or popup restores normal opacity immediately. Native application focus
+events remain effective across idle frames; reopening resets the delay. A fade
+never increases opacity above the selected normal value. Theme motion and the
+optional `reducedMotion` argument control the transition.
+
+The component multiplies emitted root/child/popup/tooltip vertex alpha, including
+native chrome, custom artwork and image tints. It preserves RGB, geometry, UVs,
+indices, clips, textures, IDs and styles; unrelated top-level windows and shared
+viewport/foreground drawing stay outside its ownership. Avoid separate child
+instances or another style/image opacity multiplier on the same tree. Configuration,
+main toggles, translated labels and saving remain consumer responsibilities.
 
 For a direct native window, compose `MaterialWindowDecorations.Prepare` through
 the fold's five-argument PreDraw overload; cache the delegate per owner.
@@ -95,6 +113,9 @@ Target appends at ordinal 63 for LootGoblin's Current Run crosshair; the existin
 Location pin and every preceding mesh and ordinal remain available.
 MapPin (64) and HeartOutline (65) provide BFE's approved map-with-pin and outlined
 support artwork, retaining the separate Map, Location and filled Heart meshes.
+Discord (66) and KoFi (67) provide shared community artwork with transparent
+Discord eyes and a red Ko-fi heart. They retain caller colour/opacity and restore
+native draw-list flags; complete stroked geometry fits the icon square at 14/36 pixels.
 See the sizing showcase and independent consumer example.
 For an established native language control, use
 `MaterialAppearanceSelector.Draw(id, ref accent, labels, drawLanguage)`.
@@ -111,8 +132,15 @@ places existing actions between colour and language, call
 Both retain the combined selector's native identities and change semantics;
 the consumer still owns placement and saving.
 
-`DrawAccent(id, ref accent, labels, size)` accepts a positive logical swatch size;
-the original overload retains 28 and its native identity. Language field height
+`DrawAccent(id, ref accent, labels, floatSize)` accepts a positive logical square
+swatch size; the original overload retains 28 and its native identity.
+The `Vector2` overload draws a complete rectangular colour field with a Palette
+mesh, current swatch and chevron. Its dimensions are logical units, and the full
+field opens the same popup with the same accent/button IDs and change events.
+Its Palette uses the current pixel `MaterialControls.Metrics.IconSize`, bounded
+by the field height and space before the swatch. Supply explicit metrics for a
+larger approved icon without changing the field dimensions or native identity.
+Language field height
 uses the existing explicit `MaterialControls.Push(metrics)` scope; measure its
 width with those same metrics rather than adding another selector implementation.
 

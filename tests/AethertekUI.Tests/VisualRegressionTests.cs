@@ -7,6 +7,73 @@ namespace AethertekUI.Tests;
 
 public unsafe class VisualRegressionTests
 {
+    [Theory]
+    [InlineData(false,1f)] [InlineData(false,1.5f)] [InlineData(true,1f)] [InlineData(true,1.5f)]
+    public void RectangularAccentFieldPreservesIdentityAndWholeFieldInteraction(bool compact,float scale)
+    {
+        using var host=new NativeTestContext();
+        ImGui.GetIO().ConfigFlags|=ImGuiConfigFlags.NavEnableKeyboard;
+        var theme=new MaterialTheme(new Vector3(.2f,.7f,.8f),compact?MaterialDensity.Compact:MaterialDensity.Standard);
+        theme.Motion.Enabled=false;
+        var accent=new Vector3(28/255f,201/255f,230/255f);
+        var labels=new MaterialAppearanceLabels("Color","Language","Teal","Blue","Pink","Custom RGB");
+        var dimensions=compact?new Vector2(138,47):new Vector2(144,49);
+        var rectangle=true;var disabled=false;var changes=0;
+        Vector2 min=default,max=default;MaterialControlMetrics popupMetrics=default;Vector2 popupSpacing=default;
+        void Draw()
+        {
+            using var scope=MaterialTheme.Push(theme,scale);
+            ImGui.SetNextWindowPos(Vector2.Zero);ImGui.SetNextWindowSize(new(700,600));
+            ImGui.Begin("Accent field",ImGuiWindowFlags.NoSavedSettings|ImGuiWindowFlags.NoTitleBar);
+            using var controls=MaterialControls.Push(MaterialControls.Metrics with { IconSize=(compact?30:32)*scale });
+            popupMetrics=MaterialControls.Metrics;popupSpacing=ImGui.GetStyle().ItemSpacing;
+            ImGui.PushID("appearance");ImGui.PushID("accent");var expected=ImGui.GetID("##button");ImGui.PopID();ImGui.PopID();
+            var list=ImGui.GetWindowDrawList();var first=list.VtxBuffer.Size;
+            ImGui.BeginDisabled(disabled);
+            var changed=rectangle?MaterialAppearanceSelector.DrawAccent("appearance",ref accent,labels,dimensions)
+                :MaterialAppearanceSelector.DrawAccent("appearance",ref accent,labels);
+            ImGui.EndDisabled();
+            Assert.Equal(expected,ImGuiP.GetItemID());
+            Assert.Equal((rectangle?dimensions:new Vector2(28))*scale,ImGui.GetItemRectSize());
+            min=ImGui.GetItemRectMin();max=ImGui.GetItemRectMax();
+            if(rectangle && !disabled)
+            {
+                var ink=ImGui.ColorConvertFloat4ToU32(theme.Colors.OnSurfaceVariant);
+                var points=new List<Vector2>();
+                for(var i=first;i<list.VtxBuffer.Size;i++)
+                {
+                    var vertex=list.VtxBuffer[i];
+                    if(vertex.Col==ink && vertex.Pos.X<min.X+(max.X-min.X)*.4f) points.Add(vertex.Pos);
+                }
+                Assert.NotEmpty(points);
+                var width=(points.Max(p=>p.X)-points.Min(p=>p.X))/scale;
+                var height=(points.Max(p=>p.Y)-points.Min(p=>p.Y))/scale;
+                Assert.InRange(width,compact?23:25,compact?27:29);
+                Assert.InRange(height,compact?23:25,compact?27:29);
+            }
+            if(changed)changes++;
+            ImGui.End();
+        }
+        host.Frame(Draw);rectangle=false;host.Frame(Draw);rectangle=true;host.Frame(Draw);
+        host.Click(new(min.X+5*scale,(min.Y+max.Y)*.5f),Draw);
+        Assert.Equal(1,ImGui.GetCurrentContext().OpenPopupStack.Size);
+        var popup=new ImGuiWindowPtr(ImGui.GetCurrentContext().OpenPopupStack[0].Window);
+        var blue=popup.DC.CursorStartPos+new Vector2(20*scale,popupMetrics.Height+popupSpacing.Y+popupMetrics.Height*.5f);
+        host.Click(blue,Draw);
+        Assert.Equal(new Vector3(66/255f,133/255f,244/255f),accent);
+        Assert.Equal(1,changes);
+        ImGui.GetIO().AddKeyEvent(ImGuiKey.Escape,true);host.Frame(Draw);
+        ImGui.GetIO().AddKeyEvent(ImGuiKey.Escape,false);host.Frame(Draw);
+        Assert.Equal(0,ImGui.GetCurrentContext().OpenPopupStack.Size);
+        host.Click(new(max.X-5*scale,(min.Y+max.Y)*.5f),Draw);
+        Assert.Equal(1,ImGui.GetCurrentContext().OpenPopupStack.Size);
+        ImGui.GetIO().AddKeyEvent(ImGuiKey.Escape,true);host.Frame(Draw);
+        ImGui.GetIO().AddKeyEvent(ImGuiKey.Escape,false);host.Frame(Draw);
+        disabled=true;host.Frame(Draw);host.Click((min+max)*.5f,Draw);
+        Assert.Equal(0,ImGui.GetCurrentContext().OpenPopupStack.Size);
+        Assert.Equal(1,changes);
+    }
+
     [Fact]
     public void CustomComboPreviewRetainsNegativeGlyphBearing()
     {
