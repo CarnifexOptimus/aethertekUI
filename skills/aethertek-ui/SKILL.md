@@ -798,13 +798,32 @@ requested by its ranges. Prioritize the selected locale's
 CJK glyphs and retain Latin/Cyrillic coverage. In Dalamud, use managed atlas
 handles and explicitly merge the host's `DalamudAsset.NotoSansCjkRegular` when
 needed (verified bundled TTC faces: Japanese 0, Korean 1, Simplified Chinese 2,
-Traditional Chinese 3). Read the collection's PostScript face names when the
-host asset changes; do not guess its face order. Do not pass neutral
+Traditional Chinese 3). These bundled faces have identical glyph coverage;
+merge one face per role, selecting the active locale's regional forms (Japanese
+0 for other locales), rather than merging every CJK face. Preserve required
+ranges, font sizes, symbol merges and host-language coverage. Read the
+collection's PostScript face names and recheck coverage when the host asset
+changes; do not guess its face order. Do not pass neutral
 codes such as `ja`, `ko` or `zh-Hans` to `AttachWindowsDefaultFont`: unsupported
 cultures can silently add nothing. Check actual managed-handle readiness, load
 errors and glyph coverage after atlas rebuilds. Dispose consumer-owned handles;
 never distribute Windows fonts. Temporary host fonts cannot qualify for visual
 acceptance.
+
+For BFE's seven font roles, set `build.NewImAtlas.TexDesiredWidth` and
+`TexDesiredHeight` to 4096 inside each existing managed `OnPreBuild` callback,
+including rebuilds. This measured starting size works around the host packing
+defect; it is not a universal atlas-size guarantee. Keep finite time and memory
+bounds for verification and require managed-host readiness, glyph coverage,
+language-change and scale-rebuild acceptance before treating the fix as verified.
+
+On 2026-10-06, BFE's Debug/x64 build through `Z:\bfe.bat` passed with zero
+warnings and errors after this correction; the launcher was left unchanged.
+mcvaxius then reported that BFE loaded instantly in the user-controlled Account 1
+test. This establishes initial managed-host load acceptance for BFE, not a
+measured load time or acceptance for other consumers. Language changes, complete
+glyph coverage and scale rebuilds were not separately reported as tested.
+
 Segoe UI text faces omit some symbols used in existing tooltips, including
 U+26AB (black circle). Merge the installed `seguisym.ttf` through the managed
 atlas for required symbol coverage, alongside the selected CJK merges, in every
