@@ -59,10 +59,8 @@ public static class MaterialInput
         using var style = new MaterialStyleScope();
         style.Style(ImGuiStyleVar.FrameRounding, MaterialTheme.Metrics.Radius);
         if (error) { style.Color(ImGuiCol.Border, MaterialTheme.Current.Colors.Error); style.Style(ImGuiStyleVar.FrameBorderSize, MaterialTheme.Metrics.Border); }
-        var changed = ImGui.InputTextMultiline("##value", ref value, maxLength, MaterialTheme.Metrics.Scaled(size), flags);
-        ImGui.EndDisabled();
-        ImGui.PopID();
-        return changed;
+        try { return MaterialShapedInput.Multiline("##value", ref value, maxLength, MaterialTheme.Metrics.Scaled(size), flags); }
+        finally { ImGui.EndDisabled(); ImGui.PopID(); }
     }
 
     private static float Begin(string id, float width, bool disabled)

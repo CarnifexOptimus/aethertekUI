@@ -68,7 +68,7 @@ public static class MaterialAppearanceSelector
             }
             finally { ImGui.PopID(); }
             if(pressed) ImGui.OpenPopup("color");
-            if(ImGui.IsItemHovered()) ImGui.SetTooltip(labels.Color);
+            if(ImGui.IsItemHovered()) MaterialSemantic.DrawTooltip(labels.Color);
             return DrawColorPopup(ref accent,labels);
         }
         finally { ImGui.PopID(); }
@@ -88,7 +88,7 @@ public static class MaterialAppearanceSelector
         using var controls=MaterialControls.Push();
         var scale=MaterialTheme.Metrics.Scale;
         var iconSize=Math.Min(MaterialControls.Metrics.IconSize,MaterialControls.Metrics.Height);
-        var minimum=MathF.Ceiling(ImGui.CalcTextSize(languages.LabelFor(language,"Select...")).X
+        var minimum=MathF.Ceiling(MaterialText.Measure(languages.LabelFor(language,"Select...")).X
             + MaterialControls.Metrics.Height + 3*MaterialControls.Metrics.Gap + iconSize);
         var pixels=MaterialLayout.FitNextItemWidth(languageWidth<0?languageWidth:languageWidth*scale,minimum);
         var changed=MaterialCombo.Draw("language",languages,ref language,
@@ -118,7 +118,7 @@ public static class MaterialAppearanceSelector
         var colors=MaterialTheme.Current.Colors;
         var swatch=new MaterialControlAppearance(new(accent,1),colors.OnSurface,colors.OutlineVariant);
         if(MaterialButton.Draw("accent", "", swatch, new(size,size))) ImGui.OpenPopup("color");
-        if(ImGui.IsItemHovered()) ImGui.SetTooltip(labels.Color);
+        if(ImGui.IsItemHovered()) MaterialSemantic.DrawTooltip(labels.Color);
         return DrawColorPopup(ref accent,labels);
     }
     private static bool DrawColorPopup(ref Vector3 accent,MaterialAppearanceLabels labels)
@@ -132,7 +132,7 @@ public static class MaterialAppearanceSelector
             foreach(var p in presets)
                 if(MaterialButton.Draw(p.Id,p.Label,new MaterialControlAppearance(new(p.Color,1),new(0,0,0,1),colors.OutlineVariant)))
                 { accent=p.Color; accentChanged=true; }
-            ImGui.TextUnformatted(labels.Custom);
+            MaterialText.Text(labels.Custom);
             ImGui.ColorPicker3("##rgb",ref accent,ImGuiColorEditFlags.NoAlpha);
             accentChanged |= ImGui.IsItemDeactivatedAfterEdit();
             ImGui.EndPopup();
@@ -143,6 +143,6 @@ public static class MaterialAppearanceSelector
     {
         ImGui.SameLine();
         MaterialButton.IconButton("globe",MaterialIcon.Globe,disabled:true,size:28);
-        if(ImGui.IsItemHovered(ImGuiHoveredFlags.AllowWhenDisabled)) ImGui.SetTooltip(label);
+        if(ImGui.IsItemHovered(ImGuiHoveredFlags.AllowWhenDisabled)) MaterialSemantic.DrawTooltip(label);
     }
 }

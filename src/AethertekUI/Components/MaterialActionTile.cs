@@ -36,7 +36,7 @@ public static class MaterialActionTile
             void DrawText(string text, Vector2 measured, float top, Vector4 color)
             {
                 var x = Math.Max(layout.Padding,(layout.Size.X-measured.X)*.5f);
-                dl.AddText(ImGui.GetFont(),ImGui.GetFontSize(),state.Min+new Vector2(x,top),
+                MaterialText.AddText(dl,state.Min+new Vector2(x,top),
                     MaterialDraw.Color(color,state.Alpha),text,layout.WrapWidth);
             }
         }
@@ -59,8 +59,8 @@ public static class MaterialActionTile
         var width = MaterialLayout.ResolveWidth(size.X,140*m.Scale,ImGui.GetContentRegionAvail().X,m.Scale);
         var padding = Math.Min(m.Padding,Math.Max(0,(width-1)*.25f));
         var wrap = Math.Max(1,width-2*padding);
-        var labelSize = ImGui.CalcTextSize(label,false,wrap);
-        var detailSize = string.IsNullOrEmpty(secondary) ? Vector2.Zero : ImGui.CalcTextSize(secondary,false,wrap);
+        var labelSize = MaterialText.Measure(label,false,wrap);
+        var detailSize = string.IsNullOrEmpty(secondary) ? Vector2.Zero : MaterialText.Measure(secondary,false,wrap);
         var icon = Math.Min(wrap,Math.Max(24*m.Scale,controls.IconSize));
         var contentHeight = 2*padding+icon+controls.Gap+labelSize.Y
             + (detailSize.Y > 0 ? controls.Gap*.5f+detailSize.Y : 0);

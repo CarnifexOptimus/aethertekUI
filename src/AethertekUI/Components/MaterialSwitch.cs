@@ -21,8 +21,11 @@ public static class MaterialSwitch
         var m=MaterialTheme.Metrics; var c=MaterialTheme.Current.Colors;
         var controls=MaterialControls.Metrics;
         var height=Math.Max(controls.Height,(trackSize?.Y ?? 0)*m.Scale);
+        var text=MaterialText.Measure(label);
+        var lineHeight=MaterialNativeCaption.IsShaped(label)?text.Y:ImGui.GetTextLineHeight();
+        if(MaterialNativeCaption.IsShaped(label)) height=Math.Max(height,text.Y+2*m.Scale);
         var track=trackSize.HasValue ? trackSize.Value*m.Scale : m.SwitchSize*Math.Min(1,(height-2*m.Scale)/m.SwitchSize.Y);
-        var width=MaterialLayout.ResolveWidth(0,track.X+(label.Length==0?0:controls.Gap+ImGui.CalcTextSize(label).X),
+        var width=MaterialLayout.ResolveWidth(0,track.X+(label.Length==0?0:controls.Gap+text.X),
             ImGui.GetContentRegionAvail().X,m.Scale);
         ImGui.PushID(id);
         var changed=MaterialDraw.Hit("##switch",new(width,height),disabled,out var state);
@@ -42,7 +45,7 @@ public static class MaterialSwitch
             ImGui.GetWindowDrawList().AddCircleFilled(center,radius,MaterialDraw.Color(thumb,state.Alpha),24);
             if(state.Hovered)
                 ImGui.GetWindowDrawList().AddCircle(center,radius+inset,MaterialDraw.Color(MaterialColor.Alpha(c.OnSurface,.12f),state.Alpha),24,m.Border*2);
-            ImGui.GetWindowDrawList().AddText(state.Min+new Vector2(track.X+controls.Gap,(height-ImGui.GetTextLineHeight())*.5f),
+            MaterialText.AddText(ImGui.GetWindowDrawList(),state.Min+new Vector2(track.X+controls.Gap,(height-lineHeight)*.5f),
                 MaterialDraw.Color(c.OnSurface,state.Alpha),label);
             ImGui.GetWindowDrawList().PopClipRect();
         }
@@ -57,9 +60,12 @@ public static class MaterialSelection
     {
         var m=MaterialTheme.Metrics; var c=MaterialTheme.Current.Colors;
         var controls=MaterialControls.Metrics;
+        var text=MaterialText.Measure(label);
+        var lineHeight=MaterialNativeCaption.IsShaped(label)?text.Y:ImGui.GetTextLineHeight();
         var side=Math.Min(controls.Height-2*m.Scale,Math.Max(controls.IconSize,ImGui.GetTextLineHeight()));
-        var size=new Vector2(MaterialLayout.ResolveWidth(0,side+controls.Gap+ImGui.CalcTextSize(label).X,
-            ImGui.GetContentRegionAvail().X,m.Scale),controls.Height);
+        var height=MaterialNativeCaption.IsShaped(label)?Math.Max(controls.Height,text.Y+2*m.Scale):controls.Height;
+        var size=new Vector2(MaterialLayout.ResolveWidth(0,side+controls.Gap+text.X,
+            ImGui.GetContentRegionAvail().X,m.Scale),height);
         ImGui.PushID(id);
         var changed=MaterialDraw.Hit("##checkbox",size,disabled,out var state);
         if(changed) value=!value;
@@ -69,7 +75,7 @@ public static class MaterialSelection
             ImGui.GetWindowDrawList().PushClipRect(state.Min,state.Max,true);
             MaterialDraw.Shape(box,value?c.Primary:c.SurfaceContainer,c.OnSurface,m.Border*3,!value);
             if(value) MaterialIcons.Draw(MaterialIcon.Check,box.Min,side,c.OnPrimary,state.Alpha);
-            ImGui.GetWindowDrawList().AddText(state.Min+new Vector2(side+controls.Gap,(size.Y-ImGui.GetTextLineHeight())*.5f),MaterialDraw.Color(c.OnSurface,state.Alpha),label);
+            MaterialText.AddText(ImGui.GetWindowDrawList(),state.Min+new Vector2(side+controls.Gap,(size.Y-lineHeight)*.5f),MaterialDraw.Color(c.OnSurface,state.Alpha),label);
             ImGui.GetWindowDrawList().PopClipRect();
         }
         ImGui.PopID();
@@ -79,9 +85,12 @@ public static class MaterialSelection
     {
         var m=MaterialTheme.Metrics; var c=MaterialTheme.Current.Colors;
         var controls=MaterialControls.Metrics;
+        var text=MaterialText.Measure(label);
+        var lineHeight=MaterialNativeCaption.IsShaped(label)?text.Y:ImGui.GetTextLineHeight();
         var side=Math.Min(controls.Height-2*m.Scale,Math.Max(controls.IconSize,ImGui.GetTextLineHeight()));
-        var size=new Vector2(MaterialLayout.ResolveWidth(0,side+controls.Gap+ImGui.CalcTextSize(label).X,
-            ImGui.GetContentRegionAvail().X,m.Scale),controls.Height);
+        var height=MaterialNativeCaption.IsShaped(label)?Math.Max(controls.Height,text.Y+2*m.Scale):controls.Height;
+        var size=new Vector2(MaterialLayout.ResolveWidth(0,side+controls.Gap+text.X,
+            ImGui.GetContentRegionAvail().X,m.Scale),height);
         ImGui.PushID(id);
         var clicked=MaterialDraw.Hit("##radio",size,disabled,out var state);
         var selected=EqualityComparer<T>.Default.Equals(value,option);
@@ -94,7 +103,7 @@ public static class MaterialSelection
             dl.PushClipRect(state.Min,state.Max,true);
             dl.AddCircle(center,side*.45f,MaterialDraw.Color(selected||changed||state.Focused?c.Primary:c.Outline,state.Alpha),20,m.Border*(state.Focused?2:1));
             if(selected||changed) dl.AddCircleFilled(center,side*.25f,MaterialDraw.Color(c.Primary,state.Alpha),16);
-            dl.AddText(state.Min+new Vector2(side+controls.Gap,(size.Y-ImGui.GetTextLineHeight())*.5f),MaterialDraw.Color(c.OnSurface,state.Alpha),label);
+            MaterialText.AddText(dl,state.Min+new Vector2(side+controls.Gap,(size.Y-lineHeight)*.5f),MaterialDraw.Color(c.OnSurface,state.Alpha),label);
             dl.PopClipRect();
         }
         ImGui.PopID();

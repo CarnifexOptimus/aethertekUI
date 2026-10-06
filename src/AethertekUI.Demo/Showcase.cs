@@ -44,7 +44,7 @@ internal sealed partial class Showcase
 
     public void Draw(float globalScale = 1)
     {
-        if(!IsOpen&&!overlayOpen&&!windowMotionOpen) return;
+        if(!IsOpen&&!overlayOpen&&!windowMotionOpen&&!HindiPreviewOpen) return;
         // The theme scope wraps Begin/End, so it also styles the outer window.
         using var scope=MaterialTheme.Push(theme,globalScale,MaterialStyleMode.Material);
         using var chrome=MaterialWindowChrome.Push();
@@ -106,6 +106,7 @@ internal sealed partial class Showcase
         }
         if(overlayOpen) DrawOverlay();
         if(windowMotionOpen) DrawWindowMotion();
+        if(HindiPreviewOpen) DrawHindiPreview();
     }
     private void DrawWindowMotion()
     {

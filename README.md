@@ -116,6 +116,46 @@ remain Material-prefixed, and internal ImGui IDs are preserved. Read the
 [adaptive sizing guide](docs/ADAPTIVE_SIZING.md) and
 [component API](docs/COMPONENT_API.md).
 
+### Windows-shaped Hindi text
+
+`MaterialTextRenderer` uses Windows DirectWrite and installed Nirmala UI for
+Devanagari shaping, measurement and caret geometry. A consumer supplies the
+texture uploader; Dalamud hosts can own `MaterialTextHost` from the optional
+adapter. Enter its `Push()` scope around the window tree and dispose it outside
+the native frame after render submission. No font-atlas mutation or third-party
+shaping package is required.
+
+Under that scope, `MaterialText.Measure`, `AddText` and `Text` route Devanagari
+through the same shaped layout. Material buttons, action tiles and text/search
+fields use that route; other retained native text/control wrappers still need
+explicit integration before a consumer advertises Hindi. Non-Hindi text and
+password fields retain their native path. Borrowed layouts are valid for the
+current frame only.
+
+Retained native wrappers can use `MaterialText.BeginCombo`/`Selectable` and the
+text/tooltip helpers while keeping their original labels and IDs.
+`MaterialText.TreeNode` and `TableHeader` also retain raw native identities and
+arrows; callers own `TreePop` and table row-height reservation.
+The public `MaterialShapedInput.SingleLine` bridge accepts that same native ID; reserve its
+line height with `MaterialText.PushLineHeight`.
+Single-line fields preserve leading Hindi ink within their existing frame padding
+at zero scroll, retaining the original text origin and the padded scrolling clip.
+Keep existing atlas glyph checks
+for other scripts and use `renderer.CheckGlyphs` for authored Devanagari without
+uploading textures. `MaterialShapedInput.Multiline` preserves an existing editor's
+native ID, both scroll axes, clipboard/undo and CRLF/Unicode source values;
+`MaterialInput.Multiline` uses the same route. Declare mixed tab captions with
+`MaterialTabs.Begin(id, captions)` before native Begin to reserve their natural
+height. Game-native DTR/chat still uses the host's text renderer.
+
+The showcase command `/aethertekui hindi` opens an optional mock editing preview
+without changing the existing eight pages. Native ImGui still owns the search
+field's ID, focus and undo. Its ImWchar16 buffer uses transient proxy characters
+to preserve supplementary source text and clipboard values; these proxies never
+enter saved consumer strings. Supplementary keyboard input that the host has
+already truncated cannot be reconstructed. Game/GPU and IME interaction require
+user-controlled acceptance.
+
 ## Showcase and outputs
 
 **AethertekUI Showcase**, command `/aethertekui`, contains eight mock-data pages:

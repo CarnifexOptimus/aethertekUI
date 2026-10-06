@@ -25,6 +25,79 @@ See [Adaptive sizing and host compatibility](ADAPTIVE_SIZING.md) for units, owne
 
 All controls are immediate-mode; booleans return activation or value change. Consumers own state and lifecycle.
 
+### Windows text shaping
+
+`MaterialTextLayout(text, fontSize, maximumWidth, fontFamily, locale)` owns a
+Windows DirectWrite layout. Sizes and returned hit-test coordinates are scaled
+UI pixels; pass the active font size once. Positive infinity selects no wrapping.
+`Size`, `Baseline`, `Clusters`, `HitTestPoint`, `HitTestPosition` and `HitTestRange`
+share the same shaping. `Rasterize()` returns white RGBA pixels with grayscale
+coverage in alpha and an overhang `Offset`; consumers retain their tint and clip.
+
+Own `MaterialTextRenderer(upload, fontFamily, locale)` and enter its `Push()`
+scope in the owning ImGui context. The uploader returns
+`MaterialTextTexture(id, disposableOwner)`. Core owns those returned resources;
+the Dalamud `MaterialTextHost(ITextureProvider)` supplies the raw-RGBA uploader.
+Dispose/clear outside a native frame, after render submission. Scopes are lexical,
+context-bound and LIFO, including when nested with the same owner. Do not retain
+or dispose borrowed `GetLayout` results beyond the current frame.
+
+`MaterialText.Measure`, `AddText` and `Text` use DirectWrite only for Devanagari
+under that scope. Native text is otherwise unchanged. `Text` supplies the shaped
+layout's item height and avoids uploading offscreen items. Existing material
+buttons/action tiles and text/search fields share the route. Raw ImGui labels,
+tooltips and consumer wrappers require explicit routing; a text scope alone
+does not shape them.
+
+For retained consumer wrappers, use `TextWrapped`, `TextColored`, `TextDisabled`,
+`BulletText` and `SetTooltip` for authored text. `Text` honors the existing native
+wrap position. `AddText` also accepts an explicit native font and pixel size for
+retained title/header drawing. `BeginCombo` retains its label-derived ID, native
+arrow and caller-owned popup; `Selectable` retains the native option label/ID.
+`TreeNode(nativeLabel, flags)` preserves a raw tree's label-derived ID and arrow;
+the caller retains `TreePop` ownership. It reserves existing vertical padding
+around shaped ink, including unframed rows. `TableHeader(nativeLabel)` retains
+native sort arrows and presses; reserve the shaped header row height before
+calling it. Their optional shaped `display` caption retains the supplied native
+label/ID. These wrappers do not add an ID scope.
+Reserve the complete frame for shaped preview ink, including negative bearings.
+`PushLineHeight(value, hint)` supplies a temporary shaped-only native frame-height
+reservation. Use it around `MaterialShapedInput.SingleLine(originalNativeId,
+hint, ref value, maxLength, flags)`; an existing `PushOverrideID` plus empty label
+remains valid. Do not replace the consumer's native ID with a new library field ID.
+
+`MaterialTextLayout.CheckGlyphs()` validates actual shaped runs without allocating
+a bitmap. `MaterialTextRenderer.CheckGlyphs(authoredText, fontSize)` checks only
+Devanagari strings and requires no host texture uploads. Keep the consumer's
+original atlas checks for every non-Devanagari character; validate each retained
+font-role size before allowing a Hindi catalog or language-selector entry.
+
+The single-line field retains its original native input ID and native undo,
+focus and clipboard behavior, with shaped pointer/caret/selection/scroll/IME
+geometry. Fields reserve Hindi's natural line height before painting their
+background. Backspace retains native codepoint deletion, allowing conjuncts to
+be dismantled. Replacement paste retains native undo steps. Password fields
+keep the unchanged native path. In ImWchar16 hosts, transient editor tokens
+preserve supplementary and private-use source values through clipboard and
+undo while respecting original UTF-8 input limits; tokens are never returned
+to consumers. Supplementary keyboard data already lost in the host input queue
+is outside this bridge.
+
+`MaterialShapedInput.Multiline(nativeId, ref value, maxLength, pixelSize, flags)`
+preserves the retained editor ID, native child/scrolling, clipboard, undo and
+UTF-8 capacity. Shaped line geometry supplies pointer/caret/selection, vertical
+navigation and per-line IME placement. CRLF/lone-CR and supplementary/private-use
+source values survive the transient native proxy. `MaterialInput.Multiline`
+uses the same route for its existing field. Game-rendered SeStrings and actual
+host IME acceptance remain separate.
+
+`MaterialTabs.Begin(id, captions, flags)` declares mixed bar captions before
+native Begin to reserve their natural shaped height. Explicit widths/flags and
+native tab IDs remain caller-owned. Tree/tab scope construction cleans up native
+pushes on an upload failure; consumer-owned popups/clips require their own
+`finally` cleanup. Use rune-aware `MaterialText.NativeGlyphText` for atlas input
+after checking Devanagari through shaped glyph runs.
+
 Enter `MaterialWindowChrome.Push()` after the theme and before native Begin,
 and keep it active through End. It supplies outer-window rounding explicitly
 for retained `ColorsOnly` layouts without changing that mode's existing contract.

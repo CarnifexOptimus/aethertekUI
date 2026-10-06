@@ -23,7 +23,13 @@ public static class MaterialSurface
     public static bool ClickableCard(string id, string title, string? detail = null, Vector2 size = default, bool selected = false, bool disabled = false)
     {
         var m=MaterialTheme.Metrics; var c=MaterialTheme.Current.Colors;
-        var actual=MaterialDraw.Size(size,Math.Max(m.Padding*2+ImGui.CalcTextSize(title).X,180*m.Scale),m.TileHeight);
+        var text=MaterialText.Measure(title);
+        var titleHeight=MaterialNativeCaption.IsShaped(title)?text.Y:ImGui.GetTextLineHeight();
+        var detailSize=detail is null?Vector2.Zero:MaterialText.Measure(detail);
+        var height=m.TileHeight;
+        if(MaterialNativeCaption.IsShaped(title) || (detail is not null && MaterialNativeCaption.IsShaped(detail)))
+            height=Math.Max(height,2*m.Padding+text.Y+(detail is null?0:m.Gap+detailSize.Y));
+        var actual=MaterialDraw.Size(size,Math.Max(m.Padding*2+text.X,180*m.Scale),height);
         ImGui.PushID(id);
         var clicked=MaterialDraw.Hit("##card",actual,disabled,out var state);
         MaterialDraw.Shape(state,selected?c.PrimaryContainer:c.SurfaceContainerLow,c.OnSurface,m.OuterRadius,true);
@@ -31,8 +37,8 @@ public static class MaterialSurface
         {
             var dl=ImGui.GetWindowDrawList();
             dl.PushClipRect(state.Min+new Vector2(m.Padding),state.Max-new Vector2(m.Padding),true);
-            dl.AddText(state.Min+new Vector2(m.Padding),MaterialDraw.Color(c.OnSurface,state.Alpha),title);
-            if(detail is not null) dl.AddText(state.Min+new Vector2(m.Padding,m.Padding+ImGui.GetTextLineHeight()+m.Gap),MaterialDraw.Color(c.OnSurfaceVariant,state.Alpha),detail);
+            MaterialText.AddText(dl,state.Min+new Vector2(m.Padding),MaterialDraw.Color(c.OnSurface,state.Alpha),title);
+            if(detail is not null) MaterialText.AddText(dl,state.Min+new Vector2(m.Padding,m.Padding+titleHeight+m.Gap),MaterialDraw.Color(c.OnSurfaceVariant,state.Alpha),detail);
             dl.PopClipRect();
         }
         ImGui.PopID();

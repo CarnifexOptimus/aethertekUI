@@ -13,9 +13,14 @@ public static class MaterialSegmented
         var m=MaterialTheme.Metrics; var c=MaterialTheme.Current.Colors;
         var controls=MaterialControls.Metrics;
         var natural=0f;
+        var height=controls.Height;
         for(var i=0;i<segments.Length;i++)
-            natural=Math.Max(natural,ImGui.CalcTextSize(segments[i].Label).X+2*controls.Padding.X+controls.IconSize+controls.Gap);
-        var size=MaterialDraw.Size(new(width,0),natural*segments.Length,controls.Height);
+        {
+            var text=MaterialText.Measure(segments[i].Label);
+            natural=Math.Max(natural,text.X+2*controls.Padding.X+controls.IconSize+controls.Gap);
+            if(MaterialNativeCaption.IsShaped(segments[i].Label)) height=Math.Max(height,text.Y+2*m.Scale);
+        }
+        var size=MaterialDraw.Size(new(width,0),natural*segments.Length,height);
         var changed=false;
         ImGui.PushID(id);
         ImGui.BeginGroup();

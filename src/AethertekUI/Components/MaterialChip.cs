@@ -17,8 +17,10 @@ public static class MaterialChip
     {
         var m=MaterialTheme.Metrics; var c=MaterialTheme.Current.Colors;
         var controls=MaterialControls.Metrics;
-        var size=new Vector2(MaterialLayout.ResolveWidth(0,ImGui.CalcTextSize(label).X+2*controls.Padding.X+(icon==MaterialIcon.None?0:controls.IconSize+controls.Gap),
-            ImGui.GetContentRegionAvail().X,m.Scale),Math.Max(Math.Min(m.ChipHeight,controls.Height),ImGui.GetTextLineHeight()+2*m.Scale));
+        var text=MaterialText.Measure(label);
+        var lineHeight=MaterialNativeCaption.IsShaped(label)?text.Y:ImGui.GetTextLineHeight();
+        var size=new Vector2(MaterialLayout.ResolveWidth(0,text.X+2*controls.Padding.X+(icon==MaterialIcon.None?0:controls.IconSize+controls.Gap),
+            ImGui.GetContentRegionAvail().X,m.Scale),Math.Max(Math.Min(m.ChipHeight,controls.Height),lineHeight+2*m.Scale));
         ImGui.PushID(id);
         var clicked=MaterialDraw.Hit("##chip",size,disabled,out var state);
         MaterialDraw.Shape(state,selected?c.SecondaryContainer:Vector4.Zero,c.OnSurface,size.Y*.5f,!selected);

@@ -26,9 +26,54 @@ public static class MaterialTree
         internal TreeScope(string id, string label, ImGuiTreeNodeFlags flags)
         {
             ImGui.PushID(id);
-            Visible = ImGui.TreeNodeEx("##node", flags, label);
-            popTree = Visible && (flags & ImGuiTreeNodeFlags.NoTreePushOnOpen) == 0;
-            active = true;
+            var opened = false;
+            try
+            {
+                var caption = MaterialNativeCaption.Visible(label);
+                if (!MaterialNativeCaption.IsShaped(caption))
+                    Visible = ImGui.TreeNodeEx("##node", flags, label);
+                else
+                {
+                    var origin = ImGui.GetCursorScreenPos();
+                    var list = ImGui.GetWindowDrawList();
+                    var first = list.VtxBuffer.Size;
+                    var font = ImGui.GetFont();
+                    var measured = MaterialText.Measure(caption);
+                    var window = ImGuiP.GetCurrentWindow();
+                    var padding = ImGui.GetStyle().FramePadding;
+                    var framed = (flags & ImGuiTreeNodeFlags.Framed) != 0;
+                    var padded = framed || (flags & ImGuiTreeNodeFlags.FramePadding) != 0;
+                    var nativePaddingY = padded ? padding.Y : Math.Min(window.DC.CurrLineTextBaseOffset, padding.Y);
+                    using var height = MaterialText.PushLineHeight(caption);
+                    if (!window.SkipItems)
+                    {
+                        window.DC.CurrLineSize.Y = Math.Max(window.DC.CurrLineSize.Y, measured.Y + 2 * nativePaddingY);
+                        window.DC.CurrLineTextBaseOffset += Math.Max(0, measured.Y - ImGui.GetFontSize()) * .5f;
+                    }
+                    Visible = ImGui.TreeNodeEx("##node", flags, label);
+                    opened = Visible;
+                    var bounds = ImGui.GetCurrentContext().LastItemData.DisplayRect;
+                    if (ImGui.IsItemVisible())
+                    {
+                        MaterialNativeCaption.HideGlyphs(list, first, font, caption, bounds.Min, bounds.Max);
+                        list.PushClipRect(bounds.Min, bounds.Max, true);
+                        try
+                        {
+                            MaterialText.AddText(list, origin + new Vector2(ImGui.GetFontSize() + padding.X * (framed ? 3 : 2),
+                                (bounds.Max.Y - bounds.Min.Y - measured.Y) * .5f), ImGui.GetColorU32(ImGuiCol.Text), caption);
+                        }
+                        finally { list.PopClipRect(); }
+                    }
+                }
+                popTree = Visible && (flags & ImGuiTreeNodeFlags.NoTreePushOnOpen) == 0;
+                active = true;
+            }
+            catch
+            {
+                if (opened && (flags & ImGuiTreeNodeFlags.NoTreePushOnOpen) == 0) ImGui.TreePop();
+                ImGui.PopID();
+                throw;
+            }
         }
         public void Dispose()
         {
@@ -58,11 +103,12 @@ public static class MaterialSemantic
     public static void Feedback(string text, Vector4? color = null)
     {
         using var scope = Text(color ?? MaterialTheme.Current.Colors.OnSurfaceVariant);
-        ImGui.TextWrapped(text);
+        MaterialText.TextWrapped(text);
     }
     public static void Tooltip(string text, bool allowDisabled = true)
     {
         if (ImGui.IsItemHovered(allowDisabled ? ImGuiHoveredFlags.AllowWhenDisabled : ImGuiHoveredFlags.None))
-            ImGui.SetTooltip(text);
+            DrawTooltip(text);
     }
+    internal static void DrawTooltip(string text) => MaterialText.SetTooltip(text);
 }

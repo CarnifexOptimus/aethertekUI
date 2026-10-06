@@ -14,7 +14,7 @@ public static class MaterialDragDrop
         {
             var copy = value;
             ImGui.SetDragDropPayload(payloadType, MemoryMarshal.AsBytes(MemoryMarshal.CreateReadOnlySpan(ref copy,1)));
-            ImGui.TextUnformatted(preview);
+            MaterialText.Text(preview);
         }
         finally { ImGui.EndDragDropSource(); }
         return true;

@@ -1,4 +1,5 @@
 using System.Numerics;
+using System.Runtime.InteropServices;
 using Dalamud.Bindings.ImGui;
 using Xunit;
 
@@ -108,6 +109,9 @@ public unsafe class NativeInteractionTests
 internal sealed unsafe class NativeTestContext : IDisposable
 {
     private readonly ImGuiContextPtr context;
+    private readonly Dictionary<ulong, RegisteredTexture> textures = [];
+    private nint nextTextureId = 2;
+    public int ReleasedTextures { get; private set; }
     public byte* Pixels { get; private set; }
     public int AtlasWidth { get; private set; }
     public int AtlasHeight { get; private set; }
@@ -129,8 +133,39 @@ internal sealed unsafe class NativeTestContext : IDisposable
     }
     public SoftwarePreview.Texture Texture(ImTextureID id)
     {
-        if(id.Handle!=1) throw new InvalidOperationException("Unknown diagnostic texture.");
-        return new((nint)Pixels,AtlasWidth,AtlasHeight);
+        if(id.Handle==1) return new((nint)Pixels,AtlasWidth,AtlasHeight);
+        if(textures.TryGetValue(id.Handle,out var texture)) return texture.Texture;
+        throw new InvalidOperationException("Unknown diagnostic texture.");
+    }
+    public RegisteredTexture RegisterTexture(byte[] pixels, int width, int height)
+    {
+        if(width<1 || height<1 || pixels.Length!=checked(width*height*4)) throw new ArgumentException("Invalid diagnostic texture.");
+        var texture = new RegisteredTexture(this, nextTextureId++, pixels, width, height);
+        textures.Add(texture.Id.Handle, texture);
+        return texture;
+    }
+    internal sealed class RegisteredTexture : IDisposable
+    {
+        private readonly NativeTestContext owner;
+        private GCHandle pixels;
+        private bool disposed;
+        public ImTextureID Id { get; }
+        public SoftwarePreview.Texture Texture { get; }
+        public RegisteredTexture(NativeTestContext owner,nint id,byte[] bytes,int width,int height)
+        {
+            this.owner=owner;
+            Id=new ImTextureID(id);
+            pixels=GCHandle.Alloc(bytes,GCHandleType.Pinned);
+            Texture=new SoftwarePreview.Texture(pixels.AddrOfPinnedObject(),width,height);
+        }
+        public void Dispose()
+        {
+            if(disposed) return;
+            disposed=true;
+            owner.textures.Remove(Id.Handle);
+            pixels.Free();
+            owner.ReleasedTextures++;
+        }
     }
     public void Frame(Action draw)
     {
@@ -144,5 +179,9 @@ internal sealed unsafe class NativeTestContext : IDisposable
         ImGui.GetIO().AddMouseButtonEvent(0,true);Frame(draw);
         ImGui.GetIO().AddMouseButtonEvent(0,false);Frame(draw);
     }
-    public void Dispose() => ImGui.DestroyContext(context);
+    public void Dispose()
+    {
+        foreach(var texture in textures.Values.ToArray()) texture.Dispose();
+        ImGui.DestroyContext(context);
+    }
 }

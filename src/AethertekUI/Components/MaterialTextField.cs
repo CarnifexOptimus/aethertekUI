@@ -28,6 +28,14 @@ public static class MaterialTextField
         var m=MaterialTheme.Metrics; var c=MaterialTheme.Current.Colors;
         var controls=MaterialControls.Metrics;
         var height=controls.Height;
+        if ((flags & ImGuiInputTextFlags.Password) == 0 && MaterialTextRenderer.Current is { } textRenderer
+            && (MaterialText.RequiresShaping(value) || MaterialText.RequiresShaping(hint)))
+        {
+            var fontSize=ImGui.GetFontSize();
+            var shapedHeight=Math.Max(textRenderer.GetLayout(value,fontSize).Size.Y,
+                textRenderer.GetLayout(hint,fontSize).Size.Y);
+            height+=Math.Max(0,shapedHeight-ImGui.GetTextLineHeight());
+        }
         var rounding=appearance?.Radius(m.Scale) ?? controls.Rounding;
         var size=new Vector2(MaterialLayout.ResolveWidth(width,220*m.Scale,ImGui.GetContentRegionAvail().X,m.Scale),height);
         // Suppress decoration when a narrow panel cannot fit an editable area.
@@ -36,11 +44,16 @@ public static class MaterialTextField
         var inset=Math.Min(controls.Gap,Math.Max(0,(size.X-1)*.25f));
         var origin=ImGui.GetCursorScreenPos();
         ImGui.PushID(id); ImGui.BeginGroup(); ImGui.BeginDisabled(disabled);
+        try
+        {
         var dl=ImGui.GetWindowDrawList();
         dl.AddRectFilled(origin,origin+size,MaterialDraw.Color(appearance?.Fill ?? c.SurfaceContainerHighest),rounding);
         var leadingWidth=leading==MaterialIcon.None?0:height-controls.Gap;
         var trailingWidth=clear||trailing!=MaterialIcon.None?height:0;
         var style=new MaterialStyleScope();
+        bool changed,focused;
+        try
+        {
         if(appearance is { } a) style.Color(ImGuiCol.Text,a.Foreground);
         style.Color(ImGuiCol.FrameBg,Vector4.Zero);
         style.Color(ImGuiCol.FrameBgHovered,Vector4.Zero);
@@ -54,9 +67,10 @@ public static class MaterialTextField
             ImGui.SetKeyboardFocusHere();
             searchState.FocusRequested=false;
         }
-        var changed=ImGui.InputTextWithHint("##input",hint,ref value,maxLength,flags);
-        var focused=ImGui.IsItemActive()||ImGui.IsItemFocused();
-        style.Dispose();
+        changed=MaterialShapedInput.SingleLine("##input",hint,ref value,maxLength,flags);
+        focused=ImGui.IsItemActive()||ImGui.IsItemFocused();
+        }
+        finally { style.Dispose(); }
         if(leading!=MaterialIcon.None) MaterialIcons.Draw(leading,origin+new Vector2(controls.Gap,(height-controls.IconSize)*.5f),controls.IconSize,c.OnSurfaceVariant);
         if(clear)
         {
@@ -71,7 +85,8 @@ public static class MaterialTextField
             rounding,ImDrawFlags.RoundCornersAll,focused||error?m.Border*2:m.Border);
         ImGui.SetCursorScreenPos(origin);
         ImGui.Dummy(size);
-        ImGui.EndDisabled(); ImGui.EndGroup(); ImGui.PopID();
         return changed;
+        }
+        finally { ImGui.EndDisabled(); ImGui.EndGroup(); ImGui.PopID(); }
     }
 }

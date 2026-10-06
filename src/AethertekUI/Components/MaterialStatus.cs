@@ -24,7 +24,7 @@ public static class MaterialStatus
         var m=MaterialTheme.Metrics; var c=MaterialTheme.Current.Colors;
         var fg=color??c.OnSecondaryContainer;
         var bg=background??(color.HasValue?MaterialColor.Alpha(fg,.14f):c.SecondaryContainer);
-        var text=ImGui.CalcTextSize(label);
+        var text=MaterialText.Measure(label);
         var size=new Vector2(text.X+2*m.Gap,Math.Max(m.ChipHeight,text.Y+m.Gap));
         if(appearance.HasValue) { appearance.Value.Radius(m.Scale); size=MaterialDraw.Size(dimensions,size.X,size.Y); }
         var p=ImGui.GetCursorScreenPos(); var dl=ImGui.GetWindowDrawList();
@@ -34,11 +34,11 @@ public static class MaterialStatus
         dl.AddRectFilled(p,p+size,MaterialDraw.Color(bg),radius);
         if(appearance is { } a) dl.AddRect(p,p+size,MaterialDraw.Color(a.Border),radius,ImDrawFlags.RoundCornersAll,m.Border);
         if(appearance.HasValue) dl.PushClipRect(p+new Vector2(2*m.Scale,0),p+size-new Vector2(2*m.Scale,0),true);
-        dl.AddText(p+new Vector2(Math.Max(2*m.Scale,(size.X-text.X)*.5f),(size.Y-text.Y)*.5f),MaterialDraw.Color(fg),label);
+        MaterialText.AddText(dl,p+new Vector2(Math.Max(2*m.Scale,(size.X-text.X)*.5f),(size.Y-text.Y)*.5f),MaterialDraw.Color(fg),label);
         if(appearance.HasValue)
         {
             dl.PopClipRect();
-            if(text.X>size.X-4*m.Scale && ImGui.IsItemHovered()) ImGui.SetTooltip(label);
+            if(text.X>size.X-4*m.Scale && ImGui.IsItemHovered()) MaterialSemantic.DrawTooltip(label);
         }
     }
     public static void LinearProgress(float fraction,float width=-1,float height=0,Vector4? accent=null,Vector4? track=null)
@@ -60,7 +60,7 @@ public static class MaterialStatus
     {
         var m=MaterialTheme.Metrics;
         ImGui.Dummy(new Vector2(0,m.SectionGap*.5f));
-        ImGui.TextColored(MaterialTheme.Current.Colors.OnSurfaceVariant,label);
+        MaterialText.TextColored(MaterialTheme.Current.Colors.OnSurfaceVariant,label);
         ImGui.Dummy(new Vector2(0,m.Gap*.25f));
     }
 }

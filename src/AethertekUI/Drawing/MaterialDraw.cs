@@ -49,7 +49,7 @@ internal static class MaterialDraw
     {
         if (!state.Visible) return;
         var m = MaterialControls.Metrics;
-        var textSize = ImGui.CalcTextSize(label);
+        var textSize = MaterialText.Measure(label);
         var iconWidth = m.IconSize + m.Gap;
         var width = textSize.X + (leading == MaterialIcon.None ? 0 : iconWidth) + (trailing == MaterialIcon.None ? 0 : iconWidth);
         var x = alignLeft ? state.Min.X+m.Padding.X : state.Min.X+Math.Max(m.Gap,(state.Max.X-state.Min.X-width)*.5f);
@@ -58,7 +58,7 @@ internal static class MaterialDraw
         var inset=Math.Min(m.Gap,Math.Max(0,(state.Max.X-state.Min.X-1)*.5f));
         dl.PushClipRect(state.Min+new Vector2(inset,0),state.Max-new Vector2(inset,0),true);
         if(leading != MaterialIcon.None) { MaterialIcons.Draw(leading,new(x,centerY-m.IconSize*.5f),m.IconSize,color,state.Alpha); x += iconWidth; }
-        dl.AddText(new(x,centerY-textSize.Y*.5f),Color(color,state.Alpha),label);
+        MaterialText.AddText(dl,new(x,centerY-textSize.Y*.5f),Color(color,state.Alpha),label);
         if(trailing != MaterialIcon.None) MaterialIcons.Draw(trailing,new(x+textSize.X+m.Gap,centerY-m.IconSize*.5f),m.IconSize,color,state.Alpha);
         dl.PopClipRect();
     }

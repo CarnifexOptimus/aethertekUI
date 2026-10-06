@@ -11,6 +11,7 @@
   </PropertyGroup>
   <ItemGroup>
     <ProjectReference Include="../AethertekUI/AethertekUI.csproj"/>
+    <ProjectReference Include="../AethertekUI.Dalamud/AethertekUI.Dalamud.csproj"/>
     <None Include="AethertekUI.Demo.json" CopyToOutputDirectory="PreserveNewest"/>
   </ItemGroup>
 </Project>

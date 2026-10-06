@@ -37,19 +37,65 @@ public static class MaterialNavigation
 public static class MaterialTabs
 {
     public static TabBarScope Begin(string id,ImGuiTabBarFlags flags=ImGuiTabBarFlags.None) => new(id,flags);
+    /// <summary>Declares captions before native Begin so mixed-language tabs share the natural shaped line height.</summary>
+    public static TabBarScope Begin(string id,IReadOnlyList<string> captions,ImGuiTabBarFlags flags=ImGuiTabBarFlags.None) => new(id,flags,captions);
     public static TabItemScope Item(string label,ImGuiTabItemFlags flags=ImGuiTabItemFlags.None) => new(label,flags);
     public ref struct TabBarScope
     {
         private bool active;
         public bool Visible { get; }
         internal TabBarScope(string id,ImGuiTabBarFlags flags) { active=Visible=ImGui.BeginTabBar(id,flags); }
+        internal TabBarScope(string id,ImGuiTabBarFlags flags,IReadOnlyList<string> captions)
+        {
+            ArgumentNullException.ThrowIfNull(captions);
+            using var height=MaterialText.PushLineHeight(captions.Select(MaterialNativeCaption.Visible).ToArray());
+            active=Visible=ImGui.BeginTabBar(id,flags);
+        }
         public void Dispose() { if(active) ImGui.EndTabBar(); active=false; }
     }
     public ref struct TabItemScope
     {
         private bool active;
         public bool Visible { get; }
-        internal TabItemScope(string label,ImGuiTabItemFlags flags) { active=Visible=ImGui.BeginTabItem(label,flags); }
+        internal TabItemScope(string label,ImGuiTabItemFlags flags)
+        {
+            // The bar owns its metrics; restore them only while submitting each
+            // sibling tab, leaving the selected content's controls unchanged.
+            using var height=new MaterialStyleScope();
+            var owner=ImGui.GetCurrentContext().CurrentTabBar;
+            if(!owner.IsNull && owner.FramePadding!=ImGui.GetStyle().FramePadding)
+                height.Style(ImGuiStyleVar.FramePadding,owner.FramePadding);
+            var caption=MaterialNativeCaption.Visible(label);
+            if(!MaterialNativeCaption.IsShaped(caption)) { active=Visible=ImGui.BeginTabItem(label,flags);return; }
+            var measured=MaterialText.Measure(caption);
+            // Keep an explicit caller width and the original native label/ID.
+            if(((int)ImGui.GetCurrentContext().NextItemData.Flags&1)==0)
+                ImGui.SetNextItemWidth(Math.Max(ImGui.CalcTextSize(caption).X,measured.X)+2*ImGui.GetStyle().FramePadding.X);
+            var list=ImGui.GetWindowDrawList();var first=list.VtxBuffer.Size;var font=ImGui.GetFont();
+            active=Visible=ImGui.BeginTabItem(label,flags|ImGuiTabItemFlags.NoTooltip);
+            try
+            {
+                var min=ImGui.GetItemRectMin();var max=ImGui.GetItemRectMax();
+                MaterialNativeCaption.HideGlyphs(list,first,font,caption,min,max);
+                var bar=ImGui.GetCurrentContext().CurrentTabBar;
+                var clipMin=new Vector2(Math.Max(min.X,bar.ScrollingRectMinX),min.Y);
+                var clipMax=new Vector2(Math.Min(max.X,bar.ScrollingRectMaxX),max.Y);
+                if(clipMax.X>clipMin.X && clipMax.Y>clipMin.Y)
+                {
+                    list.PushClipRect(clipMin,clipMax,true);
+                    try { MaterialText.AddText(list,min+new Vector2(ImGui.GetStyle().FramePadding.X,(max.Y-min.Y-measured.Y)*.5f),ImGui.GetColorU32(ImGuiCol.Text),caption); }
+                    finally { list.PopClipRect(); }
+                }
+                if((flags&ImGuiTabItemFlags.NoTooltip)==0 && measured.X>max.X-min.X-2*ImGui.GetStyle().FramePadding.X && ImGui.IsItemHovered())
+                    MaterialSemantic.DrawTooltip(caption);
+            }
+            catch
+            {
+                if(active) ImGui.EndTabItem();
+                active=false;
+                throw;
+            }
+        }
         public void Dispose() { if(active) ImGui.EndTabItem(); active=false; }
     }
 }

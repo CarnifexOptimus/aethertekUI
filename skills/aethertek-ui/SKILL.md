@@ -98,10 +98,30 @@ when replacing an older alpha path; apply complete-window opacity once instead
 of multiplying it again through background styles. Add only the needed preference
 fields and verify old configurations retain the new defaults and unrelated values.
 
+Trace the consumer's actual storage before checking appearance persistence:
+BFE uses ECommons EzConfig, MOGTOME uses its own System.Text.Json options,
+Nav uses Version/Payload envelopes, and MOM/public loaders merge existing JSON.
+Public-loader preference merges must respect their release dependency boundary.
+DDuck's public host uses System.Text.Json and the existing MOM-style atomic
+replacement to retain the shared root identity, version and private/unknown JSON;
+its development/private module retains native typed saves. A Newtonsoft envelope
+introduced a forbidden public-host reference. Verify packages against the actual
+public Release loader as well as the build reference; retain the dependency guard.
+A generic Dalamud serialization check cannot stand in for those paths.
+Keep existing seeded-collection reload behavior separate from new appearance
+regressions; compare against native legacy restore or the existing pure normalizer,
+and retain any rejected whole-object result. AutoParty Administration preserves
+its script-free CSP, so static opacity is supported and timed fade is disabled;
+Lifecycle Lab supports focus fade through its existing page preferences.
+
+
 For selected complete-window transparency, own one `MaterialWindowOpacity` per
 top-level window tree. Call `Apply(windowName, opacity, enabled, autoFade,
 fadedOpacity, unfocusedDelaySeconds)` once under its theme after the final native
 End and motion/decorations restore, before Render, including collapsed windows.
+`WindowSystem.Windows` returns `IWindow`; use that interface for per-window
+opacity registry keys. A dictionary keyed by concrete `Window` rejects the
+collection's elements, including in the separately compiled private build.
 Fractions clamp to .1–1. Defaults are 1 normal, .5 unfocused, auto-fade enabled
 and a 10-second delay. Focus in owned children/popups restores normal opacity
 immediately; native application focus events retain lost-focus state across idle
@@ -171,9 +191,17 @@ Keep IDs independent of translated labels. Use persistent model keys in
 `MaterialSegment.Key` values. Index segment IDs suit fixed lists only. Raw
 native controls can separate translated text and identity using `###stable-id`.
 Preserve existing internal ImGui IDs during refactors and rebranding.
+When replacing native Combo option submission, inspect the binding overloads.
+This host's managed PushID(index) selects a pointer hash; native Combo uses a
+four-byte integer. MOGTOME retained its original nine option IDs by calling
+ImGuiNative.PushID(index). Preserve existing pointer-ID loops elsewhere; changing
+those scopes merely to resemble C++ changes their established identities.
+
 IDs include their parent window, table and tree scopes. Moving an established
 control into a presentation child or table can change its ID even when its label
 is unchanged; preserve the prior ID root when retaining that control.
+Native tab bars also supply an ID scope. A tab item's NoPushId flag suppresses
+only that item's scope; derive diagnostic identities from the remaining bar scope.
 Appending `###original` to a translated label does not preserve the hash of an
 existing plain `original` label. For those controls, pass the original raw label
 to the native widget and paint the translation from its bounds, sizing for the
@@ -515,14 +543,94 @@ translated layouts before advertising support. Retain every existing locale and
 persisted ordinal, including existing pt-BR/zh-Hant choices; do not duplicate an
 already supported locale. Apply equal nonempty key/placeholder coverage to all
 advertised languages, including these additions.
-Hindi (`hi`) rendering investigation is also selected, but support requires
-demonstrated Devanagari shaping and cluster layout in native ImGui beyond glyph
-presence. The current native diagnostic with Nirmala UI Regular (verified TTC
-face 0) has every sample glyph yet leaves conjuncts/viramas unjoined and pre-base
-vowels misplaced compared with Windows-shaped text. Glyph merges alone do not
-qualify Hindi support. A future implementation must resolve shaped cluster
-positions and native editing/layout before advertising it. This decision does
-not authorize a new shaping dependency.
+Hindi (`hi`) requires Devanagari shaping beyond glyph presence. The approved
+Windows route uses `MaterialTextLayout`, consumer-owned `MaterialTextRenderer`
+and optional `MaterialTextHost(ITextureProvider)`; no third-party shaping package
+is selected. Scope the full window/status draw path, including font-status early
+returns. Route measurement and painting together through `MaterialText.Measure`,
+`AddText` and `Text`. A scope alone does not intercept raw ImGui labels/tooltips
+or consumer wrappers. Material buttons, action tiles and text/search fields use
+this route; consumer catalogs and remaining controls still need integration.
+Adding हिन्दी to an always-visible selector requires shaping in every locale.
+Retain native glyph checks for existing scripts and validate authored Devanagari
+through shaping before excluding its glyphs from atlas validation.
+
+For retained native wrappers, `MaterialText.BeginCombo` and `Selectable` preserve
+their supplied native labels/IDs, arrows and popup lifecycle. Raw
+`MaterialText.TreeNode`/`TableHeader` preserve the existing identity root and accept
+an optional shaped display caption while retaining the original native label.
+Keep caller-owned `TreePop` and reserve shaped table-header row height before
+native submission. The raw tree retains existing vertical padding around shaped
+ink, including unframed rows; complete-ink checks exposed top clipping at 150%.
+Text/tooltip helpers and explicit-font `AddText` share the shaped route; `Text` respects native wrap
+positions. `MaterialShapedInput.SingleLine` is public for existing wrappers,
+including an empty label under the owner's `PushOverrideID`. Reserve its line
+height with `MaterialText.PushLineHeight(value, hint)` instead of changing IDs.
+Keep combo preview clipping at the full native frame: clipping at increased
+FramePadding cuts shaped vertical ink and negative bearings, as the native Hindi
+selector checks demonstrated. Retain arrow reservation and parent-window clips.
+Single-line editors admit leading glyph overhang into the existing native frame
+padding when unscrolled, without moving the text origin, pointer or caret. Keep
+the padded clip during horizontal scrolling. Nav's Hindi Blacklist hint exposed
+a clipped leading pixel at 150 percent; hint/value regressions cover both
+densities/scales alongside native caret, IME and horizontal-scroll checks.
+Do not compensate by adding text spaces or shifting the editor origin.
+
+`renderer.CheckGlyphs(authoredText, fontSize)` checks actual shaped glyph runs
+without bitmap/texture uploads. Validate each original font-role size separately
+and retain atlas checks for all non-Devanagari characters. A text scope alone
+does not make the atlas contain Hindi or prove consumer readiness.
+
+Pass the active scaled font size once and reserve the shaped natural line height
+before drawing fields. Native IDs, focus, clipboard and undo remain native;
+Backspace dismantles conjuncts by codepoint and replacement paste retains native
+undo steps. ImGui 1.88 ImWchar16 needs transient editor tokens for supplementary
+and private-use values; tokens never enter saved strings. Retain proxy routing
+after the last Hindi character is removed. Host-truncated supplementary keyboard
+input, password fields and game-rendered DTR/SeString text remain outside the
+demonstrated editor bridge.
+
+Use `MaterialShapedInput.Multiline(nativeId, ref value, maxLength, pixelSize, flags)`
+for a retained multiline editor; `MaterialInput.Multiline` routes its own field
+through the same bridge. Preserve the original native ID and source bytes,
+including CRLF/lone-CR, supplementary characters and private-use values. The
+native child retains both scroll axes, clipboard/undo and capacity limits while
+shaped line geometry supplies pointer selection, vertical navigation and IME
+position. Keep protocol, JSON and encrypted values opaque. Actual host IME
+acceptance remains separate from the standalone native checks.
+
+Declare a mixed tab bar's visible captions before native Begin with
+`MaterialTabs.Begin(id, captions, flags)`, or reserve their shaped line height
+around the owner's `BeginTabBar`. Increasing padding only inside a tab cannot
+increase the bar-owned height. Preserve explicit caller sizes and native IDs.
+For retained tabs with an original raw label and shaped display caption, declare
+its measured width before native BeginTabItem, preserving an explicit caller
+width. Include the native padding once and clip painting to the complete item
+rectangle; padding pushed only inside a tab left DDuck captions too narrow.
+Reuse MaterialText.Selectable for shaped native labels and their leading bearings.
+Mixed-caption diagnostics must inspect native-font ink for retained terms that
+do not require shaping, rather than requiring a shaped texture for every caption.
+
+For retained checkbox labels with shaped ink, round the caption reservation upward
+and retain the native-label minimum when adjusting ItemInnerSpacing; clamp the
+adjusted spacing nonnegative. DhogGPT's shorter Hindi Enabled caption otherwise
+lost four right pixels at the native item clip. Preserve its original label/ID
+and keep existing spacing on unshaped paths. Diagnostic combo-preview lookup must
+include the consumer's deliberate leading-space layout and still check complete ink.
+
+Tree/tab scope constructors restore native pushes when shaped uploads fail;
+consumer wrappers must also close an open popup and restore their clips/IDs in
+`finally`. Filter atlas input with rune-aware `MaterialText.NativeGlyphText`
+only after validating authored Devanagari through the shaped glyph runs.
+
+Renderer scopes are context-bound and LIFO. Borrow layouts for the current frame
+only; keep textures alive through Render even after an explicit EndFrame. Clear
+and dispose outside the frame after submission. Diagnostic rendering resolves
+actual RGBA uploads, tint and clipping. Native group bounds round fractional
+extents, so editing/IME fixtures obtain origins from drawn quads or native input
+bounds. `/aethertekui hindi` previews this without changing existing showcase
+pages. Keep consumer rollout and game/GPU/IME acceptance separate; advertise Hindi
+only after the selected surfaces pass.
 
 Translate all consumer-authored windows, headings, controls, tooltips and popup
 text. C# consumers use keyed resources embedded in the assembly and native .NET
@@ -597,6 +705,11 @@ to avoid timeouts from ambiguous adjacent captures, as DDuck's compiled status
 checks verified. Check full, empty, nested, padded and LF/CRLF captures after the
 change. Keep source-specific lookaround parsers separate: DAD's leveling patterns
 contain lookaheads and cannot use that option.
+Verify captured values through the consumer's installed runtime, not just match
+success. ADS's named fields lost leading-zero and terminal-newline detail with
+the non-backtracking route; ordinary anchored matching retained it. Keep the
+established finite match timeout when restoring ordinary regex (20 ms in ADS),
+and verify that bound alongside the exact raw captures.
 For a catalog whose literal/wildcard templates repeatedly time out during Draw,
 consider matching pre-split ordinal literal segments. LootGoblin verified this
 route with ordered templates, raw/empty numbered arguments, repeated placeholders

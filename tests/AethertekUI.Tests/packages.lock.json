@@ -96,10 +96,17 @@
       "aethertekui": {
         "type": "Project"
       },
-      "aethertekui.demo": {
+      "aethertekui.dalamud": {
         "type": "Project",
         "dependencies": {
           "AethertekUI": "[0.3.0, )"
+        }
+      },
+      "aethertekui.demo": {
+        "type": "Project",
+        "dependencies": {
+          "AethertekUI": "[0.3.0, )",
+          "AethertekUI.Dalamud": "[0.3.0, )"
         }
       }
     }

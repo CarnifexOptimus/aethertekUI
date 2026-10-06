@@ -13,12 +13,17 @@ public static class MaterialWindowHeader
         var m=MaterialTheme.Metrics; var c=MaterialTheme.Current.Colors;
         var origin=ImGui.GetCursorScreenPos();
         var width=ImGui.GetContentRegionAvail().X;
-        var height=compact||subtitle is null?m.ButtonHeight:Math.Max(m.ButtonHeight,ImGui.GetTextLineHeight()*2+m.Gap);
+        var text=MaterialText.Measure(title);
+        var detail=subtitle is null?Vector2.Zero:MaterialText.Measure(subtitle);
+        var titleHeight=MaterialNativeCaption.IsShaped(title)?text.Y:ImGui.GetTextLineHeight();
+        var detailHeight=subtitle is not null && MaterialNativeCaption.IsShaped(subtitle)?detail.Y:ImGui.GetTextLineHeight();
+        var height=compact||subtitle is null?m.ButtonHeight:Math.Max(m.ButtonHeight,titleHeight+detailHeight+m.Gap);
+        if(MaterialNativeCaption.IsShaped(title)) height=Math.Max(height,text.Y);
         var actionWidth=actions.Length*(m.ButtonHeight+m.Gap);
         var dl=ImGui.GetWindowDrawList();
         dl.PushClipRect(origin,origin+new Vector2(Math.Max(0,width-actionWidth),height),true);
-        dl.AddText(origin,MaterialDraw.Color(c.OnSurface),title);
-        if(!compact&&subtitle is not null) dl.AddText(origin+new Vector2(0,ImGui.GetTextLineHeight()+m.Gap),MaterialDraw.Color(c.OnSurfaceVariant),subtitle);
+        MaterialText.AddText(dl,origin,MaterialDraw.Color(c.OnSurface),title);
+        if(!compact&&subtitle is not null) MaterialText.AddText(dl,origin+new Vector2(0,titleHeight+m.Gap),MaterialDraw.Color(c.OnSurfaceVariant),subtitle);
         dl.PopClipRect();
         ImGui.BeginGroup();
         var result=-1;
@@ -26,7 +31,7 @@ public static class MaterialWindowHeader
         {
             ImGui.SetCursorScreenPos(origin+new Vector2(width-actionWidth+i*(m.ButtonHeight+m.Gap),0));
             if(MaterialButton.IconButton(actions[i].Id,actions[i].Icon)) result=i;
-            if(actions[i].Tooltip is not null&&ImGui.IsItemHovered()) ImGui.SetTooltip(actions[i].Tooltip!);
+            if(actions[i].Tooltip is not null&&ImGui.IsItemHovered()) MaterialSemantic.DrawTooltip(actions[i].Tooltip!);
         }
         ImGui.SetCursorScreenPos(origin); ImGui.Dummy(new(width,height)); ImGui.EndGroup();
         return result;

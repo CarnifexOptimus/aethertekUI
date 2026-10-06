@@ -42,10 +42,12 @@ public static class MaterialButton
         // Reject invalid appearance before submitting an item or touching the native ID stack.
         if(appearance is { } validated) validated.Radius(MaterialTheme.Metrics.Scale);
         var c=MaterialTheme.Current.Colors; var m=MaterialControls.Metrics;
-        var width=ImGui.CalcTextSize(label).X+2*m.Padding.X;
+        var text=MaterialText.Measure(label);
+        var width=text.X+2*m.Padding.X;
         if(leading!=MaterialIcon.None) width+=m.IconSize+m.Gap;
         if(trailing!=MaterialIcon.None) width+=m.IconSize+m.Gap;
-        var actual=MaterialDraw.Size(size,width,m.Height);
+        var height=MaterialNativeCaption.IsShaped(label)?Math.Max(m.Height,text.Y+2*m.Padding.Y):m.Height;
+        var actual=MaterialDraw.Size(size,width,height);
         if(size.X<=0) actual.X=MaterialLayout.FitNextItemWidth(size.X,width);
         ImGui.PushID(id);
         var clicked=MaterialDraw.Hit("##button",actual,disabled,out var state);
