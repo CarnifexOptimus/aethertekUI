@@ -91,6 +91,13 @@ Verify actual owner hooks, expanded/collapsed/restored corner pixels, resize
 grips, constraints, IDs and saves at both densities/scales. The offline injected
 owned-viewport branch is diagnostic evidence; game/GPU acceptance stays separate.
 
+For a selected appearance rollout, reuse the consumer?s existing configuration.
+Keep colour, language and compact selection available in Settings, with independent
+main-window visibility flags defaulting on. Preserve saved legacy opacity values
+when replacing an older alpha path; apply complete-window opacity once instead
+of multiplying it again through background styles. Add only the needed preference
+fields and verify old configurations retain the new defaults and unrelated values.
+
 For selected complete-window transparency, own one `MaterialWindowOpacity` per
 top-level window tree. Call `Apply(windowName, opacity, enabled, autoFade,
 fadedOpacity, unfocusedDelaySeconds)` once under its theme after the final native
@@ -376,6 +383,16 @@ For every consumer adoption, determine how its CI and release builds will obtain
 AethertekUI. A local sibling checkout does not exist on a fresh Actions runner.
 Keep CI changes within mcvaxius's selected scope and obtain his persistent-machinery
 choice before adding dependency provisioning or credentials.
+
+Pin the AethertekUI checkout to a published library commit that contains the
+consumer's required APIs, and update that existing ref when adopting new APIs.
+Verify the dependency commit is available before releasing its consumer; local
+sibling builds can hide a cross-repository publication race. MOM's failed run
+selected the preceding library commit two seconds before shared Discord/Ko-fi
+icons arrived. Inspect the Actions checkout revision and compiler error together;
+matching 0.3.0 version metadata does not prove matching API surface. Keep the
+existing read-only credential and do not add retries or publish a dependency
+without the user's authorization.
 
 When Actions provisioning is selected, use native `actions/checkout` steps with
 the consumer and AethertekUI in sibling folders inside `GITHUB_WORKSPACE`.
