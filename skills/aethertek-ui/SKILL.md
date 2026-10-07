@@ -147,6 +147,18 @@ Use Compact density for compact desktop designs, and
 `MaterialControls.Push(MaterialControlContext.Toolbar)` or `Dense` for local
 rows. `MaterialTable.PushControls()` aligns native and custom table editors.
 Enter a control scope after selecting its font. Pass host global scale once.
+For selected smaller native buttons, check the caller's zero-padding and Dense
+state before shaping. Push Toolbar before `MaterialText.PushLineHeight`, or
+measure the final caption/icon height explicitly after capturing eligibility.
+A later padding scope otherwise erases shaped-height reservation and can enlarge
+SmallButtons. Keep original IDs, positive widths, full-width slots and compound
+image/action tiles; verify actual wrapper ink, native presses and restoration.
+For an explicit-height wrapper that also calls `PushLineHeight`, capture the
+Toolbar padding before that reservation. Size the native button from the measured
+caption/icon height plus that original padding once. Using the later padded value
+with the measured caption double-counts shaped growth, as FrenRider, LootGoblin,
+MOGTOME and VMX demonstrated. Preserve any requested positive height as a minimum
+and verify actual font roles, large text and both densities/scales.
 Explicit component sizes are logical units; measured metrics, native ImGui
 coordinates and `MaterialActionTile.Measure` results are already pixels.
 Zero/negative sizing conventions vary by component; consult
@@ -206,11 +218,21 @@ corners, opacity, window IDs and saved geometry unchanged.
 
 Keep the owner's `MaterialWindowMotion` lifecycle around native Begin/End.
 The host reserves font size plus inner spacing beside Close; larger horizontal
-frame padding can intercept the first custom button. `Prepare` temporarily limits
-that padding with a one-pixel native rounding allowance. `DrawChrome` restores
+frame padding can intercept the first custom button. `Prepare` retains that
+limit for left-collapse layouts. Native right Collapse and Close are only one
+font width apart, while each hit rectangle includes twice `FramePadding.X`;
+a positive padding limit still overlaps them. For right-collapse layouts,
+`Prepare` temporarily uses zero X when Close or adjacent custom actions are
+present, including custom-action windows that hide Close. `DrawChrome` restores
 the original X before body controls, and `Restore` handles collapsed frames.
 Keep both calls in their original order; Y and the caller's styles remain intact.
-Check the first cell's right edge at fractional scales as well as center presses.
+Direct native Begin/End owners with Close and right Collapse need the same
+zero-X scope around Begin only, restored before body drawing. IconOffset changes
+icon ink, not hit regions. Check the native Close/collapse boundary and first
+custom cell's right edge with actual hover transitions and clicks, including
+collapsed windows and fractional scales; center presses alone missed I494.
+Model native button bounds from the title rectangle inset by `WindowBorderSize`.
+Mouse coordinates are floored; native button positions remain fractional.
 
 The independent ConsumerContract example shares its retained Enabled handler
 with one native title shortcut. Verify actual native pointer routing, collapsed
@@ -445,6 +467,20 @@ host replacement and its version choice as a separate release step; equal versio
 metadata cannot distinguish older and rebuilt binaries. Offline compatibility
 verification does not authorize host installation or publication.
 
+For DDuck, MOM and DhogNav private modules, ClientStructs is owned by the
+running Dalamud host. Resolve it through the load context of
+`typeof(IDalamudPluginInterface).Assembly` with only the requested version
+cleared; explicitly check the remaining assembly identity, the compiled version
+floor and the actual Dalamud directory before returning that host instance.
+CLR binding does not enforce every identity check on a custom cross-context
+return. Keep contract, core, adapter, embedded and other dependency checks exact.
+Build the module and host/reference against the same current supported bundle;
+do not download or ship another ClientStructs DLL or add recurring version pins
+to code or launchers. The three private AGENTS.md files carry this session rule.
+Use actual deployable-host resolver checks and authenticated package verification
+as distinct evidence. Installed old public loaders still require the selected
+user-controlled replacement path; local checks do not establish game acceptance.
+
 ## GitHub Actions provisioning
 
 For every consumer adoption, determine how its CI and release builds will obtain
@@ -507,6 +543,13 @@ code running with a secret can disclose it despite log masking. Do not run
 untrusted pull-request code with this credential or add `pull_request_target`
 access as part of adoption. Shipping the compiled library DLL makes that binary
 public; it does not publish the source repository or its deploy key.
+
+## Bound UI revision rounds
+
+For each selected UI change, use at most three implementation-and-check rounds.
+Then stop visual adjustments and leave further refinement to user feedback.
+Keep verification focused on the selected defect; retain failed and untested
+results honestly. User feedback can authorize another bounded change.
 
 ## Evolve through approved designs
 

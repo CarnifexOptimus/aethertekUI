@@ -36,15 +36,20 @@ public sealed class MaterialWindowMotion
             roundedCorners ? prepareDecorations : null);
         preparedWindow = window;
         if (replacedConstraints) window.SizeConstraints = null;
-        if (window.TitleBarButtons.Count > 0 && window.ShowCloseButton && !window.IsClickthrough
-            && (window.Flags & ImGuiWindowFlags.NoTitleBar) == 0)
+        var style = ImGui.GetStyle();
+        var rightCollapse = (window.Flags & ImGuiWindowFlags.NoCollapse) == 0
+            && style.WindowMenuButtonPosition == ImGuiDir.Right;
+        if (!window.IsClickthrough && (window.Flags & ImGuiWindowFlags.NoTitleBar) == 0
+            && ((rightCollapse && window.ShowCloseButton)
+                || (window.TitleBarButtons.Count > 0 && (rightCollapse || window.ShowCloseButton))))
         {
-            var style = ImGui.GetStyle();
             var padding = style.FramePadding;
-            // Native Close includes both horizontal paddings in its hit region;
-            // Dalamud reserves only font size plus inner spacing for that region.
-            // Leave one pixel for native coordinate rounding at fractional scales.
-            var chromePaddingX = Math.Min(padding.X, Math.Max(0, (style.ItemInnerSpacing.X - 1) * .5f));
+            // Native right Collapse and Close are one font width apart, but
+            // each hit region includes both horizontal paddings. Zero X removes
+            // their overlap; retain the existing Close/custom-button allowance
+            // when Collapse is on the left. Body padding is restored below.
+            var chromePaddingX = rightCollapse ? 0
+                : Math.Min(padding.X, Math.Max(0, (style.ItemInnerSpacing.X - 1) * .5f));
             if (chromePaddingX < padding.X)
             {
                 titlebarPaddingX = padding.X;
