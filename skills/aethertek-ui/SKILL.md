@@ -77,7 +77,12 @@ For direct native Begin/End, own one `MaterialWindowFold` and one
 `MaterialWindowDecorations`. Pass a cached `decorations.Prepare` delegate to the
 fold's five-argument PreDraw overload after setting existing size constraints.
 Call `decorations.Paint()` first in visible content and again after End, then
-`fold.PostDraw()`. Paint replaces only matched native decoration meshes in that
+`fold.PostDraw()`. Paint waits until the owner leaves the native window stack;
+keep the after-End call for expanded windows too. Front-inserting decoration
+commands before native table/channel merges corrupts index offsets and clip
+assignments, as ADS's header/actions/state tables demonstrated. The early call
+retains the owner's font measurement for resize grips. Paint replaces only
+matched native decoration meshes in that
 owner's draw list, retaining emitted opacity, title controls, scrollbar grabs,
 input and global styles. It does not paint a shared viewport background.
 Docked windows and native popup/child/tooltip windows retain native chrome.

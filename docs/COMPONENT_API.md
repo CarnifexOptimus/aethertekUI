@@ -8,11 +8,11 @@ See [Adaptive sizing and host compatibility](ADAPTIVE_SIZING.md) for units, owne
 |---|---|
 | MaterialStyleMode.Compatible / Material / ColorsOnly | Preserve host layout by default; opt into full metrics or colors alone |
 | MaterialWindowChrome.Push() | Explicit outer-window rounding using the active theme's pixel metrics; retains host padding, spacing, IDs and geometry |
-| MaterialWindowDecorations.Prepare / Paint | Owned-viewport decoration replacement; compose preparation with the final native sizing callback, paint first in Draw and after End when collapsed |
+| MaterialWindowDecorations.Prepare / Paint | Owned-viewport decoration replacement; compose preparation with the final native sizing callback, call first in Draw and after End; painting waits for the owner's final End |
 | MaterialWindowFold.PreDraw / PostDraw | Consumer-owned transition of one native window's existing collapse controls; keeps expanded size, IDs and native resize behavior |
 | MaterialWindowFold.GetLogicalSize() | Expanded pixel geometry for observers inside that window's Draw during a transition |
 | MaterialWindowOpacity.Apply / CurrentOpacity | One owner-tree alpha multiplier after final End; native focus delay, immediate focus restoration, and consumer-owned preferences |
-| AethertekUI.Dalamud.MaterialWindowMotion.Prepare / DrawChrome / Restore | Bridge for one Dalamud Window; prepares fold and optional owned-viewport chrome before Begin, paints first in Draw and restores managed constraints after End |
+| AethertekUI.Dalamud.MaterialWindowMotion.Prepare / DrawChrome / Restore | Bridge for one Dalamud Window; prepares fold and optional owned-viewport chrome before Begin, restores body styles first in Draw, then paints chrome and restores managed constraints after End |
 | MaterialControls.Push(context) | Match native and custom control heights using current font, density and scale |
 | MaterialControlContext.Regular / Toolbar / Dense | Local sizing intent independent of theme density |
 | MaterialControls.Push(metrics) | Explicit already-scaled pixel metrics; parameterless nested scopes inherit, explicit contexts remeasure |
@@ -116,7 +116,7 @@ For a Dalamud Window, `MaterialWindowMotion.Prepare(this)` belongs last in its
 PreDraw and `Restore(this)` first in PostDraw. The original overload retains
 fold-only behavior. Select owned-viewport corners with the three required
 arguments `Prepare(this, reducedMotion: false, roundedCorners: true)`, and call
-`DrawChrome()` first in Draw. Restore also paints collapsed chrome after End,
+`DrawChrome()` first in Draw. Restore paints expanded and collapsed chrome after End,
 before returning transient animation geometry to its expanded state.
 The bridge scales the owner's
 managed constraints using the host scale and restores them after End. A managed
@@ -145,6 +145,10 @@ main toggles, translated labels and saving remain consumer responsibilities.
 For a direct native window, compose `MaterialWindowDecorations.Prepare` through
 the fold's five-argument PreDraw overload; cache the delegate per owner.
 Call `Paint()` first in visible content and again after End before PostDraw.
+Painting waits until the owner leaves the native window stack. Keep the after-End
+call on expanded windows too: inserting decoration commands before native tables
+and draw channels finish merging corrupts their index offsets and clip assignments.
+The early call retains the owner's font measurement for resize-grip geometry.
 The replacement uses matched native decoration vertices and emitted colors in
 the owner's draw list. It preserves host alpha/fades and global style stacks;
 title controls, menu dividers, scrollbar grabs and native input remain intact.

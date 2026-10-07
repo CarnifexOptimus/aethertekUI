@@ -9,6 +9,7 @@ public sealed class MaterialWindowDecorations
     private ImGuiWindowPtr window;
     private ImGuiContextPtr context;
     private float radius;
+    private float? ownerFontSize;
 
     /// <summary>Call from the final native sizing callback, after viewport selection.</summary>
     public void Prepare(ImGuiWindowPtr native)
@@ -20,16 +21,27 @@ public sealed class MaterialWindowDecorations
         window = native;
         context = ImGui.GetCurrentContext();
         radius = MaterialTheme.Metrics.OuterRadius;
+        ownerFontSize = null;
     }
 
-    /// <summary>Call first in Draw, and again after End for collapsed windows.</summary>
-    public void Paint()
+    /// <summary>Call first in Draw and again after End. Painting waits until the owner's final End.</summary>
+    public unsafe void Paint()
     {
         if (window.IsNull) return;
         if (ImGui.GetCurrentContext() != context)
             throw new InvalidOperationException("Finish decorations in the context that prepared them.");
+        // Tables merge index buffers in command order. Inserting chrome commands
+        // before those merges redirects consumer geometry into unrelated clips.
+        for (var index = 0; index < context.CurrentWindowStack.Size; index++)
+            if (context.CurrentWindowStack.Data[index].Window == window.Handle)
+            {
+                if (ImGuiP.GetCurrentWindow() == window) ownerFontSize = ImGui.GetFontSize();
+                return;
+            }
         var native = window;
         window = default;
+        var fontSize = ownerFontSize ?? ImGui.GetFontSize();
+        ownerFontSize = null;
         var flags = native.Flags;
         var list = native.DrawList;
         var min = native.Pos;
@@ -147,7 +159,7 @@ public sealed class MaterialWindowDecorations
         void Grip(int n, float rounding, uint color)
         {
             if (color == 0) return;
-            var gripSize = MathF.Floor(MathF.Max(ImGui.GetFontSize() * 1.1f, rounding + 1 + ImGui.GetFontSize() * .2f));
+            var gripSize = MathF.Floor(MathF.Max(fontSize * 1.1f, rounding + 1 + fontSize * .2f));
             var direction = new Vector2(n == 0 ? -1 : 1, -1);
             var corner = min + new Vector2(n == 0 ? native.Size.X : 0, native.Size.Y);
             list.PathLineTo(corner + direction * (n == 0 ? new Vector2(gripSize, native.WindowBorderSize) : new Vector2(native.WindowBorderSize, gripSize)));

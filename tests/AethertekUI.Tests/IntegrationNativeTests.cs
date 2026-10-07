@@ -11,6 +11,179 @@ public unsafe class IntegrationNativeTests
     [InlineData(MaterialDensity.Compact, 1.5f)]
     [InlineData(MaterialDensity.Standard, 1f)]
     [InlineData(MaterialDensity.Standard, 1.5f)]
+    public void OwnedViewportChromePreservesTablesAndNestedChannelsThroughOpacityToggle(MaterialDensity density, float scale)
+    {
+        using var host = new NativeTestContext((int)(1200 * scale), (int)(700 * scale), scale);
+        var theme = new MaterialTheme(new Vector3(.3f, .7f, .4f), density);
+        var fold = new MaterialWindowFold();
+        var decorations = new MaterialWindowDecorations();
+        var opacity = new MaterialWindowOpacity();
+        const string name = "Owned table chrome###owned-table-chrome";
+        var decorated = false;
+        var transparency = false;
+        uint transparencyId = 0;
+        var actionIds = new uint[6];
+        var actionCenters = new Vector2[6];
+        var presses = new int[6];
+        Vector2 transparencyCenter = default, contentMin = default, contentMax = default;
+        ImDrawListPtr list = default;
+        var markers = new List<(string Name, int FirstVertex, Vector2 Min, Vector2 Max)>();
+        var owned = new ImGuiSizeCallback(_ => ImGuiP.GetCurrentWindow().Handle->ViewportOwned = 1);
+
+        void Marker(string label)
+        {
+            var min = ImGui.GetCursorScreenPos();
+            var max = min + new Vector2(18, 12) * scale;
+            markers.Add((label, list.VtxBuffer.Size, min, max));
+            list.AddRectFilled(min, max, 0xff48e0c0);
+            ImGui.Dummy(max - min);
+        }
+
+        void Draw()
+        {
+            using var palette = MaterialTheme.Push(theme, scale, MaterialStyleMode.ColorsOnly);
+            using var chrome = MaterialWindowChrome.Push();
+            using var geometry = new MaterialStyleScope();
+            geometry.Style(ImGuiStyleVar.WindowPadding, new Vector2(12) * scale);
+            geometry.Style(ImGuiStyleVar.CellPadding, new Vector2(5, 4) * scale);
+            markers.Clear();
+            ImGui.SetNextWindowSizeConstraints(new(100), new(2000 * scale), owned);
+            fold.PreDraw(name, null, null, true, decorated ? decorations.Prepare : null);
+            ImGui.SetNextWindowPos(new Vector2(20) * scale);
+            ImGui.SetNextWindowSize(new Vector2(980, 520) * scale);
+            if (ImGui.Begin(name, ImGuiWindowFlags.NoSavedSettings))
+            {
+                if (decorated) decorations.Paint();
+                list = ImGui.GetWindowDrawList();
+                contentMin = ImGui.GetCursorScreenPos();
+                if (ImGui.BeginTable("header", 2, ImGuiTableFlags.SizingStretchSame))
+                {
+                    ImGui.TableNextColumn();
+                    ImGui.TextUnformatted("Header and subtitle remain visible");
+                    Marker("header");
+                    ImGui.TableNextColumn();
+                    var id = ImGui.GetID("Transparency");
+                    if (transparencyId == 0) transparencyId = id;
+                    Assert.Equal(transparencyId, id);
+                    ImGui.Checkbox("Transparency", ref transparency);
+                    Assert.Equal(transparencyId, ImGuiP.GetItemID());
+                    transparencyCenter = (ImGui.GetItemRectMin() + ImGui.GetItemRectMax()) * .5f;
+                    ImGui.EndTable();
+                }
+                if (ImGui.BeginTable("actions", 6, ImGuiTableFlags.SizingStretchSame))
+                {
+                    for (var column = 0; column < 6; column++)
+                    {
+                        ImGui.TableNextColumn();
+                        var label = $"Action {column}";
+                        var id = ImGui.GetID(label);
+                        if (actionIds[column] == 0) actionIds[column] = id;
+                        Assert.Equal(actionIds[column], id);
+                        if (ImGui.Button(label, new Vector2(-1, 32 * scale))) presses[column]++;
+                        Assert.Equal(id, ImGuiP.GetItemID());
+                        actionCenters[column] = (ImGui.GetItemRectMin() + ImGui.GetItemRectMax()) * .5f;
+                        Marker(label);
+                    }
+                    ImGui.EndTable();
+                }
+                if (ImGui.BeginTable("state", 4, ImGuiTableFlags.SizingStretchSame))
+                {
+                    for (var column = 0; column < 4; column++)
+                    {
+                        ImGui.TableNextColumn();
+                        var start = ImGui.GetCursorScreenPos();
+                        var width = ImGui.GetContentRegionAvail().X;
+                        var splitter = ImGui.ImDrawListSplitter();
+                        splitter.Split(list, 2);
+                        try
+                        {
+                            splitter.SetCurrentChannel(list, 1);
+                            ImGui.SetCursorScreenPos(start + new Vector2(6) * scale);
+                            if (ImGui.BeginTable("bounds", 1, ImGuiTableFlags.SizingFixedFit | ImGuiTableFlags.NoSavedSettings,
+                                new Vector2(width - 12 * scale, 0)))
+                            {
+                                ImGui.TableSetupColumn("Content", ImGuiTableColumnFlags.WidthFixed, width - 12 * scale);
+                                ImGui.TableNextColumn();
+                                ImGui.TextUnformatted($"State {column}");
+                                Marker($"State {column}");
+                                ImGui.EndTable();
+                            }
+                            var bottom = ImGui.GetCursorScreenPos().Y + 6 * scale;
+                            splitter.SetCurrentChannel(list, 0);
+                            list.AddRectFilled(start, new(start.X + width, bottom), 0xff403020);
+                            ImGui.SetCursorScreenPos(new(start.X, bottom));
+                            ImGui.Dummy(new(width, 0));
+                        }
+                        finally { splitter.Merge(list); splitter.Destroy(); }
+                    }
+                    ImGui.EndTable();
+                }
+                contentMax = new(contentMin.X + ImGui.GetContentRegionAvail().X, ImGui.GetCursorScreenPos().Y);
+            }
+            ImGui.End();
+            if (decorated) decorations.Paint();
+            fold.PostDraw();
+            opacity.Apply(name, .5f, transparency, autoFade: false, reducedMotion: true);
+
+            // A table merge must keep each emitted marker under the clip of its own cell.
+            foreach (var marker in markers)
+            {
+                var references = 0;
+                for (var commandIndex = 0; commandIndex < list.CmdBuffer.Size; commandIndex++)
+                {
+                    var command = list.CmdBuffer[commandIndex];
+                    for (var index = command.IdxOffset; index < command.IdxOffset + command.ElemCount; index++)
+                    {
+                        var vertex = list.IdxBuffer[(int)index] + command.VtxOffset;
+                        if (vertex < marker.FirstVertex || vertex >= marker.FirstVertex + 4) continue;
+                        references++;
+                        Assert.True(command.ClipRect.X <= marker.Min.X && command.ClipRect.Y <= marker.Min.Y
+                            && command.ClipRect.Z >= marker.Max.X && command.ClipRect.W >= marker.Max.Y,
+                            $"{marker.Name} geometry uses another cell's clip {command.ClipRect}; expected {marker.Min}..{marker.Max}; decorations={decorated}, transparency={transparency}.");
+                    }
+                }
+                Assert.True(references == 6, $"{marker.Name} has {references} indexed vertices instead of 6; decorations={decorated}.");
+            }
+        }
+
+        void CheckInk()
+        {
+            ImGui.GetIO().AddMousePosEvent(-100, -100);
+            decorated = false;
+            host.Frame(Draw); host.Frame(Draw);
+            var expected = SoftwarePreview.Capture(host);
+            decorated = true;
+            host.Frame(Draw); host.Frame(Draw);
+            var actual = SoftwarePreview.Capture(host);
+            for (var y = (int)MathF.Ceiling(contentMin.Y); y < (int)MathF.Floor(contentMax.Y); y++)
+            for (var x = (int)MathF.Ceiling(contentMin.X); x < (int)MathF.Floor(contentMax.X); x++)
+            for (var channel = 0; channel < 4; channel++)
+            {
+                var offset = (y * actual.Width + x) * 4 + channel;
+                Assert.True(Math.Abs(expected.Rgba[offset] - actual.Rgba[offset]) <= 2,
+                    $"Table ink changed at ({x},{y}) channel {channel}: native={expected.Rgba[offset]}, decorated={actual.Rgba[offset]}, transparency={transparency}.");
+            }
+        }
+
+        CheckInk();
+        for (var toggle = 0; toggle < 2; toggle++)
+        {
+            host.Click(transparencyCenter, Draw);
+            Assert.Equal(toggle == 0, transparency);
+            CheckInk();
+        }
+        for (var column = 0; column < 6; column++)
+        {
+            host.Click(actionCenters[column], Draw);
+            Assert.Equal(1, presses[column]);
+        }
+    }
+
+    [Theory]
+    [InlineData(MaterialDensity.Compact, 1f)]
+    [InlineData(MaterialDensity.Compact, 1.5f)]
+    [InlineData(MaterialDensity.Standard, 1f)]
+    [InlineData(MaterialDensity.Standard, 1.5f)]
     public void OwnedViewportChromeRoundsRenderedCornersAndPreservesNativeControls(MaterialDensity density, float scale)
     {
         using var host = new NativeTestContext(800, 600, scale);

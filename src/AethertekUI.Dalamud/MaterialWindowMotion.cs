@@ -77,7 +77,7 @@ public sealed class MaterialWindowMotion
     /// <summary>Read inside the owner's Draw when observing saved or repairable geometry.</summary>
     public Vector2 GetLogicalSize() => fold.GetLogicalSize();
 
-    /// <summary>Call first in Draw to paint owned-viewport chrome before consumer content.</summary>
+    /// <summary>Call first in Draw to restore body styles; owned-viewport painting finishes in Restore after End.</summary>
     public void DrawChrome()
     {
         RestoreTitlebarPadding();
