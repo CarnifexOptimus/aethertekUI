@@ -179,6 +179,46 @@ upward. DhogNav's narrow Japanese warning otherwise measured as one line but
 rendered two. Use the same reservation when budgeting the enclosing card and
 its table footer, and verify the final native child content and scroll range.
 
+## Native titlebar actions
+
+For a selected Dalamud titlebar rollout, register fixed `Window.TitleBarButtons`
+once on the existing window owner. Preserve existing registrations and their
+priority order: the native host derives custom-button IDs from that order.
+Use consumer-owned callbacks that accept left clicks, re-read current eligibility
+and call the same compound handler as the retained body action. Translate the
+current action/reason tooltip; native title buttons have no disabled property,
+so an unavailable action must remain inert. These callbacks run while collapsed,
+outside body Draw and its local font/text scopes; keep the consumer's full host
+theme/localization/shaping scopes around that route.
+
+Keep every selected main body control. Relocate only explicitly selected mini
+navigation shortcuts, retaining mini run controls, information and contextual
+item menus. A popup belonging to the body keeps its original ID scope: request
+it from the title callback and open it from that scope when Draw runs, expanding
+the owner only when the selected action requires it.
+
+Dalamud scales `IconOffset` logical coordinates once. Reserve current native
+font size plus item spacing per visible icon, together with close, optional
+right-collapse and host settings controls. Consumer title repaints must clip
+before that reservation. Preserve existing title-helper signatures used by
+reflection; use a separately named owner-aware helper when needed. Keep motion,
+corners, opacity, window IDs and saved geometry unchanged.
+
+Keep the owner's `MaterialWindowMotion` lifecycle around native Begin/End.
+The host reserves font size plus inner spacing beside Close; larger horizontal
+frame padding can intercept the first custom button. `Prepare` temporarily limits
+that padding with a one-pixel native rounding allowance. `DrawChrome` restores
+the original X before body controls, and `Restore` handles collapsed frames.
+Keep both calls in their original order; Y and the caller's styles remain intact.
+Check the first cell's right edge at fractional scales as well as center presses.
+
+The independent ConsumerContract example shares its retained Enabled handler
+with one native title shortcut. Verify actual native pointer routing, collapsed
+callbacks, fresh blockers and title/control bounds at both densities/scales.
+Calling a descriptor delegate directly proves callback logic only. An offline
+probe of the installed host's unavailable-icon fallback exercises native hit
+routing but does not prove managed IconFont readiness, icon ink or game rendering.
+
 ## Identity, localization and resources
 
 Use only `mcvaxius` or `dhoggpt` for user attribution. Never include the
@@ -810,12 +850,29 @@ errors and glyph coverage after atlas rebuilds. Dispose consumer-owned handles;
 never distribute Windows fonts. Temporary host fonts cannot qualify for visual
 acceptance.
 
-For BFE's seven font roles, set `build.NewImAtlas.TexDesiredWidth` and
-`TexDesiredHeight` to 4096 inside each existing managed `OnPreBuild` callback,
-including rebuilds. This measured starting size works around the host packing
-defect; it is not a universal atlas-size guarantee. Keep finite time and memory
-bounds for verification and require managed-host readiness, glyph coverage,
-language-change and scale-rebuild acceptance before treating the fix as verified.
+For the selected suite CJK rollout, set `build.NewImAtlas.TexDesiredWidth`
+and `TexDesiredHeight` to 4096 inside each existing managed `OnPreBuild`
+callback, including rebuilds. Preserve original roles, heights, ranges, merge
+targets, symbol/host-language merges and handle lifecycle. Reuse linked
+public-root builders in private modules instead of duplicating them. MOM retains
+its seven standard roles and two existing body handles at their density-specific
+heights. BFE demonstrated this host-packing workaround; 4096 is a measured
+starting size, not a universal atlas-size guarantee.
+
+The installed TTC's PostScript name table was checked on 2026-10-07 and confirms
+JP=0, KR=1, SC=2, TC=3, despite a conflicting order in the endpoint API XML.
+Check the actual asset when it changes. String-code consumers recognize both
+`zh-Hans`/`zh-CN` and `zh-Hant`/`zh-TW`; enum consumers retain their native
+language selection.
+
+Capturing and executing production PreBuild delegates verifies original/rebuild
+configuration, role counts, merge order and disposal. Use the consumer-owned
+required-text set when it constructs ranges internally; use supplied text for
+callers that accept explicit ranges. A bounded native bake proves only the
+checked glyph set. These
+checks do not prove complete displayed-text coverage, managed readiness, Hindi
+shaping, language/scale rebuild acceptance or game/GPU rendering. Keep finite
+time and memory bounds and leave those host acceptance criteria explicit.
 
 On 2026-10-06, BFE's Debug/x64 build through `Z:\bfe.bat` passed with zero
 warnings and errors after this correction; the launcher was left unchanged.

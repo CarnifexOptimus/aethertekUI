@@ -23,6 +23,32 @@ For a game-anchored overlay, material.BeginFrame(applyMetrics: false) applies co
 
 Call Controller.Apply(newSettings) on configuration change. It validates before mutation, skips identical values and regenerates palettes only when seed RGB changes. Density, alpha and reduced motion reuse the cached palette. Keep one controller/theme per ImGui context and do not switch contexts or threads inside scopes.
 
+## Native titlebar shortcuts
+
+Dalamud consumers can register fixed `Window.TitleBarButtons` on their existing
+owner; this needs no additional AethertekUI registration service. The compiled
+ConsumerContract example shares its existing Enabled handler between a retained
+body switch and a title shortcut. Keep callbacks and translated tooltips in the
+consumer, rechecking current action gates at the click, including while collapsed.
+Retain main body controls and move only explicitly selected mini shortcuts.
+
+Preserve registration/priority order, native close/collapse/dragging and original
+window identities. Icon offsets are logical units scaled by Dalamud. Custom title
+painting must reserve the actual native icon/font/spacing widths and host controls;
+it must not paint over the button cells. Popup actions retain their original body
+ID scopes. See the usage skill's native-titlebar section for verification limits:
+descriptor callback checks, native pointer routing and managed-host/game icon
+rendering are separate evidence.
+
+Keep the motion lifecycle on owners with custom title buttons. Dalamud reserves
+font size plus inner spacing beside Close; larger native horizontal frame padding
+can overlap the first custom hit region. `MaterialWindowMotion.Prepare` limits
+that padding for native Begin with a one-pixel rounding allowance. `DrawChrome`
+restores the original horizontal padding before body content; `Restore` also
+restores it after collapsed frames. Vertical padding, IDs and caller styles stay
+intact. Verify the right edge of the first custom button at fractional scales,
+as well as its center and the collapsed route.
+
 ## Data and identity
 
 Keep models, sorting rules and persistence in the plugin. Cache MaterialOptions<T> for combos, with unique stable string keys; Replace on model revision and SetQuery when filtering changes. Labels are display text. Nullable option values can represent inherited settings; MaterialOverride.Switch supplies Inherit/On/Off for bool?.

@@ -2,6 +2,7 @@ using System.Numerics;
 using AethertekUI;
 using AethertekUI.Dalamud;
 using Dalamud.Bindings.ImGui;
+using Dalamud.Interface;
 using Dalamud.Interface.Windowing;
 
 namespace ConsumerContract;
@@ -149,7 +150,19 @@ public sealed class ConsumerUi : IDisposable
             IsOpen = true;
             Size = new(600,500);
             SizeCondition = ImGuiCond.FirstUseEver;
+            // Native title callbacks also run when the window body is collapsed.
+            // A real consumer translates this tooltip and rechecks its current action gates here.
+            TitleBarButtons.Add(new()
+            {
+                Icon = FontAwesomeIcon.PowerOff,
+                Priority = 0,
+                IconOffset = new(2,1), // Logical units; Dalamud applies its scale once.
+                Click = button => { if (button == ImGuiMouseButton.Left) SetEnabled(!enabled); },
+                ShowTooltip = () => MaterialText.SetTooltip(enabled ? "Disable independent plugin" : "Enable independent plugin"),
+            });
         }
+
+        private void SetEnabled(bool value) => enabled = value;
 
         public override void PreDraw() => motion.Prepare(this, reducedMotion: false, roundedCorners: true);
         public override void PostDraw()
@@ -163,7 +176,8 @@ public sealed class ConsumerUi : IDisposable
         {
             motion.DrawChrome();
             MaterialWindowHeader.Draw("Independent plugin", "Consumer owns lifecycle and domain state", []);
-            MaterialSwitch.Draw("enabled","Enabled",ref enabled);
+            var requestedEnabled = enabled;
+            if (MaterialSwitch.Draw("enabled","Enabled",ref requestedEnabled)) SetEnabled(requestedEnabled);
             MaterialSegmented.Draw<int>("mode",Modes,ref mode);
             MaterialTextField.SearchField("search",ref query,state:searchFocus);
             MaterialCombo.Draw("route",routes,ref route);

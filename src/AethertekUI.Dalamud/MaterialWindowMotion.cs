@@ -14,6 +14,7 @@ public sealed class MaterialWindowMotion
     private Window? preparedWindow;
     private WindowSizeConstraints? constraints;
     private bool replacedConstraints;
+    private float? titlebarPaddingX;
 
     public MaterialWindowMotion() => prepareDecorations = decorations.Prepare;
 
@@ -35,6 +36,21 @@ public sealed class MaterialWindowMotion
             roundedCorners ? prepareDecorations : null);
         preparedWindow = window;
         if (replacedConstraints) window.SizeConstraints = null;
+        if (window.TitleBarButtons.Count > 0 && window.ShowCloseButton && !window.IsClickthrough
+            && (window.Flags & ImGuiWindowFlags.NoTitleBar) == 0)
+        {
+            var style = ImGui.GetStyle();
+            var padding = style.FramePadding;
+            // Native Close includes both horizontal paddings in its hit region;
+            // Dalamud reserves only font size plus inner spacing for that region.
+            // Leave one pixel for native coordinate rounding at fractional scales.
+            var chromePaddingX = Math.Min(padding.X, Math.Max(0, (style.ItemInnerSpacing.X - 1) * .5f));
+            if (chromePaddingX < padding.X)
+            {
+                titlebarPaddingX = padding.X;
+                style.FramePadding = new Vector2(chromePaddingX, padding.Y);
+            }
+        }
     }
 
     /// <summary>Call first in PostDraw, after native End, including when collapsed.</summary>
@@ -44,6 +60,7 @@ public sealed class MaterialWindowMotion
         if (preparedWindow is null) return;
         if (!ReferenceEquals(window, preparedWindow))
             throw new InvalidOperationException("Restore the same window that was prepared.");
+        RestoreTitlebarPadding();
         decorations.Paint();
         fold.PostDraw();
         if (replacedConstraints && window.SizeConstraints is null) window.SizeConstraints = constraints;
@@ -56,5 +73,17 @@ public sealed class MaterialWindowMotion
     public Vector2 GetLogicalSize() => fold.GetLogicalSize();
 
     /// <summary>Call first in Draw to paint owned-viewport chrome before consumer content.</summary>
-    public void DrawChrome() => decorations.Paint();
+    public void DrawChrome()
+    {
+        RestoreTitlebarPadding();
+        decorations.Paint();
+    }
+
+    private void RestoreTitlebarPadding()
+    {
+        if (titlebarPaddingX is not { } originalX) return;
+        var style = ImGui.GetStyle();
+        style.FramePadding = new Vector2(originalX, style.FramePadding.Y);
+        titlebarPaddingX = null;
+    }
 }
