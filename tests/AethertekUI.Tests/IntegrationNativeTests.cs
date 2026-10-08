@@ -7,6 +7,155 @@ namespace AethertekUI.Tests;
 public unsafe class IntegrationNativeTests
 {
     [Theory]
+    [InlineData(MaterialDensity.Compact, 1f, false)]
+    [InlineData(MaterialDensity.Compact, 1.25f, true)]
+    [InlineData(MaterialDensity.Standard, 1f, true)]
+    [InlineData(MaterialDensity.Standard, 1.25f, false)]
+    public void BorrowedTitleImageRetainsNativeControlsGeometryAndOpacity(MaterialDensity density, float scale, bool menuBar)
+    {
+        using var host = new NativeTestContext(1000, 600, scale);
+        var paintFont = ImGui.GetIO().Fonts.AddFontDefault();
+        paintFont.Scale = 1.65f;
+        host.RefreshAtlas();
+        using var image = host.RegisterTexture(Enumerable.Repeat((byte)255, 8 * 4 * 4).ToArray(), 8, 4);
+        var theme = new MaterialTheme(new Vector3(.3f, .7f, .4f), density);
+        var opacity = new MaterialWindowOpacity();
+        const string name = "Original retained title###borrowed-title";
+        var imageReady = true;
+        var collapsed = false;
+        var forceCollapse = true;
+        var open = true;
+        var actions = 0;
+        var bodyActions = 0;
+        Vector2 actionCenter = default, bodyCenter = default, bodyOrigin = default, textOrigin = default;
+        ImGuiWindowPtr window = default;
+        uint actionId = 0, bodyId = 0;
+
+        void Draw()
+        {
+            using var palette = MaterialTheme.Push(theme, scale, MaterialStyleMode.ColorsOnly);
+            ImGui.PushStyleVar(ImGuiStyleVar.FramePadding, new Vector2(0, 5 * scale));
+            ImGui.GetStyle().WindowMenuButtonPosition = ImGuiDir.Right;
+            ImGui.SetNextWindowPos(new(30, 30), ImGuiCond.FirstUseEver);
+            ImGui.SetNextWindowSize(new Vector2(560, 330) * scale, ImGuiCond.FirstUseEver);
+            if (forceCollapse) ImGui.SetNextWindowCollapsed(collapsed);
+            var visible = ImGui.Begin(name, ref open, ImGuiWindowFlags.NoSavedSettings
+                | (menuBar ? ImGuiWindowFlags.MenuBar : ImGuiWindowFlags.None));
+            window = ImGuiP.GetCurrentWindow();
+            var title = ImGuiP.TitleBarRect(window);
+            var cursor = ImGui.GetCursorScreenPos();
+            var fontSize = ImGui.GetFontSize();
+            // Models an existing consumer-owned title action, including while collapsed.
+            var actionPosition = new Vector2(title.Max.X - 3 * fontSize - 2 * ImGui.GetStyle().ItemInnerSpacing.X, title.Min.Y);
+            var id = ImGui.GetID("title-action");
+            if (actionId == 0) actionId = id;
+            Assert.Equal(actionId, id);
+            ImGui.PushClipRect(title.Min, title.Max, false);
+            try { if (ImGuiP.CloseButton(id, actionPosition)) actions++; }
+            finally { ImGui.PopClipRect(); }
+            actionCenter = actionPosition + new Vector2(fontSize * .5f, (title.Max.Y - title.Min.Y) * .5f);
+            if (visible)
+            {
+                bodyOrigin = cursor;
+                id = ImGui.GetID("body-action");
+                if (bodyId == 0) bodyId = id;
+                Assert.Equal(bodyId, id);
+                if (ImGui.Button("body-action")) bodyActions++;
+                bodyCenter = (ImGui.GetItemRectMin() + ImGui.GetItemRectMax()) * .5f;
+            }
+            ImGui.End();
+            var list = window.DrawList;
+            var count = list.VtxBuffer.Size;
+            var prior = Enumerable.Range(0, count).Select(i => list.VtxBuffer[i]).ToArray();
+            var lastId = ImGui.GetCurrentContext().LastItemData.ID;
+            ImGui.PushFont(paintFont);
+            try
+            {
+                Assert.True(ImGuiP.CalcFontSize(window) > fontSize * 1.5f);
+                MaterialWindowHeader.PaintTitle(window, "Translated retained title", imageReady ? image.Id : default,
+                    new(8, 4), fontSize + 2 * ImGui.GetStyle().ItemInnerSpacing.X);
+            }
+            finally { ImGui.PopFont(); }
+            Assert.Equal(lastId, ImGui.GetCurrentContext().LastItemData.ID);
+            var hidden = 0;
+            for (var i = 0; i < count; i++)
+            {
+                Assert.Equal(prior[i].Pos, list.VtxBuffer[i].Pos);
+                Assert.Equal(prior[i].Uv, list.VtxBuffer[i].Uv);
+                if (prior[i].Col == list.VtxBuffer[i].Col) continue;
+                hidden++;
+                Assert.Equal(prior[i].Col & 0x00ffffff, list.VtxBuffer[i].Col);
+                Assert.InRange(list.VtxBuffer[i].Pos.Y, title.Min.Y - 1, title.Max.Y + 1);
+            }
+            Assert.True(hidden > 0, "Native caption was not replaced.");
+            var imageVertices = new List<ImDrawVert>();
+            var captionVertices = new List<ImDrawVert>();
+            for (var c = 0; c < list.CmdBuffer.Size; c++)
+            {
+                var command = list.CmdBuffer[c];
+                for (var i = command.IdxOffset; i < command.IdxOffset + command.ElemCount; i++)
+                {
+                    var index = (int)(list.IdxBuffer[(int)i] + command.VtxOffset);
+                    if (index < count) continue;
+                    var vertex = list.VtxBuffer[index];
+                    if (command.TextureId == image.Id) imageVertices.Add(vertex);
+                    else captionVertices.Add(vertex);
+                }
+            }
+            Assert.Equal(imageReady, imageVertices.Count > 0);
+            if (imageReady)
+            {
+                var min = new Vector2(imageVertices.Min(v => v.Pos.X), imageVertices.Min(v => v.Pos.Y));
+                var max = new Vector2(imageVertices.Max(v => v.Pos.X), imageVertices.Max(v => v.Pos.Y));
+                Assert.InRange((max.X - min.X) / (max.Y - min.Y), 1.999f, 2.001f);
+                Assert.InRange(max.X - min.X, fontSize - .01f, fontSize + .01f);
+                Assert.True(max.Y <= title.Max.Y && min.Y >= title.Min.Y);
+                Assert.True(max.X < captionVertices.Min(v => v.Pos.X));
+            }
+            var currentTextOrigin = new Vector2(captionVertices.Min(v => v.Pos.X), captionVertices.Min(v => v.Pos.Y));
+            if (textOrigin == default) textOrigin = currentTextOrigin;
+            Assert.Equal(textOrigin, currentTextOrigin); // Missing texture keeps its space.
+            opacity.Apply(name, .5f, autoFade: false);
+            foreach (var vertex in imageVertices)
+            {
+                // Vertex snapshots are pre-opacity; the actual list below proves one multiplier.
+                Assert.Equal(uint.MaxValue, vertex.Col);
+            }
+            if (imageReady)
+                Assert.Contains(Enumerable.Range(count, list.VtxBuffer.Size - count),
+                    i => (list.VtxBuffer[i].Col >> 24) == 128);
+            ImGui.PopStyleVar();
+        }
+
+        host.Frame(Draw); host.Frame(Draw);
+        var initialBody = bodyOrigin;
+        var position = window.Pos;
+        var size = window.SizeFull;
+        host.Click(bodyCenter, Draw);
+        Assert.Equal(1, bodyActions);
+        Assert.Equal(initialBody, bodyOrigin);
+        host.Click(actionCenter, Draw);
+        Assert.Equal(1, actions);
+        imageReady = false; host.Frame(Draw);
+        Assert.Equal(position, window.Pos);
+        Assert.Equal(size, window.SizeFull);
+        collapsed = true; host.Frame(Draw); host.Frame(Draw);
+        Assert.True(window.Collapsed);
+        host.Click(actionCenter, Draw);
+        Assert.Equal(2, actions);
+        forceCollapse = false;
+        var titleRect = ImGuiP.TitleBarRect(window);
+        var font = ImGuiP.CalcFontSize(window);
+        host.Click(new(titleRect.Max.X - 1.5f * font, titleRect.Min.Y + (titleRect.Max.Y - titleRect.Min.Y) * .5f), Draw);
+        host.Frame(Draw); // Native collapse request applies on the next Begin.
+        Assert.False(window.Collapsed);
+        host.Click(new(titleRect.Max.X - .5f * font, titleRect.Min.Y + (titleRect.Max.Y - titleRect.Min.Y) * .5f), Draw);
+        Assert.False(open);
+        Assert.Equal(size, window.SizeFull);
+        Assert.Equal(0, host.ReleasedTextures);
+    }
+
+    [Theory]
     [InlineData(MaterialDensity.Compact, 1f)]
     [InlineData(MaterialDensity.Compact, 1.5f)]
     [InlineData(MaterialDensity.Standard, 1f)]

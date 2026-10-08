@@ -73,6 +73,26 @@ public sealed unsafe class MaterialTextRenderer : IDisposable
         }
     }
 
+    /// <summary>Probes optional shaped text without uploading textures or caching availability.</summary>
+    public bool TryCheckGlyphs(IEnumerable<string> text, float fontSize, out string error)
+    {
+        ArgumentNullException.ThrowIfNull(text);
+        ObjectDisposedException.ThrowIf(disposed, this);
+        try
+        {
+            CheckGlyphs(text, fontSize);
+            error = string.Empty;
+            return true;
+        }
+        catch (Exception failure) when (failure is InvalidOperationException
+            or System.Runtime.InteropServices.ExternalException or DllNotFoundException
+            or EntryPointNotFoundException or BadImageFormatException)
+        {
+            error = failure.Message;
+            return false;
+        }
+    }
+
     internal void Draw(ImDrawListPtr drawList, Vector2 position, uint color, string text, float fontSize, float wrapWidth = 0)
     {
         if (text.Length == 0 || (color >> 24) == 0) return;

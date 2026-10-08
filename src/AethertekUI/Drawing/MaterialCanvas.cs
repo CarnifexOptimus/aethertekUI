@@ -32,6 +32,19 @@ public static class MaterialCanvas
     public static void Image(ImTextureID texture, Vector2 size, Vector4? tint = null)
         => ImGui.Image(texture,MaterialTheme.Metrics.Scaled(size),Vector2.Zero,Vector2.One,tint ?? Vector4.One);
 
+    /// <summary>Fits a borrowed image in pixel bounds without changing layout or native item identity.</summary>
+    public static void DrawImage(ImDrawListPtr drawList, ImTextureID texture, Vector2 textureSize,
+        Vector2 min, Vector2 max, Vector4? tint = null)
+    {
+        var box = max - min;
+        if (texture.Handle == 0 || !float.IsFinite(textureSize.X) || !float.IsFinite(textureSize.Y)
+            || textureSize.X <= 0 || textureSize.Y <= 0 || !float.IsFinite(box.X) || !float.IsFinite(box.Y)
+            || box.X <= 0 || box.Y <= 0) return;
+        var size = textureSize * Math.Min(box.X / textureSize.X, box.Y / textureSize.Y);
+        var origin = min + (box - size) * .5f;
+        drawList.AddImage(texture, origin, origin + size, Vector2.Zero, Vector2.One, Color(tint ?? Vector4.One));
+    }
+
     /// <summary>Borrowed icon font. No font ownership or FontAwesome dependency.</summary>
     public static bool GlyphButton(string id, string glyph, ImFontPtr font, bool disabled = false, float size = 0)
     {
