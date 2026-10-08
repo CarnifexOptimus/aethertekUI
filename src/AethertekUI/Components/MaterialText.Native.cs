@@ -202,7 +202,7 @@ public static partial class MaterialText
         ImGuiSelectableFlags flags = ImGuiSelectableFlags.None, Vector2 size = default, string? display = null)
     {
         display ??= nativeLabel.Split("##", 2)[0];
-        if (MaterialTextRenderer.Current is null || !RequiresShaping(display))
+        if (!MaterialNativeCaption.IsShaped(display) && display == MaterialNativeCaption.Visible(nativeLabel))
             return ImGui.Selectable(nativeLabel, selected, flags, size);
         var textSize = Measure(display);
         size.Y = Math.Max(size.Y, textSize.Y);

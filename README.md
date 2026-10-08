@@ -11,6 +11,14 @@ content after its final End, with a focus delay and consumer-owned preferences.
 The window-motion showcase and independent consumer demonstrate its lifecycle;
 see [the component contract](docs/COMPONENT_API.md).
 
+Borrowed plugin images can use aspect-preserving `MaterialCanvas.DrawImage` in
+pixel bounds and `MaterialWindowHeader.PaintTitle` after End, before opacity.
+The window-motion showcase and compiled consumer demonstrate image ownership
+and missing-image spacing. Native font fallback retains shaped glyph validation;
+optional Hindi menu probes can leave ordinary locales usable while selected
+Hindi failure offers explicit consumer-owned recovery. Host/Wine/game acceptance
+remains separate from local native tests.
+
 ## Repository
 
 ```text

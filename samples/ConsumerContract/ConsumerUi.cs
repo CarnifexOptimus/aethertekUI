@@ -110,11 +110,16 @@ public sealed class ConsumerUi : IDisposable
     }
     private readonly WindowSystem windows = new("Independent consumer example");
     private readonly MaterialWindowHost material;
+    private readonly ExampleWindow example = new();
     public ConsumerUi(MaterialThemeSettings settings)
     {
         material = new(settings);
-        windows.AddWindow(new ExampleWindow());
+        windows.AddWindow(example);
     }
+
+    // The consumer's existing texture owner must retain this image through render submission.
+    public void SetBrandingImage(ImTextureID image, Vector2 dimensions)
+    { example.BorrowedImage = image; example.BorrowedImageSize = dimensions; }
 
     // Consumer calls this from its existing draw subscription.
     public void Draw() => material.Draw(windows);
@@ -134,6 +139,8 @@ public sealed class ConsumerUi : IDisposable
 
     private sealed class ExampleWindow : Window
     {
+        internal ImTextureID BorrowedImage;
+        internal Vector2 BorrowedImageSize;
         private readonly MaterialWindowMotion motion = new();
         private readonly MaterialWindowOpacity opacity = new();
         private readonly MaterialOptions<int> routes = new([new("local",0,"Local route"),new("remote",1,"Remote route")]);
@@ -168,6 +175,10 @@ public sealed class ConsumerUi : IDisposable
         public override void PostDraw()
         {
             motion.Restore(this);
+            var native = ImGuiP.FindWindowByName(WindowName);
+            if (!native.IsNull)
+                MaterialWindowHeader.PaintTitle(native, "Consumer integration contract", BorrowedImage, BorrowedImageSize,
+                    (TitleBarButtons.Count + 1) * (ImGuiP.CalcFontSize(native) + ImGui.GetStyle().ItemInnerSpacing.X), ShowCloseButton);
             // Consumer-owned preferences can replace these defaults; the theme is still active.
             opacity.Apply(WindowName);
         }
@@ -175,6 +186,10 @@ public sealed class ConsumerUi : IDisposable
         public override void Draw()
         {
             motion.DrawChrome();
+            var origin = ImGui.GetCursorScreenPos();
+            MaterialCanvas.DrawImage(ImGui.GetWindowDrawList(), BorrowedImage, BorrowedImageSize,
+                origin, origin + new Vector2(36 * MaterialTheme.Metrics.Scale));
+            ImGui.Dummy(new Vector2(36 * MaterialTheme.Metrics.Scale));
             MaterialWindowHeader.Draw("Independent plugin", "Consumer owns lifecycle and domain state", []);
             var requestedEnabled = enabled;
             if (MaterialSwitch.Draw("enabled","Enabled",ref requestedEnabled)) SetEnabled(requestedEnabled);

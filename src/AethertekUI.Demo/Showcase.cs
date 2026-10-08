@@ -7,6 +7,8 @@ internal sealed partial class Showcase
 {
     public bool IsOpen;
     public int Page;
+    internal ImTextureID BorrowedImage;
+    internal Vector2 BorrowedImageSize;
     internal MaterialDensity DemoDensity { set { density=(int)value; theme.Density=value; } }
     private Vector3 seed = new(.36f,.72f,.46f);
     private MaterialTheme theme = new(new Vector3(.36f,.72f,.46f));
@@ -118,6 +120,10 @@ internal sealed partial class Showcase
         if(ImGui.Begin(name,ref windowMotionOpen))
         {
             windowDecorations.Paint();
+            var imageOrigin = ImGui.GetCursorScreenPos();
+            MaterialCanvas.DrawImage(ImGui.GetWindowDrawList(), BorrowedImage, BorrowedImageSize,
+                imageOrigin, imageOrigin + new Vector2(36 * scale));
+            ImGui.Dummy(new Vector2(36 * scale));
             ImGui.TextWrapped("Use the title arrow or double-click the title to minimize and restore this window.");
             ImGui.TextWrapped("Resize it, then minimize and restore again. The expanded size and native controls are retained.");
             var motion=theme.Motion.Enabled;
@@ -131,6 +137,8 @@ internal sealed partial class Showcase
         ImGui.End();
         windowDecorations.Paint();
         windowFold.PostDraw();
+        MaterialWindowHeader.PaintTitle(ImGuiP.FindWindowByName(name), "Window motion preview",
+            BorrowedImage, BorrowedImageSize);
         windowOpacity.Apply(name,windowOpacityPercent/100,windowOpacityEnabled,windowAutoFade,
             windowFadePercent/100,windowFadeDelay);
     }

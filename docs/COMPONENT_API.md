@@ -72,6 +72,14 @@ Devanagari strings and requires no host texture uploads. Keep the consumer's
 original atlas checks for every non-Devanagari character; validate each retained
 font-role size before allowing a Hindi catalog or language-selector entry.
 
+`TryCheckGlyphs(optionalText, fontSize, out error)` probes optional shaped captions
+without uploading textures or caching availability. Native DirectWrite fallback
+may satisfy an absent requested family; actual shaped glyph coverage still gates
+support. Keep mandatory selected-catalog/raw-text checks separate. A consumer can
+disable an unavailable Hindi menu option with an ASCII display override while
+retaining its key/native ID, and offer explicit saved-language recovery through
+its existing save route. Windows fallback checks do not establish Wine support.
+
 The single-line field retains its original native input ID and native undo,
 focus and clipboard behavior, with shaped pointer/caret/selection/scroll/IME
 geometry. Fields reserve Hindi's natural line height before painting their
@@ -247,7 +255,7 @@ Tables remain native BeginTable/EndTable with a MaterialTable.PushStyle scope an
 | MaterialActionTile | Draw | Activation, active/disabled flags, optional subtitle |
 | MaterialStatus | Badge; LinearProgress; SectionHeader | Display only; optional consumer colors |
 | MaterialDialog | Begin(id,ref open,flags) | Modal scope with Visible |
-| MaterialWindowHeader | Draw(title,subtitle,actions,compact) | Activated action index or -1 |
+| MaterialWindowHeader | Draw(title,subtitle,actions,compact); PaintTitle(window,title,texture,textureSize,extraRightWidth,showCloseButton) | Header action index or -1; borrowed after-End title image/caption |
 | MaterialTable | PushStyle(alternateRows); RowState(selected,hovered,semanticBackground) | Style-only scope; native tables remain caller-owned |
 | MaterialIcons | Draw | Texture-free vector drawing; caller can use native images separately |
 
@@ -329,7 +337,20 @@ Every style/child/tab/dialog scope is a ref struct. Do not copy, box, store or d
 | MaterialClipper | Native uniform-row clipper; Step then Start..End, optional Include before first Step |
 | MaterialSearchState | Optional FocusRequested, restores text focus following clear |
 | MaterialSemantic | Text/Colors scopes preserve supplied colors; Feedback and Tooltip |
-| MaterialCanvas | Public pixel-space Color/Surface; borrowed Image/ImageButton/GlyphButton with logical control sizes |
+| MaterialCanvas | Pixel-space Color/Surface/DrawImage(drawList,texture,textureSize,min,max,tint); borrowed Image/ImageButton/GlyphButton with logical control sizes |
 | MaterialNavigationMath.NextEnabled | Pure host-routed traversal; skips disabled options, optional wrap; no global input |
 
 Options/models must be owned per control or deliberately shared; sharing a MaterialOptions instance also shares its query. Payload type names must distinguish incompatible layouts even when their unmanaged sizes match. Keep native table ID/column settings and host texture lifetimes. Full usage is compiled in samples/ConsumerContract; see INTEGRATION_GUIDE.md.
+
+`DrawImage` centers an aspect-preserving image within pixel bounds and changes no
+cursor or item ID. Missing/invalid textures draw nothing; the caller reserves
+layout space. `PaintTitle` runs after final End and motion/decorations restoration,
+before complete-window opacity. It masks only native caption glyphs and retains
+native controls, background, geometry and IDs. Supply existing custom/host-button
+reservation in pixels; native Close/collapse are budgeted separately. It always
+reserves one native-font-size image box plus inner spacing, including when the
+image is unavailable or the body is collapsed. The consumer owns the texture
+through render submission and keeps its title minimum wide enough for this box.
+Title geometry comes from the owner's retained Begin bounds, so a subsequently
+borrowed font of a different size does not change native control spacing. Keep
+the Begin frame-padding Y in scope through repaint; X may be restored by motion.

@@ -39,14 +39,10 @@ internal static unsafe class WindowsTextInterop
         {
             Check(((delegate* unmanaged[Stdcall]<nint, nint*, int, int>)Slot(factory, 3))(
                 factory, &fonts, 0));
-            uint familyIndex = 0;
-            int familyExists = 0;
             fixed (char* familyText = family)
             {
-                Check(((delegate* unmanaged[Stdcall]<nint, char*, uint*, int*, int>)Slot(fonts, 5))(
-                    fonts, familyText, &familyIndex, &familyExists));
-                if (familyExists == 0)
-                    throw new InvalidOperationException("The requested Windows text font family is not installed.");
+                // DirectWrite chooses an installed fallback when the requested family
+                // is absent. Actual glyph coverage is still checked on the shaped run.
                 fixed (char* localeText = locale)
                     Check(((delegate* unmanaged[Stdcall]<nint, char*, nint, int, int, int,
                         float, char*, nint*, int>)Slot(factory, 15))(

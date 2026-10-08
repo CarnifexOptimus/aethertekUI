@@ -7,6 +7,49 @@ namespace AethertekUI.Tests;
 public unsafe class MaterialTextConsumerTests
 {
     [Fact]
+    public void MissingRequestedFamilyUsesNativeHindiFallbackAndKeepsGlyphValidation()
+    {
+        using var layout = new MaterialTextLayout("\u0915\u094d\u0937\u0947\u0924\u094d\u0930", 32,
+            fontFamily: "AethertekUI deliberately absent diagnostic family");
+        layout.CheckGlyphs();
+        Assert.True(layout.Size.X > 0);
+        Assert.Contains(layout.Rasterize().Rgba, value => value != 0);
+        using var renderer = new MaterialTextRenderer(_ => throw new Xunit.Sdk.XunitException("Optional probe uploaded texture."),
+            fontFamily: "AethertekUI deliberately absent diagnostic family");
+        Assert.True(renderer.TryCheckGlyphs(["\u0939\u093f\u0928\u094d\u0926\u0940"], 24, out var error), error);
+        Assert.False(renderer.TryCheckGlyphs(["\U00011B00"], 24, out error));
+        Assert.False(string.IsNullOrWhiteSpace(error));
+    }
+
+    [Fact]
+    public void AsciiUnavailableCaptionRetainsOriginalHindiOptionIdentityAndDisabledInput()
+    {
+        using var host = new NativeTestContext();
+        Vector2 center = default;
+        var disabled = true;
+        var clicks = 0;
+        void Draw()
+        {
+            ImGui.SetNextWindowSize(new(500, 200));
+            ImGui.Begin("Unavailable language", ImGuiWindowFlags.NoSavedSettings);
+            var id = ImGui.GetID("\u0939\u093f\u0928\u094d\u0926\u0940###language-hi");
+            ImGui.BeginDisabled(disabled);
+            var list = ImGui.GetWindowDrawList();
+            var first = list.VtxBuffer.Size;
+            if (MaterialText.Selectable("\u0939\u093f\u0928\u094d\u0926\u0940###language-hi", display: "Hindi (unavailable)")) clicks++;
+            Assert.Equal(id, ImGui.GetCurrentContext().LastItemData.ID);
+            center = (ImGui.GetItemRectMin() + ImGui.GetItemRectMax()) * .5f;
+            Assert.True(list.VtxBuffer.Size - first >= 4 * "Hindi (unavailable)".Count(c => c != ' '));
+            ImGui.EndDisabled();
+            ImGui.End();
+        }
+        host.Frame(Draw); host.Frame(Draw); host.Click(center, Draw);
+        Assert.Equal(0, clicks);
+        disabled = false; host.Frame(Draw); host.Click(center, Draw);
+        Assert.Equal(1, clicks);
+    }
+
+    [Fact]
     public void ShapedCoverageRejectsMissingGlyphsWithoutAllocatingHostTextures()
     {
         using var renderer = new MaterialTextRenderer(_ => throw new Xunit.Sdk.XunitException("Coverage validation uploaded a texture."));

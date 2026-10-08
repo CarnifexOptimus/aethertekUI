@@ -246,6 +246,42 @@ Calling a descriptor delegate directly proves callback logic only. An offline
 probe of the installed host's unavailable-icon fallback exercises native hit
 routing but does not prove managed IconFont readiness, icon ink or game rendering.
 
+For approved real-image branding, consumers acquire their existing packaged icon
+through the current texture provider. Public/private modules resolve the icon
+beside the running public host assembly, including LocalDev, rather than beside
+an encrypted/private module. Core borrows the handle through render submission.
+`MaterialCanvas.DrawImage(drawList, texture, textureSize, min, max, tint)` takes
+pixel bounds, fits/centers the original aspect ratio and changes no layout/ID.
+Reserve the existing scaled box unconditionally; missing textures draw nothing.
+Keep the logical `Image` overload and existing helper signatures intact.
+
+Check the runtime ZIP separately from installer image sidecars. The installed
+DalamudPackager 15 default removes `images/icon.png` from the runtime ZIP and
+copies it beside the ZIP for installer use; a `DalamudPackagerFile` item alone
+does not change that task. A file getter needs its image inside the runtime
+package at the same DLL-relative path used by direct and custom-folder builds.
+Retain existing nested installer assets when adding a runtime root copy.
+Compare each actual image with its source bytes; an old ZIP or a successful
+direct build cannot establish current package placement.
+
+Call `MaterialWindowHeader.PaintTitle(native, visibleTitle, texture, textureSize,
+extraRightWidth, showCloseButton)` after final native End and motion/decorations
+Restore, before complete-window opacity. Supply current native CalcFontSize-based
+custom/host button reservation in pixels; the API budgets native Close/collapse.
+Add one font-size image box plus inner gap to the retained minimum title width.
+The API masks original glyph alpha instead of painting over native backgrounds;
+it retains native controls when borrowing a different font or size. Geometry
+comes from Begin's stored InnerRect decoration height, subtracting the menu offset
+and splitting title/menu height when MenuBar is set. Native title helpers instead
+recalculate from the current font and are unsafe after a font change. Keep Begin's
+FramePadding.Y through repaint; motion may restore X. Include unequal-size fonts
+and MenuBar in expanded/collapsed checks.
+Use a nonintersecting owner title clip. Native collapse applies on the next Begin;
+check that frame before asserting its result. Focused native checks cover image
+aspect/bounds, unavailable-image spacing, separate paint fonts, expanded/collapsed
+actions, native collapse/close and one opacity multiplier at both densities and
+fractional scale. These checks do not establish host/GPU texture acceptance.
+
 ## Identity, localization and resources
 
 Use only `mcvaxius` or `dhoggpt` for user attribution. Never include the
@@ -639,7 +675,7 @@ returns. Route measurement and painting together through `MaterialText.Measure`,
 `AddText` and `Text`. A scope alone does not intercept raw ImGui labels/tooltips
 or consumer wrappers. Material buttons, action tiles and text/search fields use
 this route; consumer catalogs and remaining controls still need integration.
-Adding हिन्दी to an always-visible selector requires shaping in every locale.
+Displaying a usable हिन्दी menu caption requires shaping in every locale.
 Retain native glyph checks for existing scripts and validate authored Devanagari
 through shaping before excluding its glyphs from atlas validation.
 
@@ -668,6 +704,25 @@ Do not compensate by adding text spaces or shifting the editor origin.
 without bitmap/texture uploads. Validate each original font-role size separately
 and retain atlas checks for all non-Devanagari characters. A text scope alone
 does not make the atlas contain Hindi or prove consumer readiness.
+
+Allow native DirectWrite fallback when the preferred family is absent; retain
+actual glyph/cluster/ink validation. Do not reject a whole ordinary-language
+generation solely because its optional Hindi menu name cannot be shaped. Remove
+only that appended menu caption from mandatory required text, never catalog or
+user-authored/raw values. Inside the existing generation check, probe that caption
+with `TryCheckGlyphs(optionalText, fontSize, out error)` at every retained role.
+It uploads no texture and adds no availability cache. Disable only the stable-key
+Hindi option with ASCII `Hindi (unavailable)` when coverage fails.
+
+Keep a saved Hindi selection explicit: use native ASCII loading/error status and
+an accessible `Use English` action through the consumer's existing save/admission
+route. Never silently rewrite the locale or drop required shaped text. Retain
+failed mandatory coverage until a genuinely new generation can be checked; native
+handles being temporarily unready must not erase its error. Readiness and font
+files remain different from DirectWrite system-family availability under Wine.
+`MaterialText.Selectable` accepts an ASCII display override without changing the
+original native label/ID, including disabled entries. Native absent-family fallback
+and unavailable-glyph rejection pass on Windows; Linux/Wine acceptance stays open.
 
 Pass the active scaled font size once and reserve the shaped natural line height
 before drawing fields. Native IDs, focus, clipboard and undo remain native;
@@ -1038,6 +1093,10 @@ Botology's first adoption establishes these practices:
   containing DalamudPackager, restore normally and then build with `--no-restore`
   and `-p:Use_DalamudPackager=false` to avoid removing it from the lockfile.
   Already-restored packager targets can still run despite that build flag.
+  Isolated `--artifacts-path` outputs do not isolate the source manifest used
+  by DalamudPackager. Serialize builds with overlapping project-reference
+  graphs while those targets are active; ADS and FrenRider checks reproduced
+  an exclusive-lock failure on their shared FrenRider manifest.
   For a strictly compilation-only check, also use
   `-p:ImportNuGetBuildTargets=false`; this skips all NuGet build targets, so
   reserve it for that check and retain normal imports for release packaging.
