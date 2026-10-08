@@ -3,7 +3,7 @@ using Dalamud.Bindings.ImGui;
 
 namespace AethertekUI;
 
-public enum MaterialIcon { None, Search, Close, Settings, Check, Play, Pause, Stop, ArrowRight, Return, Edit, Delete, More, ChevronDown, Home, Grid, Table, Sliders, Info, Document, Database, Refresh, Chart, ExternalLink, Download, Palette, Globe, Map, Clock, Link, Calculator, Person, Shield, Monitor, Location, Send, Save, Copy, Heart, List, Sword, Star, Folder, Egg, Wrench, DoorExit, Cube, Chest, Cart, Chat, Group, Warning, Plus, Pulse, Utensils, Crystal, Calendar, Crown, Book, Sparkle, Bell, Terminal, Power, Target, MapPin, HeartOutline, Discord, KoFi }
+public enum MaterialIcon { None, Search, Close, Settings, Check, Play, Pause, Stop, ArrowRight, Return, Edit, Delete, More, ChevronDown, Home, Grid, Table, Sliders, Info, Document, Database, Refresh, Chart, ExternalLink, Download, Palette, Globe, Map, Clock, Link, Calculator, Person, Shield, Monitor, Location, Send, Save, Copy, Heart, List, Sword, Star, Folder, Egg, Wrench, DoorExit, Cube, Chest, Cart, Chat, Group, Warning, Plus, Pulse, Utensils, Crystal, Calendar, Crown, Book, Sparkle, Bell, Terminal, Power, Target, MapPin, HeartOutline, Discord, KoFi, Backpack }
 
 /// <summary>Small vector icons; no font or texture dependency.</summary>
 public static class MaterialIcons
@@ -21,6 +21,12 @@ public static class MaterialIcons
         void L(float x,float y,float a,float b) => dl.AddLine(P(x,y),P(a,b),ink,stroke);
         switch(icon)
         {
+            case MaterialIcon.Backpack:
+                dl.AddRect(P(.37f,.08f),P(.63f,.29f),ink,size*.08f,ImDrawFlags.RoundCornersAll,stroke);
+                dl.AddRect(P(.19f,.22f),P(.81f,.9f),ink,size*.12f,ImDrawFlags.RoundCornersAll,stroke);
+                dl.AddRect(P(.3f,.53f),P(.7f,.78f),ink,size*.05f,ImDrawFlags.RoundCornersAll,stroke);
+                L(.33f,.38f,.67f,.38f);L(.19f,.47f,.12f,.76f);L(.81f,.47f,.88f,.76f);
+                break;
             case MaterialIcon.Discord:
             {
                 var flags=dl.Flags;

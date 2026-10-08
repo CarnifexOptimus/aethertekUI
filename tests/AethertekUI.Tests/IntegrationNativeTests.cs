@@ -539,7 +539,7 @@ public unsafe class IntegrationNativeTests
             MaterialIcon.Wrench,MaterialIcon.DoorExit,MaterialIcon.Cube,MaterialIcon.Chest,MaterialIcon.Cart,MaterialIcon.Chat,
             MaterialIcon.Group,MaterialIcon.Warning,MaterialIcon.Plus,MaterialIcon.Pulse,MaterialIcon.Utensils,MaterialIcon.Crystal,
             MaterialIcon.Calendar,MaterialIcon.Crown,MaterialIcon.Book,MaterialIcon.Sparkle,MaterialIcon.Bell,MaterialIcon.Terminal,MaterialIcon.Power,MaterialIcon.Target,
-            MaterialIcon.MapPin,MaterialIcon.HeartOutline,MaterialIcon.Discord,MaterialIcon.KoFi];
+            MaterialIcon.MapPin,MaterialIcon.HeartOutline,MaterialIcon.Discord,MaterialIcon.KoFi,MaterialIcon.Backpack];
         Assert.Equal(35,(int)MaterialIcon.Send);
         for(var i=0;i<icons.Length;i++) Assert.Equal(36+i,(int)icons[i]);
         icons=[..icons,MaterialIcon.Location];
