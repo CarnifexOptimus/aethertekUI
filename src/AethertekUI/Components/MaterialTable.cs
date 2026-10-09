@@ -5,6 +5,16 @@ namespace AethertekUI;
 
 public static class MaterialTable
 {
+    /// <summary>Table colors with adjacent editor rows and a one-logical-pixel column inset.</summary>
+    /// <remarks>Enter after any control sizing scope, before BeginTable, and retain through EndTable.
+    /// Preserves editor padding, height, IDs and the caller's table flags.</remarks>
+    public static MaterialStyleScope PushTightRows(bool alternateRows = true)
+    {
+        var style = PushStyle(alternateRows);
+        style.Style(ImGuiStyleVar.CellPadding, new Vector2(MaterialTheme.Metrics.Scale, 0));
+        return style;
+    }
+
     /// <summary>Table colors plus a shared sizing context for native and Material cell editors.</summary>
     public static TableControlScope PushControls(bool alternateRows = true, MaterialControlContext context = MaterialControlContext.Dense)
         => new(alternateRows, context);

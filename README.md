@@ -171,6 +171,11 @@ Gallery, Automation, Gathering data, Dashboard, Settings, List editor,
 Large catalog and Sizing lab. It includes a floating automation overlay.
 No game actions run from the showcase.
 
+The Sizing lab includes five **Tight editor rows** using
+`MaterialTable.PushTightRows()`: zero vertical cell padding and a one-logical-pixel
+column inset, with readable padding inside each editor. Enter the scope after
+control sizing and retain it around native `BeginTable`/`EndTable`.
+
 Debug outputs relative to this repository:
 
 - Core: `src/AethertekUI/bin/Debug/net10.0-windows/AethertekUI.dll`.
@@ -190,6 +195,11 @@ for later selected plugin integrations. See [known limitations](docs/KNOWN_LIMIT
 and the [smoke-test guide](docs/PROTOTYPE_SMOKE_TEST.md).
 
 ## Evolution and provenance
+
+2026-10-09: carry the approved ADS Rules grid into `MaterialTable.PushTightRows()`
+and the Sizing lab. Existing table defaults and editor dimensions are retained;
+tight rows are an explicit table layout choice. Library version remains 0.3.0.
+Refresh the reviewed Sizing lab baseline and the existing backpack-icon preview.
 
 The optional Dalamud adapter includes `MaterialSupportLog` for a manual support
 button. Pass the active plugin interface, the consumer's translator, its existing

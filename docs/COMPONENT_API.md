@@ -20,6 +20,7 @@ See [Adaptive sizing and host compatibility](ADAPTIVE_SIZING.md) for units, owne
 | MaterialControlAppearance | Consumer fill, foreground, border, and nonnegative logical corner radius |
 | MaterialAppearanceSelector.Draw | Swatch/presets/RGB picker plus keyed language dropdown; separate AccentChanged / LanguageChanged flags |
 | MaterialTable.PushControls() | Native table styling plus Dense editor sizing |
+| MaterialTable.PushTightRows(alternateRows) | Adjacent editor rows, one logical pixel of horizontal cell padding; retains editor sizing |
 | MaterialComboLayout | Independent popup width and visible row limit; optional native LeadingIcon in the field |
 | MaterialActionTile.Measure / MaterialTileSizing | Content-aware wrapping and grid measurement; explicit fixed-height option |
 
@@ -256,7 +257,7 @@ Tables remain native BeginTable/EndTable with a MaterialTable.PushStyle scope an
 | MaterialStatus | Badge; LinearProgress; SectionHeader | Display only; optional consumer colors |
 | MaterialDialog | Begin(id,ref open,flags) | Modal scope with Visible |
 | MaterialWindowHeader | Draw(title,subtitle,actions,compact); PaintTitle(window,title,texture,textureSize,extraRightWidth,showCloseButton) | Header action index or -1; borrowed after-End title image/caption |
-| MaterialTable | PushStyle(alternateRows); RowState(selected,hovered,semanticBackground) | Style-only scope; native tables remain caller-owned |
+| MaterialTable | PushStyle(alternateRows); PushTightRows(alternateRows); RowState(selected,hovered,semanticBackground) | Style-only scopes; native tables remain caller-owned |
 | MaterialIcons | Draw | Texture-free vector drawing; caller can use native images separately |
 
 ## Child scopes and composition
@@ -289,6 +290,26 @@ if (ImGui.BeginTable("items", 3, ImGuiTableFlags.RowBg | ImGuiTableFlags.Resizab
 }
 ```
 Apply the table scope once around the table, not per row. RowState may take a semantic background; otherwise do not call it on rows with domain-owned background colors.
+
+For tight editable grids, replace `PushStyle()` with `PushTightRows()`. Enter it
+after any `MaterialControls.Push(...)` or `MaterialTable.PushControls()` scope,
+before `BeginTable`, and retain it through `EndTable`. Cell padding becomes
+`(scale, 0)`: editors meet vertically and sit one logical pixel from column
+dividers. Editor frame padding and font height remain intact; no fixed row height
+is imposed. The tallest editor determines each row's height. A caller-supplied
+minimum row height can still add space. All prior styles restore on disposal.
+
+```csharp
+using var editors = MaterialControls.Push(MaterialControlContext.Regular);
+using var tightRows = MaterialTable.PushTightRows();
+if (ImGui.BeginTable("existing-grid", 3, existingFlags))
+{
+    // Keep existing columns, editor IDs, native actions and scrolling.
+    ImGui.TableNextRow(); // Let the editors determine the height.
+    // Draw each cell with the existing editors.
+    ImGui.EndTable();
+}
+```
 
 ## Modal lifecycle
 ```csharp

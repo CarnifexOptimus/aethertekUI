@@ -152,6 +152,23 @@ Use Compact density for compact desktop designs, and
 `MaterialControls.Push(MaterialControlContext.Toolbar)` or `Dense` for local
 rows. `MaterialTable.PushControls()` aligns native and custom table editors.
 Enter a control scope after selecting its font. Pass host global scale once.
+
+For tight editable grids, use `MaterialTable.PushTightRows()` after any control
+sizing scope and before native `BeginTable`, retaining it through `EndTable`.
+The approved ADS Rules pattern uses cell padding `(scale, 0)`: no vertical gap
+between editors and one logical pixel beside column dividers. Keep readable
+padding inside each editor; let the tallest editor determine the row height.
+Do not remove font/frame padding or impose an oversized minimum row height.
+`PushTightRows` retains editor geometry and restores styles on disposal. Existing
+table defaults remain available; adopt tight rows explicitly for editable grids.
+Keep native table/column/editor IDs, inline actions, scrolling, selection, Undo
+and explicit Save behavior. Budget dropdown width for its complete translated
+value, arrow, internal padding and inline help. Show one Advanced tool group at
+a time when several groups crowd the grid. Verify repeated populated rows,
+adjacent editor bounds, native editing/actions and scope restoration in both
+densities at 100%/150% scale with larger text. The Sizing lab demonstrates five
+consecutive rows; ADS English/Russian populated previews established the pattern.
+
 For selected smaller native buttons, check the caller's zero-padding and Dense
 state before shaping. Push Toolbar before `MaterialText.PushLineHeight`, or
 measure the final caption/icon height explicitly after capturing eligibility.

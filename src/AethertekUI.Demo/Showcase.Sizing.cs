@@ -17,6 +17,8 @@ internal sealed partial class Showcase
     private readonly MaterialOptions<string> sizingLanguages=new([new("en","en","English"),new("de","de","Deutsch")]);
     private static readonly MaterialControlContext[] SizingContexts =
         [MaterialControlContext.Regular,MaterialControlContext.Toolbar,MaterialControlContext.Dense];
+    private readonly int[] sizingTableChoices = [0,1,2,0,1];
+    private readonly int[] sizingTableCounts = [1,2,3,4,5];
 
     private void SizingLab()
     {
@@ -40,18 +42,25 @@ internal sealed partial class Showcase
             ImGui.Spacing();
             ImGui.PopID();
         }
-        MaterialStatus.SectionHeader("DENSE NATIVE TABLE");
-        using(var tableStyle=MaterialTable.PushControls())
+        MaterialStatus.SectionHeader("TIGHT EDITOR ROWS");
+        ImGui.TextWrapped("Adjacent rows, one-pixel column insets. Padding stays inside the editors.");
+        using(var tableControls=MaterialControls.Push())
+        using(var tableStyle=MaterialTable.PushTightRows())
         {
-            if(ImGui.BeginTable("sizing-table",3,ImGuiTableFlags.Resizable|ImGuiTableFlags.RowBg))
+            if(ImGui.BeginTable("sizing-table",3,ImGuiTableFlags.Resizable|ImGuiTableFlags.RowBg|ImGuiTableFlags.Borders))
             {
                 ImGui.TableSetupColumn("Action",ImGuiTableColumnFlags.WidthFixed,70*MaterialTheme.Metrics.Scale);
                 ImGui.TableSetupColumn("Choice"); ImGui.TableSetupColumn("Quantity");
                 ImGui.TableHeadersRow();
-                ImGui.TableNextRow(); ImGui.TableNextColumn();
-                MaterialButton.IconButton("delete",MaterialIcon.Delete);
-                ImGui.TableNextColumn(); MaterialCombo.Draw("table-choice",sizingOptions,ref sizingChoice);
-                ImGui.TableNextColumn(); MaterialInput.Integer("table-count",ref sizingNumber);
+                for(var row=0;row<sizingTableCounts.Length;row++)
+                {
+                    ImGui.PushID(row);
+                    ImGui.TableNextRow(); ImGui.TableNextColumn();
+                    MaterialButton.IconButton("delete",MaterialIcon.Delete);
+                    ImGui.TableNextColumn(); MaterialCombo.Draw("table-choice",sizingOptions,ref sizingTableChoices[row]);
+                    ImGui.TableNextColumn(); MaterialInput.Integer("table-count",ref sizingTableCounts[row]);
+                    ImGui.PopID();
+                }
                 ImGui.EndTable();
             }
         }

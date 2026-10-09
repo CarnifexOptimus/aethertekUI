@@ -55,6 +55,14 @@ Keep models, sorting rules and persistence in the plugin. Cache MaterialOptions<
 
 For editable native tables, enter MaterialTable.PushControls once to align Dense native and Material editors. Use PushStyle when retaining existing editor dimensions. Keep existing column IDs, flags, sorting specs, visibility, widths, context menus and game icons. MaterialDataView<T>.Rebuild performs filtering/sorting only on explicit invalidation. Comparers should include a unique-key tie-breaker. MaterialSelectionSet<TKey> stores domain keys across filtering and sorting; call Prune only when objects are actually deleted, not when hidden by filters.
 
+For the approved ADS tight-row layout, use `MaterialTable.PushTightRows()` after
+the existing control sizing scope and before native `BeginTable`. Retain it
+through `EndTable`. It sets cell padding to `(scale, 0)` while preserving editor
+frame padding and font height. Use automatic row height so the tallest editor
+sets the row boundary; keep inline actions within that row. Changing only
+horizontal padding does not remove vertical gaps. The Sizing lab shows five
+consecutive editable rows with this scope.
+
 MaterialClipper wraps the native clipper for uniformly spaced rows and belongs inside the table/child scope. Include a selected/focused row before Step when it must be submitted even offscreen. Variable-height recipe trees and timeline charts retain their existing traversal. Do not introduce virtualization into a table that already owns a clipper without removing the duplicate owner.
 
 Segment keys are optional for compatibility: provide Key when options can reorder. Index IDs remain valid for fixed option lists. Never use visible list position as a persistent domain identity.

@@ -133,6 +133,91 @@ public class AdaptiveSizingTests
         Assert.Throws<ArgumentOutOfRangeException>(()=>MaterialControlMetrics.Measure(new(MaterialDensity.Compact,1),float.NaN));
     }
 
+    [Theory]
+    [InlineData(MaterialDensity.Compact,1f,MaterialControlContext.Regular)]
+    [InlineData(MaterialDensity.Compact,1.5f,MaterialControlContext.Regular)]
+    [InlineData(MaterialDensity.Standard,1f,MaterialControlContext.Regular)]
+    [InlineData(MaterialDensity.Standard,1.5f,MaterialControlContext.Regular)]
+    [InlineData(MaterialDensity.Compact,1f,MaterialControlContext.Dense)]
+    [InlineData(MaterialDensity.Compact,1.5f,MaterialControlContext.Dense)]
+    [InlineData(MaterialDensity.Standard,1f,MaterialControlContext.Dense)]
+    [InlineData(MaterialDensity.Standard,1.5f,MaterialControlContext.Dense)]
+    public unsafe void TightTableRowsMeetWithoutChangingEditorsOrNativeActions(
+        MaterialDensity density,float scale,MaterialControlContext context)
+    {
+        using var host=new NativeTestContext(1200,900,scale*1.5f);
+        var theme=new MaterialTheme(new Vector3(.3f,.7f,.4f),density);
+        int[] nativeValues=[10,20,30],materialValues=[1,2,3];
+        var presses=0;
+        Vector2 actionPoint=default,inputPoint=default;
+        void Draw()
+        {
+            using var themeScope=MaterialTheme.Push(theme,scale);
+            ImGui.SetNextWindowPos(new(20,20));ImGui.SetNextWindowSize(new(1100,700));
+            ImGui.Begin("Tight grid",ImGuiWindowFlags.NoSavedSettings|ImGuiWindowFlags.NoTitleBar);
+            using(var controls=MaterialControls.Push(context))
+            {
+                var style=ImGui.GetStyle();
+                var padding=style.FramePadding;var spacing=style.ItemSpacing;var cell=style.CellPadding;
+                var header=style.Colors[(int)ImGuiCol.TableHeaderBg];
+                var metrics=MaterialControls.Metrics;
+                using(var tight=MaterialTable.PushTightRows(alternateRows:context==MaterialControlContext.Regular))
+                {
+                    Assert.Equal(padding,style.FramePadding);Assert.Equal(spacing,style.ItemSpacing);
+                    Assert.Equal(metrics,MaterialControls.Metrics);Assert.Equal(context,MaterialControls.Context);
+                    Assert.Equal(new Vector2(scale,0),style.CellPadding);
+                    if(context==MaterialControlContext.Dense)Assert.Equal(Vector4.Zero,style.Colors[(int)ImGuiCol.TableRowBgAlt]);
+                    Assert.True(ImGui.BeginTable("retained-table",3,ImGuiTableFlags.Borders|ImGuiTableFlags.RowBg));
+                    ImGui.TableSetupColumn("Native");ImGui.TableSetupColumn("Material");ImGui.TableSetupColumn("Action");
+                    ImGui.TableHeadersRow();
+                    var previousBottom=0f;
+                    for(var row=0;row<nativeValues.Length;row++)
+                    {
+                        ImGui.PushID(row);ImGui.TableNextRow();ImGui.TableSetColumnIndex(0);
+                        var expectedId=ImGui.GetID("##retained-editor");
+                        ImGui.SetNextItemWidth(-1);
+                        ImGui.InputInt("##retained-editor",ref nativeValues[row],0);
+                        Assert.Equal(expectedId,ImGuiP.GetItemID());
+                        var min=ImGui.GetItemRectMin();var max=ImGui.GetItemRectMax();
+                        Assert.InRange(MathF.Abs(max.Y-min.Y-metrics.Height),0,.1f);
+                        // Native groups floor fractional cursor positions; allow subpixel rounding only.
+                        if(row>0)Assert.InRange(MathF.Abs(min.Y-previousBottom),0,.51f);
+                        previousBottom=max.Y;
+                        if(row==0)inputPoint=(min+max)*.5f;
+                        ImGui.TableSetColumnIndex(1);
+                        MaterialInput.Integer("retained-material-editor",ref materialValues[row],step:0);
+                        Assert.InRange(MathF.Abs(ImGui.GetItemRectMin().Y-min.Y),0,.1f);
+                        Assert.InRange(MathF.Abs(ImGui.GetItemRectSize().Y-metrics.Height),0,.1f);
+                        ImGui.TableSetColumnIndex(2);
+                        if(ImGui.Button("X##retained-action"))presses++;
+                        if(row==1)actionPoint=(ImGui.GetItemRectMin()+ImGui.GetItemRectMax())*.5f;
+                        Assert.InRange(MathF.Abs(ImGui.GetItemRectSize().Y-metrics.Height),0,.1f);
+                        Assert.Equal(0,ImGuiP.GetCurrentTable().CellPaddingY);
+                        ImGui.PopID();
+                    }
+                    ImGui.EndTable();
+                }
+                Assert.Equal(padding,style.FramePadding);Assert.Equal(spacing,style.ItemSpacing);
+                Assert.Equal(cell,style.CellPadding);Assert.Equal(header,style.Colors[(int)ImGuiCol.TableHeaderBg]);
+                Assert.Equal(metrics,MaterialControls.Metrics);Assert.Equal(context,MaterialControls.Context);
+            }
+            ImGui.End();
+        }
+        host.Frame(Draw);host.Frame(Draw);
+        host.Click(actionPoint,Draw);
+        Assert.Equal(1,presses);
+        host.Click(inputPoint,Draw);
+        ImGui.GetIO().AddKeyEvent(ImGuiKey.End,true);host.Frame(Draw);
+        ImGui.GetIO().AddKeyEvent(ImGuiKey.End,false);host.Frame(Draw);
+        ImGui.GetIO().AddInputCharacter('7');host.Frame(Draw);
+        host.Frame(Draw);
+        Assert.Equal(107,nativeValues[0]);
+        Assert.Equal(20,nativeValues[1]);Assert.Equal(30,nativeValues[2]);
+        Assert.Equal(new[]{1,2,3},materialValues);
+        if(Environment.GetEnvironmentVariable("AETHERTEKUI_PREVIEW_DIR") is { Length:>0 } directory)
+            SoftwarePreview.Save(Path.Combine(directory,$"tight-rows-{density}-{context}-{scale:0.0}.png"),host);
+    }
+
     [Fact]
     public void ActionTileMeasuresWrappedContentAndHonorsExplicitFixedMode()
     {
