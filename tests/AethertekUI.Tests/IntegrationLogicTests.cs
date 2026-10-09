@@ -6,6 +6,40 @@ namespace AethertekUI.Tests;
 
 public class IntegrationLogicTests
 {
+    [Fact]
+    public void SupportLogSnapshotAllowsAnOpenWriterAndWarnsAtTheCap()
+    {
+        var directory = Path.Combine(AppContext.BaseDirectory, "support-log-test-" + Guid.NewGuid());
+        Directory.CreateDirectory(directory);
+        try
+        {
+            var path = Path.Combine(directory, "dalamud.log");
+            using var writer = new FileStream(path, FileMode.CreateNew, FileAccess.Write,
+                FileShare.ReadWrite | FileShare.Delete);
+            var bytes = Enumerable.Range(0, 200000).Select(index => (byte)(index % 251)).ToArray();
+            writer.Write(bytes);
+            writer.Flush();
+            var archivePath = Dalamud.SupportLogArchive.Create(path, Path.Combine(directory, "exports"));
+            writer.WriteByte(42); // Snapshot reading left the active writer usable.
+            writer.Flush();
+            using (var archive = System.IO.Compression.ZipFile.OpenRead(archivePath))
+            using (var contents = archive.GetEntry("dalamud.log")!.Open())
+            using (var snapshot = new MemoryStream())
+            {
+                contents.CopyTo(snapshot);
+                Assert.Equal(bytes, snapshot.ToArray());
+                Assert.Single(archive.Entries);
+            }
+            Assert.False(Dalamud.SupportLogArchive.IsCapped(104857599));
+            Assert.True(Dalamud.SupportLogArchive.IsCapped(104857600));
+            Assert.True(Dalamud.SupportLogArchive.IsCapped(104857601));
+            Assert.Throws<FileNotFoundException>(() => Dalamud.SupportLogArchive.Create(
+                Path.Combine(directory, "absent.log"), Path.Combine(directory, "missing-exports")));
+            Assert.False(Directory.Exists(Path.Combine(directory, "missing-exports")));
+        }
+        finally { Directory.Delete(directory, recursive: true); }
+    }
+
     private sealed class CountingGenerator : IPaletteGenerator
     {
         public int Calls;

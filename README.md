@@ -191,6 +191,15 @@ and the [smoke-test guide](docs/PROTOTYPE_SMOKE_TEST.md).
 
 ## Evolution and provenance
 
+The optional Dalamud adapter includes `MaterialSupportLog` for a manual support
+button. Pass the active plugin interface, the consumer's translator, its existing
+folder-opening action and error logger. It snapshots the current client's log
+into a ZIP under the plugin's `support-logs` folder while leaving the log writer
+usable, then opens the output folder. Logs at or above 100 MiB show an inline
+warning before export because Dalamud may have stopped recording recent activity.
+Sharing and removal of old ZIPs remain manual; there is no automatic upload,
+background logger, retry or cleanup service.
+
 Implement approved plugin mockups faithfully. When a design exposes a component
 or layout gap, improve AethertekUI and demonstrate the addition in the showcase.
 Update the skill when real integrations establish better practices. AutoParty
