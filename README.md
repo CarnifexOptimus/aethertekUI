@@ -6,6 +6,12 @@ themes, scoped styles and native ImGui interaction. Version remains **0.3.0**.
 The core targets .NET 10 / Windows x64 and uses Dalamud.Bindings.ImGui; the
 optional adapter integrates with Dalamud API 15 hosts.
 
+The optional adapter's stateless `XaItemOwnership` decoder reads current-character
+XADB item responses (versions 1/2) and recorded armoire/dresser responses (version
+1). ADS and MOGTOME retain their IPC subscriptions and native game checks. The
+decoder supplies valid positive ownership; empty or incomplete storage cannot
+prove absence. It owns no cache, retry, configuration or game action.
+
 `MaterialWindowOpacity` fades an owned window's complete native and custom
 content after its final End, with a focus delay and consumer-owned preferences.
 The window-motion showcase and independent consumer demonstrate its lifecycle;
