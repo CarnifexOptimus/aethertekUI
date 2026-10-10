@@ -10,7 +10,10 @@ The optional adapter's stateless `XaItemOwnership` decoder reads current-charact
 XADB item responses (versions 1/2) and recorded armoire/dresser responses (version
 1). ADS and MOGTOME retain their IPC subscriptions and native game checks. The
 decoder supplies valid positive ownership; empty or incomplete storage cannot
-prove absence. It owns no cache, retry, configuration or game action.
+establish absence. `QueryStates` returns explicit Owned/Unknown results for every
+requested item. `Resolve` combines native and storage truth; Missing requires
+confirmed absence from both. No supported producer response currently certifies
+complete storage absence. It owns no cache, retry, configuration or game action.
 
 `MaterialWindowOpacity` fades an owned window's complete native and custom
 content after its final End, with a focus delay and consumer-owned preferences.

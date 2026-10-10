@@ -3,6 +3,8 @@ using System.Text.Json;
 
 namespace AethertekUI.Dalamud;
 
+public enum XaItemOwnershipState { Unknown, Owned, Missing }
+
 /// <summary>
 /// Reads positive, current-character XADB ownership evidence. An absent result is
 /// unknown: the item API does not certify that all storage has been recorded.
@@ -13,6 +15,20 @@ public static class XaItemOwnership
     private const int MaximumResponseLength = 4 * 1024 * 1024;
     // XADB's current SnapshotQualityResolver considers snapshots stale at 60 minutes.
     private static readonly TimeSpan SnapshotLifetime = TimeSpan.FromMinutes(60);
+
+    public static Dictionary<uint, XaItemOwnershipState> QueryStates(Func<string, string> searchItems,
+        Func<string, string> searchStorage, IEnumerable<uint> itemIds, ulong currentContentId, DateTimeOffset now)
+    {
+        var requested = itemIds.Where(id => id != 0).ToHashSet();
+        var owned = Query(searchItems, searchStorage, requested, currentContentId, now);
+        // The supported producer contracts certify positives, never complete absence.
+        return requested.ToDictionary(id => id, id => owned.Contains(id) ? XaItemOwnershipState.Owned : XaItemOwnershipState.Unknown);
+    }
+
+    public static XaItemOwnershipState Resolve(bool nativeOwned, bool nativeAbsenceKnown, XaItemOwnershipState storage)
+        => nativeOwned || storage == XaItemOwnershipState.Owned ? XaItemOwnershipState.Owned
+            : nativeAbsenceKnown && storage == XaItemOwnershipState.Missing ? XaItemOwnershipState.Missing
+            : XaItemOwnershipState.Unknown;
 
     public static HashSet<uint> Query(Func<string, string> searchItems, Func<string, string> searchStorage,
         IEnumerable<uint> itemIds, ulong currentContentId, DateTimeOffset now)

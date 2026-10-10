@@ -6,6 +6,29 @@ namespace AethertekUI.Tests;
 
 public sealed class XaItemOwnershipTests
 {
+    [Fact]
+    public void QueryStatesNeverConvertsEmptyStorageToMissing()
+    {
+        var states = XaItemOwnership.QueryStates(_ => "{\"version\":2,\"ready\":true,\"character\":{\"contentId\":42},\"rows\":[]}",
+            _ => "{}", new uint[] { 100, 101, 0, 100 }, 42, Now);
+        Assert.Equal(2, states.Count);
+        Assert.All(states.Values, state => Assert.Equal(XaItemOwnershipState.Unknown, state));
+        states = XaItemOwnership.QueryStates(_ => Items(2), _ => "{}", new uint[] { 100, 101 }, 42, Now);
+        Assert.Equal(XaItemOwnershipState.Owned, states[100]);
+        Assert.Equal(XaItemOwnershipState.Unknown, states[101]);
+    }
+
+    [Theory]
+    [InlineData(true, false, XaItemOwnershipState.Unknown, XaItemOwnershipState.Owned)]
+    [InlineData(false, false, XaItemOwnershipState.Owned, XaItemOwnershipState.Owned)]
+    [InlineData(false, true, XaItemOwnershipState.Unknown, XaItemOwnershipState.Unknown)]
+    [InlineData(false, false, XaItemOwnershipState.Missing, XaItemOwnershipState.Unknown)]
+    [InlineData(false, true, XaItemOwnershipState.Missing, XaItemOwnershipState.Missing)]
+    [InlineData(true, true, XaItemOwnershipState.Missing, XaItemOwnershipState.Owned)]
+    public void AbsenceRequiresBothTruthSources(bool nativeOwned, bool nativeAbsenceKnown,
+        XaItemOwnershipState storage, XaItemOwnershipState expected)
+        => Assert.Equal(expected, XaItemOwnership.Resolve(nativeOwned, nativeAbsenceKnown, storage));
+
     private static readonly DateTimeOffset Now = new(2026, 10, 10, 3, 0, 0, TimeSpan.Zero);
     private static readonly HashSet<uint> Requested = [100];
 
