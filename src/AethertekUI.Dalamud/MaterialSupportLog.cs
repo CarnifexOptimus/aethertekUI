@@ -1,4 +1,6 @@
 using Dalamud.Plugin;
+using Dalamud.Plugin.Services;
+using Dalamud.Bindings.ImGui;
 
 namespace AethertekUI.Dalamud;
 
@@ -9,6 +11,40 @@ public sealed class MaterialSupportLog
     private bool capped;
     private string? completedPath;
     private string? failure;
+    private bool xaSlaveOpenFailed;
+
+    /// <summary>Adds an optional XA Slave UI shortcut after the unchanged manual exporter.</summary>
+    public void Draw(IDalamudPluginInterface pluginInterface, Func<string, string> translate,
+        Action<string> openFolder, Action<Exception> reportError, ICommandManager commandManager)
+    {
+        Draw(pluginInterface, translate, openFolder, reportError);
+        bool available;
+        try
+        {
+            available = pluginInterface.InstalledPlugins?.Any(plugin => plugin.IsLoaded
+                && string.Equals(plugin.InternalName, "XASlave", StringComparison.Ordinal)) == true;
+        }
+        catch { return; } // Unavailable provider truth must not break the existing exporter.
+        if (!available) return;
+
+        if (MaterialButton.Draw("OpenXaSlaveLogTools", translate("Open XA Slave log tools")))
+        {
+            try
+            {
+                // This verified command only opens Utility > XA Mods; never invoke the cleaner.
+                xaSlaveOpenFailed = !commandManager.ProcessCommand("/xa mods");
+            }
+            catch (Exception ex)
+            {
+                xaSlaveOpenFailed = true;
+                reportError(new InvalidOperationException("XA Slave log tools could not be opened.", ex));
+            }
+        }
+        if (ImGui.IsItemHovered())
+            MaterialText.SetTooltip(translate("Opens XA Slave's Utility > XA Mods panel, which contains Dalamud Log Cleaner."));
+        if (xaSlaveOpenFailed)
+            MaterialText.TextWrapped(translate("XA Slave log tools could not be opened."));
+    }
 
     public void Draw(IDalamudPluginInterface pluginInterface, Func<string, string> translate,
         Action<string> openFolder, Action<Exception> reportError)

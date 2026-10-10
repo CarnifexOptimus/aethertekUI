@@ -210,6 +210,12 @@ warning before export because Dalamud may have stopped recording recent activity
 Sharing and removal of old ZIPs remain manual; there is no automatic upload,
 background logger, retry or cleanup service.
 
+The five-argument `MaterialSupportLog.Draw` overload also accepts the consumer's
+existing `ICommandManager`. It adds a separate **Open XA Slave log tools** button
+only while XA Slave is loaded. The button issues `/xa mods` to open the provider's
+existing Utility > XA Mods panel; it does not invoke the log cleaner. The original
+four-argument exporter API, button identity, label and behavior are retained.
+
 Implement approved plugin mockups faithfully. When a design exposes a component
 or layout gap, improve AethertekUI and demonstrate the addition in the showcase.
 Update the skill when real integrations establish better practices. AutoParty

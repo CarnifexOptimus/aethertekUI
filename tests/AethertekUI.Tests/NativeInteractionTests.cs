@@ -1,5 +1,8 @@
 using System.Numerics;
 using System.Runtime.InteropServices;
+using System.Reflection;
+using Dalamud.Plugin;
+using Dalamud.Plugin.Services;
 using Dalamud.Bindings.ImGui;
 using Xunit;
 
@@ -7,6 +10,85 @@ namespace AethertekUI.Tests;
 
 public unsafe class NativeInteractionTests
 {
+    [Fact]
+    public void XaSlaveShortcutPreservesExporterAndOnlyOpensLoadedProviderOnExplicitClick()
+    {
+        using var host = new NativeTestContext();
+        var theme = new MaterialTheme(new Vector3(.3f, .7f, .4f));
+        var support = new Dalamud.MaterialSupportLog();
+        var pluginInterface = DispatchProxy.Create<IDalamudPluginInterface, ShortcutServicesProxy>();
+        var commands = DispatchProxy.Create<ICommandManager, ShortcutServicesProxy>();
+        var commandProxy = (ShortcutServicesProxy)commands;
+        commandProxy.Results["ProcessCommand"] = true;
+        var pluginType = typeof(IDalamudPluginInterface).GetProperty("InstalledPlugins")!
+            .PropertyType.GetGenericArguments().Single();
+        var provider = DispatchProxy.Create(pluginType, typeof(ShortcutServicesProxy));
+        var providerProxy = (ShortcutServicesProxy)provider;
+        providerProxy.Results["get_InternalName"] = "XASlave";
+        providerProxy.Results["get_IsLoaded"] = false;
+        var providers = Array.CreateInstance(pluginType, 1);
+        providers.SetValue(provider, 0);
+        var interfaceProxy = (ShortcutServicesProxy)pluginInterface;
+        interfaceProxy.Results["get_InstalledPlugins"] = Array.CreateInstance(pluginType, 0);
+        var includeShortcut = false;
+        var folderActions = 0;
+        var errors = 0;
+        Vector2 lastCenter = default;
+        uint lastId = 0;
+
+        void Draw()
+        {
+            using var scope = MaterialTheme.Push(theme);
+            ImGui.SetNextWindowPos(new(0, 0));
+            ImGui.SetNextWindowSize(new(650, 400));
+            ImGui.Begin("Support actions", ImGuiWindowFlags.NoSavedSettings | ImGuiWindowFlags.NoTitleBar);
+            if (includeShortcut)
+                support.Draw(pluginInterface, key => key, _ => folderActions++, _ => errors++, commands);
+            else support.Draw(pluginInterface, key => key, _ => folderActions++, _ => errors++);
+            lastId = ImGui.GetCurrentContext().LastItemData.ID;
+            lastCenter = (ImGui.GetItemRectMin() + ImGui.GetItemRectMax()) * .5f;
+            ImGui.End();
+        }
+
+        host.Frame(Draw); host.Frame(Draw);
+        var exporterId = lastId;
+        includeShortcut = true;
+        host.Frame(Draw);
+        Assert.Equal(exporterId, lastId); // A missing provider keeps the original exporter.
+        interfaceProxy.Results["get_InstalledPlugins"] = providers;
+        host.Frame(Draw);
+        Assert.Equal(exporterId, lastId); // An unloaded provider adds no replacement control.
+        providerProxy.Results["get_IsLoaded"] = true;
+        host.Frame(Draw); host.Frame(Draw);
+        Assert.NotEqual(exporterId, lastId);
+        var shortcutCenter = lastCenter;
+        Assert.Empty(commandProxy.Commands);
+        host.Click(shortcutCenter, Draw);
+        Assert.Equal(new[] { "/xa mods" }, commandProxy.Commands);
+        commandProxy.Results["ProcessCommand"] = false;
+        host.Click(shortcutCenter, Draw);
+        Assert.Equal(new[] { "/xa mods", "/xa mods" }, commandProxy.Commands);
+        host.Frame(Draw); host.Frame(Draw);
+        Assert.Equal(2, commandProxy.Commands.Count); // Rejection never dispatches another command.
+        providerProxy.Results["get_IsLoaded"] = false;
+        host.Frame(Draw);
+        Assert.Equal(exporterId, lastId);
+        Assert.Equal(0, folderActions);
+        Assert.Equal(0, errors);
+    }
+
+    public class ShortcutServicesProxy : DispatchProxy
+    {
+        public readonly Dictionary<string, object?> Results = new();
+        public readonly List<string> Commands = new();
+        protected override object? Invoke(MethodInfo? method, object?[]? args)
+        {
+            if (method!.Name == "ProcessCommand") Commands.Add((string)args![0]!);
+            return Results.TryGetValue(method.Name, out var result) ? result
+                : throw new NotSupportedException(method.Name);
+        }
+    }
+
     [Theory] [InlineData(false)] [InlineData(true)]
     public void MouseActivatesSwitchAndSegmentButDisabledControlsDoNotChange(bool disabled)
     {
