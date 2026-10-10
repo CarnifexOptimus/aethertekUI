@@ -28,6 +28,13 @@ optional Hindi menu probes can leave ordinary locales usable while selected
 Hindi failure offers explicit consumer-owned recovery. Host/Wine/game acceptance
 remains separate from local native tests.
 
+The approved grouped Appearance standard uses `MaterialAppearanceTab.Draw` with
+consumer-owned callbacks for Theme & Language, Main window controls, Window opacity
+and When unfocused. It uses two columns when both measured groups fit and stacks
+complete groups at narrow widths. `MaterialAppearanceSelector.DrawPalette` supplies
+inline colour swatches; the Settings showcase demonstrates the layout. Existing
+configuration, native identities and save behavior stay with the consumer.
+
 ## Repository
 
 ```text

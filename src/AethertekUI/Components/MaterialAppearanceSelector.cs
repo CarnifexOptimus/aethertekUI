@@ -9,6 +9,61 @@ public readonly record struct MaterialAppearanceLabels(string Color, string Lang
 /// <summary>Consumer owns labels, language options, edit draft, persistence, and frame-boundary theme updates.</summary>
 public static class MaterialAppearanceSelector
 {
+    /// <summary>Inline palette choices and the retained custom-colour popup for grouped appearance tabs.</summary>
+    public static bool DrawPalette(string id, ref Vector3 accent, MaterialAppearanceLabels labels)
+    {
+        ImGui.PushID(id);
+        try
+        {
+            var changed = false;
+            using var controls = MaterialControls.Push(MaterialControlContext.Toolbar);
+            var metrics = MaterialControls.Metrics;
+            var scale = MaterialTheme.Metrics.Scale;
+            var colors = MaterialTheme.Current.Colors;
+            var swatch = 16 * scale;
+            MaterialText.Text(labels.Color);
+            (string Id, string Label, Vector3 Color)[] presets = [("teal-inline", labels.Teal, new(28/255f,201/255f,230/255f)),
+                ("blue-inline", labels.Blue, new(66/255f,133/255f,244/255f)), ("pink-inline", labels.Pink, new(236/255f,92/255f,160/255f))];
+            foreach (var preset in presets)
+            {
+                var text = MaterialText.Measure(preset.Label);
+                var size = new Vector2(text.X + 2 * metrics.Padding.X + swatch + metrics.Gap,
+                    Math.Max(metrics.Height, text.Y + 2 * metrics.Padding.Y));
+                ContinueRow(size.X);
+                ImGui.PushID(preset.Id);
+                bool pressed;
+                try
+                {
+                    pressed = MaterialDraw.Hit("##button", size, false, out var state);
+                    var selected = Vector3.DistanceSquared(accent, preset.Color) < .0001f;
+                    MaterialDraw.Shape(state, colors.SurfaceContainerLowest, colors.OnSurface, 4 * scale, true,
+                        border: selected ? colors.Primary : colors.OutlineVariant);
+                    if (state.Visible)
+                    {
+                        var start = state.Min + new Vector2(metrics.Padding.X, (size.Y - swatch) * .5f);
+                        ImGui.GetWindowDrawList().AddRectFilled(start, start + new Vector2(swatch),
+                            MaterialDraw.Color(new(preset.Color, 1), state.Alpha), 3 * scale);
+                        MaterialText.AddText(ImGui.GetWindowDrawList(), state.Min + new Vector2(metrics.Padding.X + swatch + metrics.Gap,
+                            (size.Y - text.Y) * .5f), MaterialDraw.Color(colors.OnSurface, state.Alpha), preset.Label);
+                    }
+                }
+                finally { ImGui.PopID(); }
+                if (pressed)
+                { accent = preset.Color; changed = true; }
+            }
+            ContinueRow(MaterialText.Measure(labels.Custom).X + 2 * metrics.Padding.X + metrics.IconSize + metrics.Gap);
+            if (MaterialButton.OutlinedButton("accent", labels.Custom, trailing: MaterialIcon.ChevronDown)) ImGui.OpenPopup("color");
+            return DrawColorPopup(ref accent, labels) || changed;
+
+            void ContinueRow(float nextWidth)
+            {
+                if (ImGui.GetItemRectMax().X + ImGui.GetStyle().ItemSpacing.X + nextWidth
+                    <= ImGui.GetWindowPos().X + ImGui.GetWindowContentRegionMax().X) ImGui.SameLine();
+            }
+        }
+        finally { ImGui.PopID(); }
+    }
+
     public static MaterialAppearanceChange Draw(string id, ref Vector3 accent, ref string language,
         MaterialOptions<string> languages, MaterialAppearanceLabels labels, float languageWidth = 112)
     {

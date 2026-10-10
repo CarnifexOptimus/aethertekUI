@@ -6,6 +6,44 @@ namespace AethertekUI.Tests;
 
 public class ComponentBehaviorTests
 {
+    [Theory]
+    [InlineData(MaterialDensity.Compact, 1f)] [InlineData(MaterialDensity.Standard, 1f)]
+    [InlineData(MaterialDensity.Compact, 1.5f)] [InlineData(MaterialDensity.Standard, 1.5f)]
+    public void GroupedAppearanceReflowsWithoutChangingNativeActionsOrLeakingScopes(MaterialDensity density, float scale)
+    {
+        using var host = new NativeTestContext((int)(1400 * scale), (int)(900 * scale), scale);
+        var theme = new MaterialTheme(new Vector3(.1f, .7f, .8f), density);
+        var wide = true; var enabled = false;
+        Vector2 themePosition = default, mainPosition = default, opacityPosition = default, center = default;
+        void Draw()
+        {
+            using var scope = MaterialTheme.Push(theme, scale);
+            ImGui.SetNextWindowPos(Vector2.Zero); ImGui.SetNextWindowSize(new Vector2(wide ? 1050 : 450, 800) * scale);
+            ImGui.Begin("Appearance scopes", ImGuiWindowFlags.NoSavedSettings | ImGuiWindowFlags.NoTitleBar);
+            var root = ImGui.GetID(""); var actionId = ImGui.GetID("Existing action");
+            var spacing = ImGui.GetStyle().ItemSpacing; var padding = ImGui.GetStyle().CellPadding;
+            MaterialAppearanceTab.Draw("appearance", new("Theme", "Main controls", "Opacity", "Unfocused"), 300 * scale,
+                () => { themePosition = ImGui.GetCursorScreenPos(); ImGui.TextUnformatted("Theme content"); },
+                () => { mainPosition = ImGui.GetCursorScreenPos(); ImGui.TextUnformatted("Main controls"); },
+                () => {
+                    opacityPosition = ImGui.GetCursorScreenPos();
+                    ImGui.Checkbox("Existing action", ref enabled);
+                    Assert.Equal(actionId, ImGuiP.GetItemID());
+                    center = (ImGui.GetItemRectMin() + ImGui.GetItemRectMax()) * .5f;
+                }, () => ImGui.TextUnformatted("Unfocused content"));
+            Assert.Equal(root, ImGui.GetID(""));
+            Assert.Equal(spacing, ImGui.GetStyle().ItemSpacing); Assert.Equal(padding, ImGui.GetStyle().CellPadding);
+            if (wide) { Assert.Equal(themePosition.Y, opacityPosition.Y); Assert.True(opacityPosition.X > themePosition.X + 300 * scale); }
+            else { Assert.Equal(themePosition.X, opacityPosition.X); Assert.True(opacityPosition.Y > mainPosition.Y); }
+            Assert.Throws<InvalidOperationException>(() => MaterialSettings.Columns("throwing", 300 * scale,
+                () => throw new InvalidOperationException("consumer callback"), () => { }));
+            Assert.Equal(root, ImGui.GetID("")); Assert.Equal(padding, ImGui.GetStyle().CellPadding);
+            ImGui.TextUnformatted("Scope restored"); ImGui.End();
+        }
+        host.Frame(Draw); host.Frame(Draw); host.Click(center, Draw); Assert.True(enabled);
+        wide = false; host.Frame(Draw); host.Frame(Draw); host.Click(center, Draw); Assert.False(enabled);
+    }
+
     [Theory] [InlineData(false)] [InlineData(true)]
     public void ExplicitRadiusRetainsSizingAndDisabledBehavior(bool disabled)
     {

@@ -13,6 +13,9 @@ See [Adaptive sizing and host compatibility](ADAPTIVE_SIZING.md) for units, owne
 | MaterialWindowFold.GetLogicalSize() | Expanded pixel geometry for observers inside that window's Draw during a transition |
 | MaterialWindowOpacity.Apply / CurrentOpacity | One owner-tree alpha multiplier after final End; native focus delay, immediate focus restoration, and consumer-owned preferences |
 | AethertekUI.Dalamud.MaterialWindowMotion.Prepare / DrawChrome / Restore | Bridge for one Dalamud Window; prepares fold and optional owned-viewport chrome before Begin, restores body styles first in Draw, then paints chrome and restores managed constraints after End |
+| MaterialSettings.Columns / Section | Compact semantic groups; measured pixel minimum controls wide-to-narrow reflow while retaining caller IDs |
+| MaterialAppearanceTab.Draw | Standard four-group Appearance layout with translated headings and consumer-owned controls/configuration |
+| MaterialAppearanceSelector.DrawPalette | Inline preset swatches and existing custom-colour popup; returns whether the consumer draft changed |
 | MaterialControls.Push(context) | Match native and custom control heights using current font, density and scale |
 | MaterialControlContext.Regular / Toolbar / Dense | Local sizing intent independent of theme density |
 | MaterialControls.Push(metrics) | Explicit already-scaled pixel metrics; parameterless nested scopes inherit, explicit contexts remeasure |

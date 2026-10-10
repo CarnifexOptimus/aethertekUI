@@ -8,19 +8,47 @@ internal sealed partial class Showcase
     private bool notifications=true,dependency,dependentSetting,reduceMotion;
     private int behavior,route,delay=250;
     private string preset="Evening route";
+    private bool appearanceCompact=true,showCompact,showTransparency,showLanguage=true,appearanceTransparency=true,appearanceFade=true;
+    private int appearanceOpacity=100,appearanceFadedOpacity=50;
+    private float appearanceFadeDelay=10;
+    private string appearanceLanguage="en";
     private static readonly string[] Routes=["Nearest node","Lowest cost","Preferred location"];
     private void Settings()
     {
-        MaterialStatus.SectionHeader("PREFERENCES");
-        using(var appearance=MaterialSurface.Card("appearance",new(-1,165)))
+        MaterialText.Text("Window appearance");
+        MaterialAppearanceTab.Draw("groupedAppearance",new("THEME & LANGUAGE","MAIN WINDOW CONTROLS","WINDOW OPACITY","WHEN UNFOCUSED"),
+            360*MaterialTheme.Metrics.Scale,() =>
         {
-            if(appearance.Visible)
+            if(MaterialAppearanceSelector.DrawPalette("appearance",ref seed,new("Color","Language","Teal","Blue","Pink","Custom RGB")))
+                theme=new(seed,(MaterialDensity)density) { SurfaceOpacity=opacity };
+            MaterialText.Text("Language");ImGui.SameLine();
+            MaterialAppearanceSelector.DrawLanguage("appearance",ref appearanceLanguage,sizingLanguages);
+            ImGui.Checkbox("Compact mode",ref appearanceCompact);
+            if(MaterialSwitch.Draw("motion","Reduce motion",ref reduceMotion)) theme.Motion.Enabled=!reduceMotion;
+        },() =>
+        {
+            ImGui.Checkbox("Compact visible on main window",ref showCompact);
+            ImGui.Checkbox("Transparency visible on main window",ref showTransparency);
+            ImGui.Checkbox("Language visible on main window",ref showLanguage);
+        },() =>
+        {
+            ImGui.Checkbox("Transparency",ref appearanceTransparency);
+            ImGui.BeginDisabled(!appearanceTransparency);
+            try { MaterialText.Text("Opacity");ImGui.SameLine();ImGui.SetNextItemWidth(150*MaterialTheme.Metrics.Scale);ImGui.SliderInt("##appearanceOpacity",ref appearanceOpacity,10,100,"%d%%"); }
+            finally { ImGui.EndDisabled(); }
+        },() =>
+        {
+            ImGui.Checkbox("Auto-fade when unfocused",ref appearanceFade);
+            ImGui.BeginDisabled(!appearanceTransparency);
+            try
             {
-                ImGui.TextUnformatted("Appearance");
-                Appearance();
-                if(MaterialSwitch.Draw("motion","Reduce motion",ref reduceMotion)) theme.Motion.Enabled=!reduceMotion;
+                MaterialText.Text("Unfocused opacity");ImGui.SameLine();ImGui.SetNextItemWidth(150*MaterialTheme.Metrics.Scale);ImGui.SliderInt("##appearanceFaded",ref appearanceFadedOpacity,10,100,"%d%%");
+                ImGui.BeginDisabled(!appearanceFade);
+                try { MaterialText.Text("Unfocused delay");ImGui.SameLine();ImGui.SetNextItemWidth(90*MaterialTheme.Metrics.Scale);ImGui.InputFloat("##appearanceDelay",ref appearanceFadeDelay); }
+                finally { ImGui.EndDisabled(); }
             }
-        }
+            finally { ImGui.EndDisabled(); }
+        });
         using(var automation=MaterialSurface.Card("automationSettings",new(-1,230)))
         {
             if(automation.Visible)

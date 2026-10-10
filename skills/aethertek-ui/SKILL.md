@@ -213,6 +213,26 @@ upward. DhogNav's narrow Japanese warning otherwise measured as one line but
 rendered two. Use the same reservation when budgeting the enclosing card and
 its table footer, and verify the final native child content and scroll range.
 
+## Grouped settings and Appearance standard
+
+Use the approved grouped Appearance layout through `MaterialAppearanceTab.Draw`:
+Theme & Language and Main window controls on the left; Window opacity and When
+unfocused on the right. Pass translated `MaterialAppearanceSections` labels and
+consumer-owned callbacks. `minimumColumnPixels` is measured in current-font pixels;
+include the complete translated controls, units, help and conditional sync actions.
+Two columns appear only when both fit; narrower windows stack complete groups.
+Use `MaterialSettings.Section` for compact semantic headings and
+`MaterialAppearanceSelector.DrawPalette` for inline colour swatches and the retained
+custom-colour popup. The showcase Settings page demonstrates the standard.
+
+Keep related toggle/value/unit controls on one row, use native tooltips for longer
+help, and retain subordinate indentation. Do not recreate a generic
+Label/Value/Help/Sync grid or reserve empty help/sync columns. Preserve every existing
+setting, conditional action, native ID, profile/global boundary and save handler.
+These presentation components own no configuration or automation. Verify actual
+wide/narrow renders, native edits/actions and scope restoration; a concept image or
+successful build alone does not establish visual fidelity or game acceptance.
+
 ## Native titlebar actions
 
 For a selected Dalamud titlebar rollout, register fixed `Window.TitleBarButtons`
