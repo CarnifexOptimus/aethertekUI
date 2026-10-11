@@ -14,7 +14,13 @@ copies. `QueryStates` returns Owned for recorded copies and Missing otherwise,
 including unrecorded or unavailable storage; a missing current-character identity
 stays Unknown. Operators are responsible for opening storage and refreshing XADB.
 `Resolve` gives native inventory/registration and recorded copies precedence over
-Missing. It owns no cache, retry, configuration or game action.
+Missing. `QueryStocks` returns quantities across recorded bags, equipped gear,
+armoury, both normal and premium saddlebag pages, retainers, armoire and dresser.
+`XaItemStock.CountWithLiveInventory` replaces readable recorded containers with
+fresh native counts, including zero, and retains unreadable storage. Duplicate
+armoire/dresser results from the two IPC channels count once; legacy inventory
+rows without locations form a lower bound rather than adding another native copy.
+It owns no cache, retry, configuration or game action.
 
 `MaterialWindowOpacity` fades an owned window's complete native and custom
 content after its final End, with a focus delay and consumer-owned preferences.
