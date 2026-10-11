@@ -10,6 +10,193 @@ namespace AethertekUI.Tests;
 public unsafe class IntegrationNativeTests
 {
     [Theory]
+    [InlineData(MaterialDensity.Compact, 1f, false)]
+    [InlineData(MaterialDensity.Standard, 1.5f, true)]
+    public void TitlebarStatusFitsFullShortEllipsisOrNothingWithoutChangingNativeGeometry(MaterialDensity density, float scale, bool collapsed)
+    {
+        using var host = new NativeTestContext((int)(1200 * scale), (int)(600 * scale), scale);
+        var theme = new MaterialTheme(new Vector3(.3f, .7f, .4f), density);
+        var opacity = new MaterialWindowOpacity();
+        const string name = "Native title###status-fit";
+        const string branding = "Plugin v1.2.3";
+        const string full = "Following [RSR] Duty: ADS";
+        const string concise = "Following";
+        var expected = full;
+        var mode = 0;
+        uint originalId = 0;
+        void Draw()
+        {
+            using var palette = MaterialTheme.Push(theme, scale, MaterialStyleMode.ColorsOnly);
+            ImGui.GetStyle().WindowMenuButtonPosition = ImGuiDir.Right;
+            var style = ImGui.GetStyle();
+            var font = ImGui.GetFontSize();
+            var gap = style.ItemInnerSpacing.X;
+            var reserved = 3 * (font + gap);
+            var available = mode switch
+            {
+                0 => ImGui.CalcTextSize(full).X + 2,
+                1 => ImGui.CalcTextSize(concise).X + 2,
+                2 => (ImGui.CalcTextSize("Fol...").X + ImGui.CalcTextSize("Foll...").X) * .5f,
+                _ => ImGui.CalcTextSize("F...").X - 1,
+            };
+            var width = 2 * style.WindowBorderSize + 2 * style.FramePadding.X + 2 * (font + gap) + reserved
+                + font + gap + ImGui.CalcTextSize(branding).X + 2 * gap + font * .26f + gap + available;
+            ImGui.SetNextWindowPos(new Vector2(30, 30) * scale, ImGuiCond.FirstUseEver);
+            ImGui.SetNextWindowSize(new Vector2(width, 180 * scale));
+            ImGui.SetNextWindowCollapsed(collapsed);
+            var open = true;
+            var shown = ImGui.Begin(name, ref open, ImGuiWindowFlags.NoSavedSettings);
+            var window = ImGuiP.GetCurrentWindow();
+            if (shown) ImGui.Button("Retained body action");
+            ImGui.End();
+            var size = window.SizeFull;
+            var position = window.Pos;
+            var lastId = ImGui.GetCurrentContext().LastItemData.ID;
+            originalId = originalId == 0 ? window.ID : originalId;
+            var list = window.DrawList;
+            var first = list.VtxBuffer.Size;
+            var quietColor = ImGui.GetColorU32(theme.Colors.OnSurfaceVariant);
+            var dotColor = ImGui.GetColorU32(new Vector4(1, .1f, .2f, 1));
+            MaterialWindowHeader.PaintTitleWithStatus(window, branding, default, Vector2.Zero,
+                new(full, concise, "Full operational details", new Vector4(1, .1f, .2f, 1)), reserved);
+            Assert.Equal(size, window.SizeFull);
+            Assert.Equal(position, window.Pos);
+            Assert.Equal(originalId, window.ID);
+            Assert.Equal(lastId, ImGui.GetCurrentContext().LastItemData.ID);
+            var statusVertices = Enumerable.Range(first, list.VtxBuffer.Size - first)
+                .Where(index => list.VtxBuffer[index].Col == quietColor).ToArray();
+            Assert.Equal(expected.Count(character => !char.IsWhiteSpace(character)) * 4, statusVertices.Length);
+            var dotVertices = Enumerable.Range(first, list.VtxBuffer.Size - first)
+                .Where(index => list.VtxBuffer[index].Col == dotColor).ToArray();
+            Assert.Equal(expected.Length != 0, dotVertices.Length != 0);
+            var limit = window.Pos.X + window.Size.X - window.WindowBorderSize - style.FramePadding.X
+                - 2 * (font + gap) - reserved;
+            Assert.All(statusVertices, index => Assert.True(list.VtxBuffer[index].Pos.X <= limit + 1));
+            opacity.Apply(name, .5f, autoFade: false);
+            Assert.All(statusVertices.Concat(dotVertices), index =>
+                Assert.Equal(128u, list.VtxBuffer[index].Col >> 24));
+        }
+        foreach (var choice in new[] { (0, full), (1, concise), (2, "Fol..."), (3, "") })
+        {
+            mode = choice.Item1;
+            expected = choice.Item2;
+            host.Frame(Draw); host.Frame(Draw);
+        }
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void TitlebarStatusTooltipRetainsOwnerOpacityAndNativeTitleActions(bool collapsed)
+    {
+        using var host = new NativeTestContext(800, 500);
+        var theme = new MaterialTheme(new Vector3(.3f, .7f, .4f), MaterialDensity.Compact);
+        var opacity = new MaterialWindowOpacity();
+        const string name = "Retained title###status-tooltip";
+        var forceCollapse = true;
+        var open = true;
+        var tooltipObserved = false;
+        Vector2 titlePoint = default, collapsePoint = default, closePoint = default;
+        ImGuiWindowPtr window = default;
+        void Draw()
+        {
+            tooltipObserved = false;
+            using var palette = MaterialTheme.Push(theme, 1, MaterialStyleMode.ColorsOnly);
+            ImGui.GetStyle().WindowMenuButtonPosition = ImGuiDir.Right;
+            ImGui.PushStyleVar(ImGuiStyleVar.FramePadding, new Vector2(0, ImGui.GetStyle().FramePadding.Y));
+            ImGui.SetNextWindowPos(new Vector2(30, 30), ImGuiCond.FirstUseEver);
+            ImGui.SetNextWindowSize(new Vector2(400, 180), ImGuiCond.FirstUseEver);
+            if (forceCollapse) ImGui.SetNextWindowCollapsed(collapsed);
+            ImGui.Begin(name, ref open, ImGuiWindowFlags.NoSavedSettings);
+            window = ImGuiP.GetCurrentWindow();
+            var title = ImGuiP.TitleBarRect(window);
+            var font = ImGui.GetFontSize();
+            var gap = ImGui.GetStyle().ItemInnerSpacing.X;
+            titlePoint = title.Min + new Vector2(100, (title.Max.Y - title.Min.Y) * .5f);
+            collapsePoint = new Vector2(title.Max.X - 1.5f * font, titlePoint.Y);
+            closePoint = new Vector2(title.Max.X - .5f * font, titlePoint.Y);
+            ImGui.End();
+            var rootCount = window.DrawList.VtxBuffer.Size;
+            var size = window.SizeFull;
+            var lastId = ImGui.GetCurrentContext().LastItemData.ID;
+            // Deliberately leave no room for status ink: the full tooltip remains available.
+            MaterialWindowHeader.PaintTitleWithStatus(window, "Retained v1.0", default, Vector2.Zero,
+                new("Waiting for the party leader to finish the current action", "Waiting",
+                    "Action: Waiting\nReason: Party leader\nRuns: 8 / 66"), 250);
+            Assert.Equal(size, window.SizeFull);
+            Assert.Equal(lastId, ImGui.GetCurrentContext().LastItemData.ID);
+            var context = ImGui.GetCurrentContext();
+            for (var index = 0; index < context.Windows.Size; index++)
+            {
+                var candidate = new ImGuiWindowPtr(context.Windows.Data[index]);
+                if ((candidate.Flags & ImGuiWindowFlags.Tooltip) == 0 || candidate.LastFrameActive != ImGui.GetFrameCount()) continue;
+                tooltipObserved = true;
+                Assert.Equal(window, candidate.ParentWindowInBeginStack);
+            }
+            opacity.Apply(name, .5f, autoFade: false);
+            if (tooltipObserved)
+                for (var index = 0; index < context.Windows.Size; index++)
+                {
+                    var candidate = new ImGuiWindowPtr(context.Windows.Data[index]);
+                    if ((candidate.Flags & ImGuiWindowFlags.Tooltip) == 0 || candidate.LastFrameActive != ImGui.GetFrameCount()) continue;
+                    Assert.Contains(Enumerable.Range(0, candidate.DrawList.VtxBuffer.Size),
+                        vertex => candidate.DrawList.VtxBuffer[vertex].Col >> 24 == 128);
+                }
+            Assert.True(window.DrawList.VtxBuffer.Size >= rootCount);
+            ImGui.PopStyleVar();
+        }
+        host.Frame(Draw); host.Frame(Draw);
+        forceCollapse = false;
+        var nativeId = window.ID;
+        ImGui.GetIO().AddMousePosEvent(titlePoint.X, titlePoint.Y);
+        host.Frame(Draw); host.Frame(Draw);
+        Assert.True(tooltipObserved);
+        ImGui.GetIO().AddMousePosEvent(collapsePoint.X, collapsePoint.Y);
+        host.Frame(Draw); host.Frame(Draw);
+        Assert.False(tooltipObserved);
+        host.Click(collapsePoint, Draw);
+        host.Frame(Draw);
+        Assert.Equal(!collapsed, window.Collapsed);
+        Assert.Equal(nativeId, window.ID);
+        host.Click(closePoint, Draw);
+        Assert.False(open);
+    }
+
+    [Fact]
+    public void TitlebarStatusUsesMeasuredShapedTextAndPreservesItsClipping()
+    {
+        using var host = new NativeTestContext(600, 300);
+        using var renderer = new MaterialTextRenderer(bitmap =>
+        {
+            var texture = host.RegisterTexture(bitmap.Rgba, bitmap.Width, bitmap.Height);
+            return new MaterialTextTexture(texture.Id, texture);
+        });
+        var theme = new MaterialTheme(new Vector3(.3f, .7f, .4f), MaterialDensity.Compact);
+        const string status = "\u0939\u093F\u0928\u094D\u0926\u0940";
+        void Draw()
+        {
+            using var shaped = renderer.Push();
+            using var palette = MaterialTheme.Push(theme, 1, MaterialStyleMode.ColorsOnly);
+            ImGui.SetNextWindowSize(new Vector2(440, 180));
+            ImGui.Begin("Status shaping###status-shaped", ImGuiWindowFlags.NoSavedSettings);
+            var window = ImGuiP.GetCurrentWindow();
+            ImGui.End();
+            var first = window.DrawList.VtxBuffer.Size;
+            MaterialWindowHeader.PaintTitleWithStatus(window, "Plugin v1.0", default, Vector2.Zero,
+                new(status, status, status), 60, showCloseButton: false);
+            Assert.Contains(Enumerable.Range(0, window.DrawList.CmdBuffer.Size), index =>
+                window.DrawList.CmdBuffer[index].TextureId.Handle >= 2 && window.DrawList.CmdBuffer[index].ElemCount > 0);
+            var vertices = Enumerable.Range(first, window.DrawList.VtxBuffer.Size - first)
+                .Where(index => window.DrawList.VtxBuffer[index].Col == ImGui.GetColorU32(theme.Colors.OnSurfaceVariant)).ToArray();
+            Assert.Equal(4, vertices.Length);
+            var size = renderer.GetLayout(status, ImGui.GetFontSize()).Size;
+            Assert.True(size.X > 0);
+            Assert.All(vertices, index => Assert.True(window.DrawList.VtxBuffer[index].Pos.X < window.Pos.X + window.Size.X - 60));
+        }
+        host.Frame(Draw); host.Frame(Draw);
+    }
+
+    [Theory]
     [InlineData(MaterialDensity.Compact, 1f)]
     [InlineData(MaterialDensity.Standard, 1.5f)]
     public void AppearanceTitlebarEditorsWorkAfterEndWhileCollapsedAndRemainOwnerScoped(MaterialDensity density, float scale)

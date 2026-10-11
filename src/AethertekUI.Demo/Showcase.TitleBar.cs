@@ -31,6 +31,12 @@ internal sealed partial class Showcase
         public override void PostDraw()
         {
             motion.Restore(this);
+            var native = ImGuiP.FindWindowByName(WindowName);
+            if (!native.IsNull)
+                MaterialWindowHeader.PaintTitleWithStatus(native, "Appearance preview v0.3.0", default, Vector2.Zero,
+                    new("Ready - four manual appearance actions", "Ready",
+                        "Ready\nThe appearance editors reuse the Settings showcase values."),
+                    TitleBarButtons.Count * (ImGui.GetFontSize() + ImGui.GetStyle().ItemInnerSpacing.X));
             appearance.DrawPopups();
             opacity.Apply(WindowName, showcase.appearanceOpacity / 100f, showcase.appearanceTransparency,
                 showcase.appearanceFade, showcase.appearanceFadedOpacity / 100f, Math.Max(0, showcase.appearanceFadeDelay));

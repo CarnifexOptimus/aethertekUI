@@ -1,3 +1,4 @@
+using System.Globalization;
 using System.Numerics;
 using System.Runtime.InteropServices;
 using Dalamud.Bindings.ImGui;
@@ -5,12 +6,24 @@ using Dalamud.Bindings.ImGui;
 namespace AethertekUI;
 
 public readonly record struct MaterialHeaderAction(string Id,MaterialIcon Icon,string? Tooltip=null);
+public readonly record struct MaterialTitlebarStatus(string Text, string ShortText, string? Tooltip = null, Vector4? Color = null);
 
 public static class MaterialWindowHeader
 {
     /// <summary>Paint after native End and motion restore, before complete-window opacity. The host owns the texture.</summary>
     public static unsafe void PaintTitle(ImGuiWindowPtr window, string visibleTitle,
         ImTextureID texture, Vector2 textureSize, float extraRightWidth = 0, bool showCloseButton = true)
+        => PaintTitleCore(window, visibleTitle, texture, textureSize, null, extraRightWidth, showCloseButton);
+
+    /// <summary>Append one measured status line and a noninteractive title tooltip; consumers own its data and visibility.</summary>
+    public static unsafe void PaintTitleWithStatus(ImGuiWindowPtr window, string visibleTitle,
+        ImTextureID texture, Vector2 textureSize, MaterialTitlebarStatus status,
+        float extraRightWidth = 0, bool showCloseButton = true)
+        => PaintTitleCore(window, visibleTitle, texture, textureSize, status, extraRightWidth, showCloseButton);
+
+    private static unsafe void PaintTitleCore(ImGuiWindowPtr window, string visibleTitle,
+        ImTextureID texture, Vector2 textureSize, MaterialTitlebarStatus? status,
+        float extraRightWidth, bool showCloseButton)
     {
         if (window.IsNull || !window.Active || (window.Flags & ImGuiWindowFlags.NoTitleBar) != 0) return;
         var context = ImGui.GetCurrentContext();
@@ -39,7 +52,8 @@ public static class MaterialWindowHeader
             - ((showCloseButton ? 1 : 0) + (right ? 1 : 0)) * (fontSize + gap)
             - Math.Max(0, extraRightWidth), title.Max.Y);
         var list = window.DrawList;
-        var nativeTitle = MaterialNativeCaption.Visible(Marshal.PtrToStringUTF8((nint)window.Name) ?? string.Empty);
+        var nativeName = Marshal.PtrToStringUTF8((nint)window.Name) ?? string.Empty;
+        var nativeTitle = MaterialNativeCaption.Visible(nativeName);
         // Erase only native caption glyphs. Repainting a background would multiply alpha
         // and cover the retained rounded chrome or native/custom title controls.
         var paintFont = ImGui.GetFont();
@@ -57,14 +71,76 @@ public static class MaterialWindowHeader
             var iconMin = new Vector2(min.X, title.Min.Y + (title.Max.Y - title.Min.Y - fontSize) * .5f);
             MaterialCanvas.DrawImage(list, texture, textureSize, iconMin, iconMin + new Vector2(fontSize));
             var text = MaterialNativeCaption.Visible(visibleTitle);
-            var size = MaterialNativeCaption.IsShaped(text)
-                ? MaterialTextRenderer.Current!.GetLayout(text, fontSize).Size
-                : ImGui.CalcTextSize(text) * (fontSize / ImGui.GetFontSize());
+            var size = MeasureTitleText(text, fontSize);
             MaterialText.AddText(list, ImGui.GetFont(), fontSize,
                 new Vector2(min.X + fontSize + gap, title.Min.Y + (title.Max.Y - title.Min.Y - size.Y) * .5f),
                 ImGui.GetColorU32(ImGuiCol.Text), text);
+            if (status is { } summary && !string.IsNullOrWhiteSpace(summary.Text))
+            {
+                var radius = fontSize * .13f;
+                var start = min.X + fontSize + gap + size.X + 2 * gap;
+                var textX = start + 2 * radius + gap;
+                var selected = FitTitleStatus(summary, Math.Max(0, max.X - textX), fontSize);
+                if (selected is not null)
+                {
+                    list.AddCircleFilled(new Vector2(start + radius, (title.Min.Y + title.Max.Y) * .5f),
+                        radius, ImGui.GetColorU32(summary.Color ?? MaterialTheme.Current.Colors.Primary));
+                    var statusSize = MeasureTitleText(selected, fontSize);
+                    MaterialText.AddText(list, ImGui.GetFont(), fontSize,
+                        new Vector2(textX, title.Min.Y + (title.Max.Y - title.Min.Y - statusSize.Y) * .5f),
+                        ImGui.GetColorU32(MaterialTheme.Current.Colors.OnSurfaceVariant), selected);
+                }
+            }
         }
         finally { list.PopClipRect(); }
+        if (status is { } tooltipStatus)
+        {
+            var tooltip = string.IsNullOrWhiteSpace(tooltipStatus.Tooltip) ? tooltipStatus.Text : tooltipStatus.Tooltip;
+            if (!string.IsNullOrWhiteSpace(tooltip) && context.HoveredWindow == window &&
+                (context.HoveredId == 0 || context.HoveredId == window.MoveId) &&
+                ImGui.IsMouseHoveringRect(min, max, false) && !ImGui.IsMouseDown(ImGuiMouseButton.Left))
+            {
+                // Keep tooltip ancestry inside the existing owner opacity tree,
+                // without adding an item or replacing native title hit regions.
+                var lastItem = context.LastItemData;
+                ImGui.Begin(nativeName, window.Flags);
+                try { MaterialText.SetTooltip(tooltip); }
+                finally
+                {
+                    ImGui.End();
+                    context.Handle->LastItemData = lastItem;
+                }
+            }
+        }
+    }
+
+    private static Vector2 MeasureTitleText(string text, float fontSize)
+        => MaterialNativeCaption.IsShaped(text)
+            ? MaterialTextRenderer.Current!.GetLayout(text, fontSize).Size
+            : ImGui.CalcTextSize(text) * (fontSize / ImGui.GetFontSize());
+
+    private static string? FitTitleStatus(MaterialTitlebarStatus status, float width, float fontSize)
+    {
+        var full = OneLine(status.Text);
+        if (MeasureTitleText(full, fontSize).X <= width) return full;
+        var shortText = string.IsNullOrWhiteSpace(status.ShortText) ? full : OneLine(status.ShortText);
+        if (MeasureTitleText(shortText, fontSize).X <= width) return shortText;
+        const string ellipsis = "...";
+        var boundaries = StringInfo.ParseCombiningCharacters(shortText);
+        var low = 0;
+        var high = boundaries.Length;
+        while (low < high)
+        {
+            var middle = (low + high + 1) / 2;
+            var end = middle == boundaries.Length ? shortText.Length : boundaries[middle];
+            if (MeasureTitleText(shortText[..end] + ellipsis, fontSize).X <= width) low = middle;
+            else high = middle - 1;
+        }
+        if (low == 0) return null;
+        var length = low == boundaries.Length ? shortText.Length : boundaries[low];
+        return shortText[..length] + ellipsis;
+
+        static string OneLine(string value) => value.Replace('\r', ' ').Replace('\n', ' ').Trim();
     }
 
     /// <returns>Index of the activated action, or -1.</returns>

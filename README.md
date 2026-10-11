@@ -54,6 +54,16 @@ collapsed frames; a central host can call it consistently after WindowSystem.Dra
 Original custom descriptors and priorities are retained. The Sizing lab's
 appearance preview demonstrates the shared Settings values in a native titlebar.
 
+`MaterialWindowHeader.PaintTitleWithStatus` adds an optional one-line status to
+the same retained title painter. Supply a `MaterialTitlebarStatus` with full and
+short text, complete hover details and an optional semantic dot colour. The
+icon/title/version keep their space first; the remaining width selects full text,
+short text or a grapheme-safe ellipsis, omitting the status when it cannot fit.
+Hover details remain available on the non-button title area while collapsed.
+Call after native End and motion restore, before opacity, with the existing
+custom-button reservation. Consumers own status data and saved visibility/detail
+preferences; `PaintTitle` retains its original signature and behavior.
+
 ## Repository
 
 ```text
@@ -230,6 +240,11 @@ for later selected plugin integrations. See [known limitations](docs/KNOWN_LIMIT
 and the [smoke-test guide](docs/PROTOTYPE_SMOKE_TEST.md).
 
 ## Evolution and provenance
+
+2026-10-11: extend the existing retained title painter with optional measured
+status and full hover details. Keep title/icon/version priority, native geometry
+and action hit regions; support clipped/collapsed titles and the existing shaped
+text and complete-window opacity routes. Version remains 0.3.0.
 
 2026-10-11: add four manual appearance titlebar actions to the optional adapter,
 retaining consumer settings, main-window visibility flags and existing native

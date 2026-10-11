@@ -235,6 +235,26 @@ successful build alone does not establish visual fidelity or game acceptance.
 
 ## Native titlebar actions
 
+For the approved one-line status rollout, use the separately named
+`MaterialWindowHeader.PaintTitleWithStatus(window, visibleTitle, texture,
+textureSize, status, extraRightWidth, showCloseButton)`. Its
+`MaterialTitlebarStatus(Text, ShortText, Tooltip, Color)` is in `AethertekUI`.
+Keep the original `PaintTitle` signature for existing/reflected callers and use
+it when the consumer's Show titlebar status preference is off. Consumers own the
+approved saved Show/Detailed preferences, translations and existing runtime data;
+do not add collection, synchronization or new counters for presentation fields.
+
+The shared painter retains icon/title/version first, then a semantic dot and
+quieter measured status in the existing remaining rectangle. Full text gives way
+to ShortText, then a grapheme-safe ellipsis; no meaningful fit emits no status ink.
+The existing shaped-text scope applies to measurements and rendering. Supply
+complete localized tooltip details even when the title text is concise or clipped.
+Hovering the non-button title region shows those details while expanded or
+collapsed without an item/hit ID. Only for that tooltip, a balanced second owner
+Begin/End retains native ancestry for the existing opacity pass. Preserve the
+after-End/motion-restore/before-opacity lifecycle and existing action reservations;
+do not grow the window or move its native title controls.
+
 For the approved four-action appearance rollout, reuse
 `AethertekUI.Dalamud.MaterialAppearanceTitleBar.Register(window, labels,
 drawLanguage, toggleCompact, drawTransparency, drawColour, visibility)`.
