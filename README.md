@@ -42,6 +42,18 @@ complete groups at narrow widths. `MaterialAppearanceSelector.DrawPalette` suppl
 inline colour swatches; the Settings showcase demonstrates the layout. Existing
 configuration, native identities and save behavior stay with the consumer.
 
+`MaterialAppearanceTitleBar.Register` adds separate Language, Compact,
+Transparency and Colour actions to a Dalamud window. Register once after its
+existing title actions, supplying translated labels and the existing editor/save
+callbacks. Compact calls the existing toggle immediately; the other actions open
+manual popups. Pass existing main-window visibility flags through the optional
+`MaterialAppearanceTitleBarVisibility` callback and call `RefreshVisibility()`
+before native Begin. Auxiliary windows can omit that callback to show all four.
+Call `DrawPopups()` after End and motion restore, before opacity, including
+collapsed frames; a central host can call it consistently after WindowSystem.Draw.
+Original custom descriptors and priorities are retained. The Sizing lab's
+appearance preview demonstrates the shared Settings values in a native titlebar.
+
 ## Repository
 
 ```text
@@ -218,6 +230,12 @@ for later selected plugin integrations. See [known limitations](docs/KNOWN_LIMIT
 and the [smoke-test guide](docs/PROTOTYPE_SMOKE_TEST.md).
 
 ## Evolution and provenance
+
+2026-10-11: add four manual appearance titlebar actions to the optional adapter,
+retaining consumer settings, main-window visibility flags and existing native
+actions. The native preview and independent popup tests cover collapsed editors,
+owner isolation and visibility restoration. Library version remains 0.3.0;
+host icon rendering and game acceptance require separate verification.
 
 2026-10-09: carry the approved ADS Rules grid into `MaterialTable.PushTightRows()`
 and the Sizing lab. Existing table defaults and editor dimensions are retained;

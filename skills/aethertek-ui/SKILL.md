@@ -235,6 +235,39 @@ successful build alone does not establish visual fidelity or game acceptance.
 
 ## Native titlebar actions
 
+For the approved four-action appearance rollout, reuse
+`AethertekUI.Dalamud.MaterialAppearanceTitleBar.Register(window, labels,
+drawLanguage, toggleCompact, drawTransparency, drawColour, visibility)`.
+Own the returned adapter per existing Window and register once after the owner's
+other title actions. Supply translated `MaterialAppearanceTitleBarLabels` and
+existing editor/save callbacks; Compact toggles the existing setting immediately.
+Language, Transparency and Colour are separate manual popups. Move the selected
+main-header shortcuts into these actions while retaining the grouped Appearance
+tab and existing account/profile persistence. Do not introduce another preference.
+
+Pass existing main-window visibility flags with the optional
+`Func<MaterialAppearanceTitleBarVisibility>` callback; Colour defaults true when
+the three existing flags are supplied. Auxiliary windows omit the callback to
+show all four. Call `RefreshVisibility()` before native Begin so hidden controls
+do not reserve title space. Four descriptors are created once and reused; refresh
+only attaches/removes those descriptors, preserving original custom descriptors,
+priorities and relative native indices. The current host sorts priorities
+descending before assigning IDs; new appearance priorities sit below the
+existing minimum. The endpoint XML's contrary priority description is not the
+current rendering contract.
+
+Call `DrawPopups()` after native End and motion restore, before complete-window
+opacity, including collapsed frames. A central host may instead call it after
+`WindowSystem.Draw`, consistently in that same ID scope every frame. Popup IDs
+include the owner's WindowName/hidden identity, and pending opens are consumed
+before drawing. Only while opening/showing a popup, the adapter enters a second
+balanced owner Begin/End with no body or decoration draws. This native parent
+scope keeps popup focus and meshes in the owner's existing opacity tree, including
+collapsed owners. Preserve the current title repaint, motion and opacity lifecycle.
+Verify original custom indices through main visibility changes, left-click-only
+actions, collapsed native popup edits and save paths. Native popup interaction
+tests do not prove managed IconFont rendering or consumer/game acceptance.
+
 For a selected Dalamud titlebar rollout, register fixed `Window.TitleBarButtons`
 once on the existing window owner. Preserve existing registrations and their
 priority order: the native host derives custom-button IDs from that order.

@@ -33,6 +33,8 @@ internal sealed partial class Showcase
     {
         prepareWindowDecorations = windowDecorations.Prepare;
         prepareShowcaseDecorations = showcaseDecorations.Prepare;
+        appearanceWindow = new(this);
+        appearanceWindows.AddWindow(appearanceWindow);
     }
     private string notice="Ready. All actions use mock state.";
     private static readonly string[] Pages=["Gallery","Automation","Gathering data","Dashboard","Settings","List editor","Large catalog","Sizing lab"];
@@ -46,7 +48,7 @@ internal sealed partial class Showcase
 
     public void Draw(float globalScale = 1)
     {
-        if(!IsOpen&&!overlayOpen&&!windowMotionOpen&&!HindiPreviewOpen) return;
+        if(!IsOpen&&!overlayOpen&&!windowMotionOpen&&!HindiPreviewOpen&&!appearanceWindow.IsOpen) return;
         // The theme scope wraps Begin/End, so it also styles the outer window.
         using var scope=MaterialTheme.Push(theme,globalScale,MaterialStyleMode.Material);
         using var chrome=MaterialWindowChrome.Push();
@@ -109,6 +111,7 @@ internal sealed partial class Showcase
         if(overlayOpen) DrawOverlay();
         if(windowMotionOpen) DrawWindowMotion();
         if(HindiPreviewOpen) DrawHindiPreview();
+        if (appearanceWindow.IsOpen) appearanceWindows.Draw();
     }
     private void DrawWindowMotion()
     {

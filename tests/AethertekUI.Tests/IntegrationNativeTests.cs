@@ -1,11 +1,217 @@
 using System.Numerics;
+using AethertekUI.Dalamud;
 using Dalamud.Bindings.ImGui;
+using Dalamud.Interface;
+using Dalamud.Interface.Windowing;
 using Xunit;
 
 namespace AethertekUI.Tests;
 
 public unsafe class IntegrationNativeTests
 {
+    [Theory]
+    [InlineData(MaterialDensity.Compact, 1f)]
+    [InlineData(MaterialDensity.Standard, 1.5f)]
+    public void AppearanceTitlebarEditorsWorkAfterEndWhileCollapsedAndRemainOwnerScoped(MaterialDensity density, float scale)
+    {
+        using var host = new NativeTestContext((int)(1000 * scale), (int)(600 * scale), scale);
+        var theme = new MaterialTheme(new Vector3(.3f, .7f, .4f), density);
+        var first = new AppearanceProbeWindow("First###appearance-first") { IsOpen = true };
+        var second = new AppearanceProbeWindow("Second###appearance-second") { IsOpen = true };
+        var saves = new int[2];
+        var compact = 0;
+        var rendered = new int[2];
+        var centers = new Vector2[2];
+        var popups = new ImGuiWindowPtr[2];
+        var fade = new MaterialWindowOpacity();
+        var focusCheck = false;
+        var labels = new MaterialAppearanceTitleBarLabels("Language", "Compact", "Transparency", "Colour");
+        var firstActions = MaterialAppearanceTitleBar.Register(first, () => labels,
+            () => Editor(0), () => compact++, () => Editor(0), () => Editor(0));
+        var secondActions = MaterialAppearanceTitleBar.Register(second, () => labels,
+            () => Editor(1), () => compact++, () => Editor(1), () => Editor(1));
+
+        void Editor(int owner)
+        {
+            rendered[owner]++;
+            popups[owner] = ImGuiP.GetCurrentWindow();
+            Assert.Equal(ImGuiP.FindWindowByName(owner == 0 ? first.WindowName : second.WindowName),
+                popups[owner].ParentWindowInBeginStack);
+            if (ImGui.Button("Save existing preference")) { saves[owner]++; ImGui.CloseCurrentPopup(); }
+            centers[owner] = (ImGui.GetItemRectMin() + ImGui.GetItemRectMax()) * .5f;
+        }
+
+        void Draw()
+        {
+            using var palette = MaterialTheme.Push(theme, scale, MaterialStyleMode.ColorsOnly);
+            ImGui.SetNextWindowPos(new Vector2(20, 20) * scale, ImGuiCond.FirstUseEver);
+            ImGui.SetNextWindowSize(new Vector2(400, 200) * scale, ImGuiCond.FirstUseEver);
+            ImGui.SetNextWindowCollapsed(true);
+            ImGui.Begin(first.WindowName, ImGuiWindowFlags.NoSavedSettings);
+            ImGui.End();
+            var firstNative = ImGuiP.FindWindowByName(first.WindowName);
+            var rootVertices = firstNative.DrawList.VtxBuffer.Size;
+            firstActions.DrawPopups();
+            Assert.Equal(rootVertices, firstNative.DrawList.VtxBuffer.Size);
+            var popup = popups[0];
+            var alphas = !popup.IsNull && popup.LastFrameActive == ImGui.GetFrameCount()
+                ? Enumerable.Range(0, popup.DrawList.VtxBuffer.Size).Select(index => popup.DrawList.VtxBuffer[index].Col >> 24).ToArray()
+                : [];
+            fade.Apply(first.WindowName, focusCheck ? 1 : .5f, autoFade: focusCheck,
+                fadedOpacity: .2f, unfocusedDelaySeconds: 0, reducedMotion: true);
+            if (!focusCheck)
+                for (var index = 0; index < alphas.Length; index++)
+                    Assert.Equal((uint)MathF.Round(alphas[index] * .5f), popup.DrawList.VtxBuffer[index].Col >> 24);
+            ImGui.SetNextWindowPos(new Vector2(500, 20) * scale, ImGuiCond.FirstUseEver);
+            ImGui.SetNextWindowSize(new Vector2(400, 200) * scale, ImGuiCond.FirstUseEver);
+            ImGui.Begin(second.WindowName, ImGuiWindowFlags.NoSavedSettings);
+            ImGui.End();
+            secondActions.DrawPopups();
+        }
+
+        host.Frame(Draw); host.Frame(Draw);
+        var native = ImGuiP.FindWindowByName(first.WindowName);
+        var originalId = native.ID;
+        var originalSize = native.SizeFull;
+        first.TitleBarButtons[0].Click!(ImGuiMouseButton.Right);
+        host.Frame(Draw);
+        Assert.Equal(new[] { 0, 0 }, rendered);
+        first.TitleBarButtons[1].Click!(ImGuiMouseButton.Right);
+        Assert.Equal(0, compact);
+        first.TitleBarButtons[1].Click!(ImGuiMouseButton.Left);
+        Assert.Equal(1, compact);
+
+        // The descriptor selects the editor; native pointer presses verify its
+        // after-End popup and save/close path. Managed icon rendering is separate.
+        first.TitleBarButtons[0].Click!(ImGuiMouseButton.Left);
+        host.Frame(Draw); host.Frame(Draw);
+        Assert.True(rendered[0] > 0);
+        Assert.Equal(0, rendered[1]);
+        focusCheck = true;
+        host.Frame(Draw);
+        Assert.Equal(1, fade.CurrentOpacity);
+        host.Click(centers[0], Draw);
+        Assert.Equal(new[] { 1, 0 }, saves);
+        Assert.True(native.Collapsed);
+        Assert.Equal(originalId, native.ID);
+        Assert.Equal(originalSize, native.SizeFull);
+
+        foreach (var buttonIndex in new[] { 2, 3 })
+        {
+            first.TitleBarButtons[buttonIndex].Click!(ImGuiMouseButton.Left);
+            host.Frame(Draw); host.Frame(Draw);
+            host.Click(centers[0], Draw);
+        }
+        Assert.Equal(new[] { 3, 0 }, saves);
+
+        second.TitleBarButtons[0].Click!(ImGuiMouseButton.Left);
+        host.Frame(Draw); host.Frame(Draw);
+        host.Click(centers[1], Draw);
+        Assert.Equal(new[] { 3, 1 }, saves);
+        Assert.True(native.Collapsed);
+    }
+
+    [Fact]
+    public void AppearanceRegistrationRetainsExistingNativePriorityOrderAndDescriptors()
+    {
+        var window = new AppearanceProbeWindow("Existing title actions###appearance-order");
+        var original = new[]
+        {
+            new TitleBarButton { Icon = FontAwesomeIcon.PowerOff, Priority = 3 },
+            new TitleBarButton { Icon = FontAwesomeIcon.Cog, Priority = -2 },
+        };
+        window.TitleBarButtons.AddRange(original);
+        var visible = new MaterialAppearanceTitleBarVisibility(true, true, true, true);
+        var appearance = MaterialAppearanceTitleBar.Register(window, () => new("Language", "Compact", "Transparency", "Colour"),
+            () => { }, () => { }, () => { }, () => { }, () => visible);
+        var hostOrder = window.TitleBarButtons.OrderByDescending(button => button.Priority).ToArray();
+        Assert.Same(original[0], hostOrder[0]);
+        Assert.Same(original[1], hostOrder[1]);
+        Assert.Equal(new[] { FontAwesomeIcon.Language, FontAwesomeIcon.CompressAlt, FontAwesomeIcon.Adjust, FontAwesomeIcon.Palette },
+            hostOrder.Skip(2).Select(button => button.Icon));
+        Assert.Equal(3, original[0].Priority);
+        Assert.Equal(-2, original[1].Priority);
+        var fixedDescriptors = hostOrder.Skip(2).ToArray();
+        visible = new(true, false, false, true);
+        appearance.RefreshVisibility();
+        Assert.Equal(4, window.TitleBarButtons.Count);
+        Assert.Same(original[0], window.TitleBarButtons[0]);
+        Assert.Same(original[1], window.TitleBarButtons[1]);
+        Assert.Same(fixedDescriptors[0], window.TitleBarButtons[2]);
+        Assert.Same(fixedDescriptors[3], window.TitleBarButtons[3]);
+        visible = new(true, true, true, true);
+        appearance.RefreshVisibility();
+        appearance.RefreshVisibility();
+        hostOrder = window.TitleBarButtons.OrderByDescending(button => button.Priority).ToArray();
+        Assert.Equal(6, hostOrder.Length);
+        Assert.Same(original[0], hostOrder[0]);
+        Assert.Same(original[1], hostOrder[1]);
+        Assert.Equal(fixedDescriptors, hostOrder.Skip(2));
+    }
+
+    private sealed class AppearanceProbeWindow(string name) : Window(name)
+    {
+        public override void Draw() { }
+    }
+
+    [Theory]
+    [InlineData(240, 0f, 1f, false)]
+    [InlineData(350, .5f, 1f, true)]
+    [InlineData(500, 1f, 1f, false)]
+    [InlineData(240, 0f, 1.5f, true)]
+    [InlineData(350, .5f, 1.5f, false)]
+    [InlineData(500, 1f, 1.5f, true)]
+    public void RepaintedClippedTitleMatchesAnInitiallyTransparentNativeCaption(int width, float alignment, float scale, bool collapsed)
+    {
+        using var host = new NativeTestContext((int)(800 * scale), (int)(500 * scale), scale);
+        var paintFont = ImGui.GetIO().Fonts.AddFontDefault();
+        paintFont.Scale = 1.65f;
+        host.RefreshAtlas();
+        ImGui.GetIO().Fonts.SetTexID(0, new ImTextureID((nint)1));
+        var theme = new MaterialTheme(new Vector3(.3f, .7f, .4f), MaterialDensity.Compact);
+        const string name = "MOGTOME v3.0.0.8 | A long native caption clipped by the retained window###clipped-title";
+        var hideNative = false;
+        Vector2 min = default, max = default;
+        void Draw()
+        {
+            using var palette = MaterialTheme.Push(theme, scale, MaterialStyleMode.ColorsOnly);
+            ImGui.PushStyleVar(ImGuiStyleVar.WindowTitleAlign, new Vector2(alignment, .5f));
+            ImGui.GetStyle().WindowMenuButtonPosition = ImGuiDir.Right;
+            ImGui.SetNextWindowPos(new Vector2(30, 30) * scale);
+            ImGui.SetNextWindowSize(new Vector2(width, 200) * scale);
+            ImGui.SetNextWindowCollapsed(collapsed);
+            if (hideNative) ImGui.PushStyleColor(ImGuiCol.Text, Vector4.Zero);
+            var open = true;
+            ImGui.Begin(name, ref open, ImGuiWindowFlags.NoSavedSettings);
+            var window = ImGuiP.GetCurrentWindow();
+            var title = ImGuiP.TitleBarRect(window);
+            var fontSize = ImGui.GetFontSize();
+            min = title.Min + new Vector2(window.WindowBorderSize + ImGui.GetStyle().FramePadding.X, 1);
+            max = title.Max - new Vector2(window.WindowBorderSize + ImGui.GetStyle().FramePadding.X
+                + 2 * (fontSize + ImGui.GetStyle().ItemInnerSpacing.X), 1);
+            ImGui.End();
+            if (hideNative) ImGui.PopStyleColor();
+            ImGui.PushFont(paintFont);
+            try { MaterialWindowHeader.PaintTitle(window, "MOGTOME v3.0.0.8", default, Vector2.Zero, 180 * scale); }
+            finally { ImGui.PopFont(); }
+            ImGui.PopStyleVar();
+        }
+        host.Frame(Draw); host.Frame(Draw);
+        var actual = SoftwarePreview.Capture(host);
+        hideNative = true;
+        host.Frame(Draw);
+        var expected = SoftwarePreview.Capture(host);
+        // Compare the real rendered caption area while retaining native actions.
+        // This detects clipped glyph remnants, including borrowed-font repaints.
+        for (var y = (int)MathF.Ceiling(min.Y); y < (int)MathF.Floor(max.Y); y++)
+        for (var x = (int)MathF.Ceiling(min.X); x < (int)MathF.Floor(max.X); x++)
+        for (var channel = 0; channel < 4; channel++)
+        {
+            var offset = (y * actual.Width + x) * 4 + channel;
+            Assert.InRange(Math.Abs(actual.Rgba[offset] - expected.Rgba[offset]), 0, 2);
+        }
+    }
+
     [Theory]
     [InlineData(MaterialDensity.Compact, 1f, false)]
     [InlineData(MaterialDensity.Compact, 1.25f, true)]

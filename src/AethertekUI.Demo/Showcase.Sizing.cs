@@ -102,6 +102,7 @@ internal sealed partial class Showcase
         AppearanceExamples();
         MaterialStatus.SectionHeader("WINDOW MOTION");
         if(MaterialButton.FilledTonalButton("show-window-motion","Preview minimize and restore"))windowMotionOpen=true;
+        if(MaterialButton.FilledTonalButton("show-appearance-titlebar","Preview appearance titlebar"))appearanceWindow.IsOpen=true;
     }
 
     internal void AppearanceExamples()
