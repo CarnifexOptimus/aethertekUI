@@ -10,6 +10,23 @@ namespace ConsumerContract;
 /// <summary>Compiles against project references AND packages. No GBR source or services.</summary>
 public sealed class ConsumerUi : IDisposable
 {
+    // Repaint only the external label: the native editor keeps its original ID and user text.
+    public static bool DrawTranslatedNativeCount(string nativeLabel, string caption, ref int value)
+    {
+        var list = ImGui.GetWindowDrawList();
+        var first = list.VtxBuffer.Size;
+        var font = ImGui.GetFont();
+        var origin = ImGui.GetCursorScreenPos();
+        var width = ImGui.CalcItemWidth();
+        using var height = MaterialText.PushLineHeight(caption);
+        var changed = ImGui.InputInt(nativeLabel, ref value);
+        var min = origin + new Vector2(width + ImGui.GetStyle().ItemInnerSpacing.X, 0);
+        var max = new Vector2(Math.Max(ImGui.GetItemRectMax().X, min.X + MaterialText.Measure(caption).X), ImGui.GetItemRectMax().Y);
+        MaterialText.ReplaceNativeCaption(list, first, font, nativeLabel, min, max,
+            min + new Vector2(0, (max.Y - min.Y - MaterialText.Measure(caption).Y) * .5f),
+            caption, ImGui.GetColorU32(ImGuiCol.Text));
+        return changed;
+    }
     // A consumer stores these using its own existing configuration, and supplies localized labels/options.
     public static MaterialAppearanceChange DrawAppearance(ImFontPtr borrowedFont, ref Vector3 accentDraft, ref string language,
         MaterialOptions<string> languages, MaterialAppearanceLabels labels, Action<Vector3,string> save)

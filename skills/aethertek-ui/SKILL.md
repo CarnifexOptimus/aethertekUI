@@ -718,6 +718,11 @@ through shaping before excluding its glyphs from atlas validation.
 
 For retained native wrappers, `MaterialText.BeginCombo` and `Selectable` preserve
 their supplied native labels/IDs, arrows and popup lifecycle. Raw
+`MaterialText.ReplaceNativeCaption` repaints a consumer's retained native label
+after submission. Capture the starting vertex and font before the control, and
+pass only its caption bounds; an editor's value rectangle must stay outside those
+bounds, even when the value contains the same glyphs as its label. The sizing lab
+and independent consumer demonstrate this separate external-caption route.
 `MaterialText.TreeNode`/`TableHeader` preserve the existing identity root and accept
 an optional shaped display caption while retaining the original native label.
 Keep caller-owned `TreePop` and reserve shaped table-header row height before

@@ -74,6 +74,19 @@ internal sealed partial class Showcase
         var editorMinimum=ImGui.CalcTextSize("00000").X+2*ImGui.GetStyle().FramePadding.X;
         ImGui.SetNextItemWidth(MaterialLayout.FitNextItemWidth(0,editorMinimum));
         ImGui.InputInt("##readable-native-number",ref sizingNumber,0);
+        ImGui.SetNextItemWidth(120 * MaterialTheme.Metrics.Scale);
+        var captionList = ImGui.GetWindowDrawList();
+        var captionFirst = captionList.VtxBuffer.Size;
+        var captionFont = ImGui.GetFont();
+        var captionOrigin = ImGui.GetCursorScreenPos();
+        var captionWidth = ImGui.CalcItemWidth();
+        ImGui.InputInt("Count##retained-caption-demo", ref sizingNumber);
+        const string translatedCount = "Translated count";
+        var captionMin = captionOrigin + new Vector2(captionWidth + ImGui.GetStyle().ItemInnerSpacing.X, 0);
+        var captionMax = new Vector2(captionMin.X + MaterialText.Measure(translatedCount).X, ImGui.GetItemRectMax().Y);
+        MaterialText.ReplaceNativeCaption(captionList, captionFirst, captionFont, "Count##retained-caption-demo",
+            captionMin, captionMax, captionMin + new Vector2(0, ImGui.GetStyle().FramePadding.Y),
+            translatedCount, ImGui.GetColorU32(ImGuiCol.Text));
         MaterialStatus.SectionHeader("COMPACT PLUGIN TOOLBAR");
         using(var controls=MaterialControls.Push(MaterialControlContext.Toolbar))
         {

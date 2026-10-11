@@ -5,6 +5,22 @@ namespace AethertekUI;
 
 public static partial class MaterialText
 {
+    /// <summary>Replace only a retained native widget's caption, keeping its identity and decoration.</summary>
+    public static void ReplaceNativeCaption(ImDrawListPtr list, int firstVertex, ImFontPtr nativeFont,
+        string nativeLabel, Vector2 boundsMin, Vector2 boundsMax, Vector2 textPosition,
+        string display, uint color)
+    {
+        ArgumentNullException.ThrowIfNull(nativeLabel);
+        ArgumentNullException.ThrowIfNull(display);
+        if (firstVertex < 0 || firstVertex > list.VtxBuffer.Size)
+            throw new ArgumentOutOfRangeException(nameof(firstVertex));
+        MaterialNativeCaption.HideGlyphs(list, firstVertex, nativeFont,
+            MaterialNativeCaption.Visible(nativeLabel), boundsMin, boundsMax);
+        list.PushClipRect(boundsMin, boundsMax, true);
+        try { AddText(list, textPosition, color, display); }
+        finally { list.PopClipRect(); }
+    }
+
     /// <summary>Reserves natural shaped line height without changing widths or native IDs.</summary>
     public static MaterialStyleScope PushLineHeight(params string[] text)
     {

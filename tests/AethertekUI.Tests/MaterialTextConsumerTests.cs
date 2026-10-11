@@ -7,6 +7,46 @@ namespace AethertekUI.Tests;
 public unsafe class MaterialTextConsumerTests
 {
     [Fact]
+    public void CaptionReplacementPreservesNativeEditorIdentityAndIdenticalUserGlyphs()
+    {
+        using var host = new NativeTestContext();
+        var value = "Name";
+        host.Frame(() =>
+        {
+            ImGui.SetNextWindowSize(new(600, 200));
+            ImGui.Begin("Caption bounds", ImGuiWindowFlags.NoSavedSettings);
+            ImGui.SetNextItemWidth(180);
+            var list = ImGui.GetWindowDrawList();
+            var first = list.VtxBuffer.Size;
+            var font = ImGui.GetFont();
+            var origin = ImGui.GetCursorScreenPos();
+            var width = ImGui.CalcItemWidth();
+            var expectedId = ImGui.GetID("Name##retained-editor");
+            ImGui.InputText("Name##retained-editor", ref value, 100);
+            Assert.Equal(expectedId, ImGui.GetCurrentContext().LastItemData.ID);
+            var original = Enumerable.Range(first, list.VtxBuffer.Size - first)
+                .Select(index => list.VtxBuffer[index]).ToArray();
+            var captionMin = origin + new Vector2(width + ImGui.GetStyle().ItemInnerSpacing.X, 0);
+            var captionMax = new Vector2(captionMin.X + MaterialText.Measure("Translated name").X, ImGui.GetItemRectMax().Y);
+            MaterialText.ReplaceNativeCaption(list, first, font, "Name##retained-editor", captionMin, captionMax,
+                captionMin + new Vector2(0, ImGui.GetStyle().FramePadding.Y), "Translated name", ImGui.GetColorU32(ImGuiCol.Text));
+            var changedCaptionVertices = 0;
+            for (var index = 0; index < original.Length; index++)
+            {
+                var current = list.VtxBuffer[first + index];
+                Assert.Equal(original[index].Pos, current.Pos);
+                Assert.Equal(original[index].Uv, current.Uv);
+                if (original[index].Pos.X < captionMin.X) Assert.Equal(original[index].Col, current.Col);
+                else if (original[index].Col != current.Col) changedCaptionVertices++;
+            }
+            Assert.True(changedCaptionVertices > 0);
+            Assert.Equal("Name", value);
+            Assert.Equal(expectedId, ImGui.GetCurrentContext().LastItemData.ID);
+            Assert.Equal(font, ImGui.GetFont());
+            ImGui.End();
+        });
+    }
+    [Fact]
     public void MissingRequestedFamilyUsesNativeHindiFallbackAndKeepsGlyphValidation()
     {
         using var layout = new MaterialTextLayout("\u0915\u094d\u0937\u0947\u0924\u094d\u0930", 32,
