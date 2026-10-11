@@ -9,11 +9,12 @@ optional adapter integrates with Dalamud API 15 hosts.
 The optional adapter's stateless `XaItemOwnership` decoder reads current-character
 XADB item responses (versions 1/2) and recorded armoire/dresser responses (version
 1). ADS and MOGTOME retain their IPC subscriptions and native game checks. The
-decoder supplies valid positive ownership; empty or incomplete storage cannot
-establish absence. `QueryStates` returns explicit Owned/Unknown results for every
-requested item. `Resolve` combines native and storage truth; Missing requires
-confirmed absence from both. No supported producer response currently certifies
-complete storage absence. It owns no cache, retry, configuration or game action.
+decoder supplies current-character recorded ownership without expiring older
+copies. `QueryStates` returns Owned for recorded copies and Missing otherwise,
+including unrecorded or unavailable storage; a missing current-character identity
+stays Unknown. Operators are responsible for opening storage and refreshing XADB.
+`Resolve` gives native inventory/registration and recorded copies precedence over
+Missing. It owns no cache, retry, configuration or game action.
 
 `MaterialWindowOpacity` fades an owned window's complete native and custom
 content after its final End, with a focus delay and consumer-owned preferences.

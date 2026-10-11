@@ -1,4 +1,3 @@
-using System.Globalization;
 using System.Text.Json;
 
 namespace AethertekUI.Dalamud;
@@ -6,28 +5,26 @@ namespace AethertekUI.Dalamud;
 public enum XaItemOwnershipState { Unknown, Owned, Missing }
 
 /// <summary>
-/// Reads positive, current-character XADB ownership evidence. An absent result is
-/// unknown: the item API does not certify that all storage has been recorded.
+/// Reads current-character XADB ownership from the last recorded storage data.
+/// Items without a recorded or native copy are treated as missing. Operators
+/// are responsible for opening storage and refreshing its recorded contents.
 /// Consumers own IPC subscriptions, native inventory and registration checks.
 /// </summary>
 public static class XaItemOwnership
 {
     private const int MaximumResponseLength = 4 * 1024 * 1024;
-    // XADB's current SnapshotQualityResolver considers snapshots stale at 60 minutes.
-    private static readonly TimeSpan SnapshotLifetime = TimeSpan.FromMinutes(60);
-
     public static Dictionary<uint, XaItemOwnershipState> QueryStates(Func<string, string> searchItems,
         Func<string, string> searchStorage, IEnumerable<uint> itemIds, ulong currentContentId, DateTimeOffset now)
     {
         var requested = itemIds.Where(id => id != 0).ToHashSet();
         var owned = Query(searchItems, searchStorage, requested, currentContentId, now);
-        // The supported producer contracts certify positives, never complete absence.
-        return requested.ToDictionary(id => id, id => owned.Contains(id) ? XaItemOwnershipState.Owned : XaItemOwnershipState.Unknown);
+        return requested.ToDictionary(id => id, id => owned.Contains(id) ? XaItemOwnershipState.Owned
+            : currentContentId != 0 ? XaItemOwnershipState.Missing : XaItemOwnershipState.Unknown);
     }
 
     public static XaItemOwnershipState Resolve(bool nativeOwned, bool nativeAbsenceKnown, XaItemOwnershipState storage)
         => nativeOwned || storage == XaItemOwnershipState.Owned ? XaItemOwnershipState.Owned
-            : nativeAbsenceKnown && storage == XaItemOwnershipState.Missing ? XaItemOwnershipState.Missing
+            : storage == XaItemOwnershipState.Missing ? XaItemOwnershipState.Missing
             : XaItemOwnershipState.Unknown;
 
     public static HashSet<uint> Query(Func<string, string> searchItems, Func<string, string> searchStorage,
@@ -71,9 +68,7 @@ public static class XaItemOwnership
                 if (!Number(row, "itemId", out var itemId) || itemId > uint.MaxValue || !requested.Contains((uint)itemId) ||
                     !Number(row, "ownerContentId", out var rowOwner) || rowOwner != currentContentId ||
                     !Number(row, "quantity", out var quantity) || quantity == 0 ||
-                    Text(row, "source") is not ("inventory" or "retainer" or "armoire" or "glamourDresser") ||
-                    Text(row, "snapshotQuality") is not ("Fresh" or "Persisted" or "Partial") ||
-                    !Fresh(Text(row, "lastSeenUtc"), now)) continue;
+                    Text(row, "source") is not ("inventory" or "retainer" or "armoire" or "glamourDresser")) continue;
                 owned.Add((uint)itemId);
             }
         }
@@ -91,14 +86,11 @@ public static class XaItemOwnership
             using var document = JsonDocument.Parse(json);
             var root = document.RootElement;
             if (!Number(root, "version", out var version) || version != 1 || !True(root, "success") ||
-                !Number(root, "contentId", out var owner) || owner != currentContentId ||
-                !Fresh(Text(root, "snapshotUpdatedUtc"), now)) return owned;
+                !Number(root, "contentId", out var owner) || owner != currentContentId) return owned;
             foreach (var source in new[] { "armoire", "glamourDresser" })
             {
                 if (!root.TryGetProperty(source, out var section) || !True(section, "requested") || !True(section, "recorded") ||
                     !section.TryGetProperty("items", out var items) || items.ValueKind != JsonValueKind.Array) continue;
-                var captured = Text(section, "capturedUtc");
-                if (!string.IsNullOrEmpty(captured) && !Fresh(captured, now)) continue;
                 foreach (var row in items.EnumerateArray())
                     if (Number(row, "itemId", out var itemId) && itemId <= uint.MaxValue && requested.Contains((uint)itemId) &&
                         Number(row, "quantity", out var quantity) && quantity > 0) owned.Add((uint)itemId);
@@ -107,11 +99,6 @@ public static class XaItemOwnership
         catch (JsonException) { owned.Clear(); }
         return owned;
     }
-
-    private static bool Fresh(string? value, DateTimeOffset now)
-        => DateTimeOffset.TryParse(value, CultureInfo.InvariantCulture,
-            DateTimeStyles.AssumeUniversal | DateTimeStyles.AdjustToUniversal, out var captured) &&
-            captured <= now && now - captured < SnapshotLifetime;
 
     private static bool Number(JsonElement element, string name, out ulong value)
     {

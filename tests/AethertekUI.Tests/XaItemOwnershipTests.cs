@@ -7,25 +7,37 @@ namespace AethertekUI.Tests;
 public sealed class XaItemOwnershipTests
 {
     [Fact]
-    public void QueryStatesNeverConvertsEmptyStorageToMissing()
+    public void UnrecordedItemsAreMissingWhileKnownCopiesAreOwned()
     {
         var states = XaItemOwnership.QueryStates(_ => "{\"version\":2,\"ready\":true,\"character\":{\"contentId\":42},\"rows\":[]}",
             _ => "{}", new uint[] { 100, 101, 0, 100 }, 42, Now);
         Assert.Equal(2, states.Count);
-        Assert.All(states.Values, state => Assert.Equal(XaItemOwnershipState.Unknown, state));
+        Assert.All(states.Values, state => Assert.Equal(XaItemOwnershipState.Missing, state));
         states = XaItemOwnership.QueryStates(_ => Items(2), _ => "{}", new uint[] { 100, 101 }, 42, Now);
         Assert.Equal(XaItemOwnershipState.Owned, states[100]);
-        Assert.Equal(XaItemOwnershipState.Unknown, states[101]);
+        Assert.Equal(XaItemOwnershipState.Missing, states[101]);
+    }
+
+    [Fact]
+    public void UnavailableStorageIsMissingWithoutRetriesButCharacterIdentityRemainsRequired()
+    {
+        var calls = 0;
+        var states = XaItemOwnership.QueryStates(_ => { calls++; throw new InvalidOperationException(); },
+            _ => { calls++; return "{}"; }, Requested, 42, Now);
+        Assert.Equal(XaItemOwnershipState.Missing, states[100]);
+        Assert.Equal(2, calls);
+        states = XaItemOwnership.QueryStates(_ => throw new Exception(), _ => throw new Exception(), Requested, 0, Now);
+        Assert.Equal(XaItemOwnershipState.Unknown, states[100]);
     }
 
     [Theory]
     [InlineData(true, false, XaItemOwnershipState.Unknown, XaItemOwnershipState.Owned)]
     [InlineData(false, false, XaItemOwnershipState.Owned, XaItemOwnershipState.Owned)]
     [InlineData(false, true, XaItemOwnershipState.Unknown, XaItemOwnershipState.Unknown)]
-    [InlineData(false, false, XaItemOwnershipState.Missing, XaItemOwnershipState.Unknown)]
+    [InlineData(false, false, XaItemOwnershipState.Missing, XaItemOwnershipState.Missing)]
     [InlineData(false, true, XaItemOwnershipState.Missing, XaItemOwnershipState.Missing)]
     [InlineData(true, true, XaItemOwnershipState.Missing, XaItemOwnershipState.Owned)]
-    public void AbsenceRequiresBothTruthSources(bool nativeOwned, bool nativeAbsenceKnown,
+    public void NativeOrRecordedCopiesWinOverAssumedMissing(bool nativeOwned, bool nativeAbsenceKnown,
         XaItemOwnershipState storage, XaItemOwnershipState expected)
         => Assert.Equal(expected, XaItemOwnership.Resolve(nativeOwned, nativeAbsenceKnown, storage));
 
@@ -47,19 +59,39 @@ public sealed class XaItemOwnershipTests
     [InlineData(2, 42, 42, 0, "retainer", "Fresh", -1)]
     [InlineData(2, 42, 42, -1, "retainer", "Fresh", -1)]
     [InlineData(2, 42, 42, 1, "housing", "Fresh", -1)]
-    [InlineData(2, 42, 42, 1, "retainer", "Stale", -1)]
-    [InlineData(2, 42, 42, 1, "retainer", "Degraded", -1)]
-    [InlineData(2, 42, 42, 1, "retainer", "Fresh", -60)]
-    [InlineData(2, 42, 42, 1, "retainer", "Fresh", 1)]
-    public void InvalidOrStaleEvidenceCannotEstablishOwnership(int version, int owner, int rowOwner, int quantity,
+    public void InvalidIdentityQuantitySourceOrVersionCannotEstablishOwnership(int version, int owner, int rowOwner, int quantity,
         string source, string quality, int minutes)
         => Assert.Empty(XaItemOwnership.ReadItems(Items(version, owner, rowOwner, quantity, source, quality, minutes), Requested, 42, Now));
+
+    [Theory]
+    [InlineData("inventory", "Fresh", -1)]
+    [InlineData("retainer", "Stale", -1440)]
+    [InlineData("armoire", "Persisted", -10080)]
+    [InlineData("glamourDresser", "Degraded", -43200)]
+    public void RecordedCopiesRemainOwnedUntilTheUserRefreshesStorage(string source, string quality, int minutes)
+        => Assert.Contains(100u, XaItemOwnership.ReadItems(Items(2, source: source, quality: quality, minutes: minutes), Requested, 42, Now));
+
+    [Fact]
+    public void QueryRequestsAllSupportedStorageSourcesAndKeepsOtherCharactersOut()
+    {
+        string? capturedRequest = null;
+        var states = XaItemOwnership.QueryStates(request =>
+        {
+            capturedRequest = request;
+            return Items(2, owner: 7, rowOwner: 7);
+        }, _ => "{}", Requested, 42, Now);
+        Assert.NotNull(capturedRequest);
+        using var document = JsonDocument.Parse(capturedRequest);
+        Assert.Equal(new[] { "inventory", "retainer", "armoire", "glamourDresser" },
+            document.RootElement.GetProperty("sources").EnumerateArray().Select(source => source.GetString()));
+        Assert.Equal(XaItemOwnershipState.Missing, states[100]);
+    }
 
     [Theory]
     [InlineData("{}")] [InlineData("[]")] [InlineData("null")] [InlineData("{")]
     [InlineData("{\"version\":2,\"ready\":true,\"character\":{\"contentId\":42},\"rows\":[]}")]
     [InlineData("{\"version\":2,\"ready\":true,\"character\":[],\"rows\":[]}")]
-    public void EmptyOrMalformedResponsesProvideNoOwnedOrMissingConclusion(string response)
+    public void EmptyOrMalformedResponsesProvideNoOwnedCopy(string response)
         => Assert.Empty(XaItemOwnership.ReadItems(response, Requested, 42, Now));
 
     [Theory]
@@ -68,7 +100,7 @@ public sealed class XaItemOwnershipTests
     [InlineData(true, false, true, 42, -1, false)]
     [InlineData(true, true, false, 42, -1, false)]
     [InlineData(true, true, true, 7, -1, false)]
-    [InlineData(true, true, true, 42, -60, false)]
+    [InlineData(true, true, true, 42, -10080, true)]
     public void StorageRequiresCurrentSuccessfulRecordedSection(bool success, bool requested, bool recorded, int owner, int minutes, bool expected)
     {
         var response = JsonSerializer.Serialize(new
