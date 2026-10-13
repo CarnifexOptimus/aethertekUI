@@ -562,9 +562,8 @@ Globe mesh and padding, retaining that minimum in narrow panes. Reflow the entir
 selector group within those editors or retained layouts; native callback overloads
 still own their field sizing.
 When an explicitly retained layout places existing actions between colour and
-language,
-use MaterialAppearanceSelector.DrawAccent and DrawLanguage with the same
-selector ID. They preserve the combined selector's accent and language IDs.
+language, use MaterialAppearanceSelector.DrawAccent and DrawLanguage with the
+same selector ID. They preserve the combined selector's accent and language IDs.
 MaterialComboLayout.LeadingIcon uses native meshes; retain the field's borrowed
 draw list while BeginCombo makes its popup current, so the icon stays in the field.
 DrawAccent's explicit positive logical size supports approved larger swatches
