@@ -244,6 +244,21 @@ it when the consumer's Show titlebar status preference is off. Consumers own the
 approved saved Show/Detailed preferences, translations and existing runtime data;
 do not add collection, synchronization or new counters for presentation fields.
 
+Keep Status and Detailed status in Settings > Appearance, with both off by
+default. A consumer with main and Mini windows keeps independent saved choices
+for each window in its existing configuration. Detailed status remains saved
+when Status is disabled; disable its editor until Status is enabled. Derive
+both views from the same existing workflow snapshots, prioritize the active
+parent workflow, and preserve character-name privacy in text and tooltips.
+For QC's `NoTitleBar` main window, paint within its existing custom title bounds
+and reserve the timer and action cells; the native title painter skips that
+flag. QSTComp Mini uses the after-End native status painter. Retain complete
+tooltip details and one final opacity application for either route.
+Capture a retained titlebar timer's paint values in the body, keep its hover
+warning under that owner, and emit its text after the native title repaint.
+Caption-glyph removal can otherwise erase matching timer letters. Preserve
+the captured font, size, colour and actual timer reservation.
+
 The shared painter retains icon/title/version first, then a semantic dot and
 quieter measured status in the existing remaining rectangle. Full text gives way
 to ShortText, then a grapheme-safe ellipsis; no meaningful fit emits no status ink.
