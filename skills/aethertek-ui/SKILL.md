@@ -233,6 +233,21 @@ These presentation components own no configuration or automation. Verify actual
 wide/narrow renders, native edits/actions and scope restoration; a concept image or
 successful build alone does not establish visual fidelity or game acceptance.
 
+Inside settings subframes, budget the complete row against that child's available
+width: translated label, editor minimum, units, reset action and help. Keep them
+inline when they fit. Put default/override state on the existing reset action's
+tooltip, including its disabled inherited state; retain the original action ID
+and mutation/confirmation handlers. Preserve semantic section headings.
+
+A cursor to the right of a window's origin does not establish inline overflow:
+table cells, indentation and groups also start there. `MaterialLayout.FitNextItemWidth`
+must only move an exhausted native `SameLine` continuation, never a fresh cell or
+indented row. Size numeric columns from the same editor minimum and scale as their
+wrappers, and keep hidden-label editors free of separate label items. One
+`TableNextRow` per item does not prove that its editors share a baseline. Check
+several populated rows inside nested/indented children, both densities, larger
+fonts and 100%/150% scale; preserve the existing true-overflow wrapping check.
+
 ## Native titlebar actions
 
 For ImGui windows with native titlebars, place Language, Compact, Transparency,

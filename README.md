@@ -241,6 +241,13 @@ and the [smoke-test guide](docs/PROTOTYPE_SMOKE_TEST.md).
 
 ## Evolution and provenance
 
+2026-10-14: correct readable-width wrapping inside settings children and table
+cells. Only an explicit native SameLine continuation may move to a fresh line;
+indentation or a later column alone must not split an editor from its row.
+Extend the existing native sizing regression for nested/indented settings and
+repeated cell baselines, and record the row/reset-action standard in the usage
+skill. Version remains 0.3.0.
+
 2026-10-11: extend the existing retained title painter with optional measured
 status and full hover details. Keep title/icon/version priority, native geometry
 and action hit regions; support clipped/collapsed titles and the existing shaped

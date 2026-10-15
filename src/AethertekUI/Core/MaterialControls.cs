@@ -131,7 +131,7 @@ public static class MaterialLayout
         if (!float.IsFinite(requestedPixels) || !float.IsFinite(minimumPixels) || minimumPixels <= 0)
             throw new ArgumentOutOfRangeException(nameof(minimumPixels));
         var available = ImGui.GetContentRegionAvail().X;
-        if (available < minimumPixels && ImGuiP.GetCurrentWindow().DC.IsSameLine)
+        if (available < minimumPixels && Convert.ToBoolean(ImGuiP.GetCurrentWindow().DC.IsSameLine))
         {
             ImGui.NewLine();
             available = ImGui.GetContentRegionAvail().X;
