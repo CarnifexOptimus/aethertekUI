@@ -121,6 +121,76 @@ public class AdaptiveSizingTests
         });
     }
 
+    [Theory]
+    [InlineData(MaterialDensity.Standard, 1f, 1f)]
+    [InlineData(MaterialDensity.Standard, 1.5f, 1f)]
+    [InlineData(MaterialDensity.Compact, 1f, 1f)]
+    [InlineData(MaterialDensity.Compact, 1.5f, 1f)]
+    [InlineData(MaterialDensity.Standard, 1.5f, 2f)]
+    [InlineData(MaterialDensity.Compact, 1.5f, 2f)]
+    public void FreshIndentedSettingsAndTableCellsDoNotAcquireAnExtraEditorLine(
+        MaterialDensity density, float scale, float fontScale)
+    {
+        using var host = new NativeTestContext(1200, 1100, fontScale);
+        var theme = new MaterialTheme(new Vector3(.3f, .7f, .4f), density);
+        var quantity = 22;
+        host.Frame(() =>
+        {
+            using var themeScope = MaterialTheme.Push(theme, scale);
+            ImGui.SetNextWindowSize(new(1000, 1000));
+            ImGui.Begin("Settings subframes", ImGuiWindowFlags.NoSavedSettings);
+            ImGui.BeginChild("Settings body", new(700, 850), false);
+            using var controls = MaterialTable.PushControls();
+            using var tightRows = MaterialTable.PushTightRows();
+            ImGui.Indent(20 * scale);
+            ImGui.BeginGroup();
+            ImGui.BeginChild("Indented field", new(95 * scale, 100 * scale), false);
+            ImGui.Indent(12 * scale);
+            var freshPosition = ImGui.GetCursorScreenPos();
+            var narrowMinimum = ImGui.GetContentRegionAvail().X + 8 * scale;
+            ImGui.SetNextItemWidth(MaterialLayout.FitNextItemWidth(-1, narrowMinimum));
+            Assert.Equal(freshPosition, ImGui.GetCursorScreenPos());
+            ImGui.InputInt("##indented-quantity", ref quantity, 0);
+            Assert.Equal(freshPosition.Y, ImGui.GetItemRectMin().Y);
+            ImGui.Unindent(12 * scale);
+            ImGui.EndChild();
+
+            Assert.True(ImGui.BeginTable("Stock rows", 2, ImGuiTableFlags.SizingFixedFit | ImGuiTableFlags.BordersInnerV));
+            try
+            {
+                ImGui.TableSetupColumn("Item", ImGuiTableColumnFlags.WidthFixed, 180 * scale);
+                ImGui.TableSetupColumn("Target", ImGuiTableColumnFlags.WidthFixed, 60 * scale);
+                float? previousBottom = null;
+                for (var row = 0; row < 5; row++)
+                {
+                    ImGui.TableNextRow();
+                    ImGui.TableSetColumnIndex(0);
+                    var rowTop = ImGui.GetCursorScreenPos().Y;
+                    ImGui.AlignTextToFramePadding();
+                    ImGui.TextUnformatted("Versatile Lure");
+                    ImGui.TableSetColumnIndex(1);
+                    var cellPosition = ImGui.GetCursorScreenPos();
+                    var minimum = ImGui.GetContentRegionAvail().X + 8 * scale;
+                    ImGui.SetNextItemWidth(MaterialLayout.FitNextItemWidth(-1, minimum));
+                    Assert.Equal(cellPosition, ImGui.GetCursorScreenPos());
+                    ImGui.PushID(row);
+                    ImGui.InputInt("##quantity", ref quantity, 0);
+                    ImGui.PopID();
+                    Assert.Equal(rowTop, ImGui.GetItemRectMin().Y);
+                    if (previousBottom.HasValue)
+                        Assert.True(Math.Abs(previousBottom.Value - ImGui.GetItemRectMin().Y) <= 1.1f);
+                    previousBottom = ImGui.GetItemRectMax().Y;
+                }
+            }
+            finally { ImGui.EndTable(); }
+            ImGui.EndGroup();
+            ImGui.Unindent(20 * scale);
+            ImGui.EndChild();
+            ImGui.End();
+        });
+        Assert.Equal(22, quantity);
+    }
+
     [Fact]
     public void WidthResolutionSeparatesMeasuredPixelsFromLogicalRequests()
     {

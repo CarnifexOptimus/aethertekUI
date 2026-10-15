@@ -124,13 +124,14 @@ public static class MaterialControls
 public static class MaterialLayout
 {
     /// <summary>Fit a native item's measured pixel width, moving an exhausted row before preserving its readable minimum.</summary>
-    /// <remarks>Negative fills the row; zero uses the minimum. A pane narrower than the minimum must scroll or grow.</remarks>
+    /// <remarks>Negative fills the row; zero uses the minimum. Only an explicit SameLine continuation may wrap.
+    /// A fresh indented row or table cell retains its baseline; its owner must provide a readable width or scrolling.</remarks>
     public static float FitNextItemWidth(float requestedPixels, float minimumPixels)
     {
         if (!float.IsFinite(requestedPixels) || !float.IsFinite(minimumPixels) || minimumPixels <= 0)
             throw new ArgumentOutOfRangeException(nameof(minimumPixels));
         var available = ImGui.GetContentRegionAvail().X;
-        if (available < minimumPixels && ImGui.GetCursorPosX() > ImGui.GetCursorStartPos().X + .5f)
+        if (available < minimumPixels && ImGuiP.GetCurrentWindow().DC.IsSameLine)
         {
             ImGui.NewLine();
             available = ImGui.GetContentRegionAvail().X;
