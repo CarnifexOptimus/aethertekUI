@@ -5,7 +5,11 @@ using Dalamud.Interface.Windowing;
 namespace AethertekUI.Dalamud;
 
 public readonly record struct MaterialAppearanceTitleBarLabels(string Language, string Compact, string Transparency, string Colour);
-public readonly record struct MaterialAppearanceTitleBarVisibility(bool Language = true, bool Compact = true, bool Transparency = true, bool Colour = true);
+public readonly record struct MaterialAppearanceTitleBarVisibility(bool Language = true, bool Compact = true, bool Transparency = true, bool Colour = true)
+{
+    /// <summary>Show the bound Krangle action by default; the consumer owns the actual privacy setting.</summary>
+    public bool Krangle { get; init; } = true;
+}
 
 /// <summary>Manual appearance shortcuts; the consumer retains editors, saved settings and window lifecycle.</summary>
 public sealed class MaterialAppearanceTitleBar
@@ -22,7 +26,7 @@ public sealed class MaterialAppearanceTitleBar
 
     private MaterialAppearanceTitleBar(Window owner, Func<MaterialAppearanceTitleBarLabels> labels,
         Action drawLanguage, Action toggleCompact, Action drawTransparency, Action drawColour,
-        Func<MaterialAppearanceTitleBarVisibility>? visibility)
+        Func<MaterialAppearanceTitleBarVisibility>? visibility, Action? toggleKrangle = null, Func<string>? krangleTooltip = null)
     {
         this.owner = owner;
         this.drawLanguage = drawLanguage;
@@ -34,6 +38,8 @@ public sealed class MaterialAppearanceTitleBar
         Add(FontAwesomeIcon.CompressAlt, () => labels().Compact, toggleCompact, value => value.Compact);
         Add(FontAwesomeIcon.Adjust, () => labels().Transparency, () => requestedPopup = "transparency", value => value.Transparency);
         Add(FontAwesomeIcon.Palette, () => labels().Colour, () => requestedPopup = "colour", value => value.Colour);
+        if (toggleKrangle != null && krangleTooltip != null)
+            Add(FontAwesomeIcon.UserSecret, krangleTooltip, toggleKrangle, value => value.Krangle);
         RefreshVisibility();
 
         void Add(FontAwesomeIcon icon, Func<string> tooltip, Action click, Func<MaterialAppearanceTitleBarVisibility, bool> shown)
@@ -64,6 +70,26 @@ public sealed class MaterialAppearanceTitleBar
         ArgumentNullException.ThrowIfNull(drawTransparency);
         ArgumentNullException.ThrowIfNull(drawColour);
         return new(owner, labels, drawLanguage, toggleCompact, drawTransparency, drawColour, visibility);
+    }
+
+    /// <summary>
+    /// Standard appearance titlebar including Krangle. The consumer toggles and saves its
+    /// existing privacy setting and supplies a localized tooltip reflecting its current value.
+    /// Registration does not alter privacy state or mask consumer text.
+    /// </summary>
+    public static MaterialAppearanceTitleBar Register(Window owner, Func<MaterialAppearanceTitleBarLabels> labels,
+        Action drawLanguage, Action toggleCompact, Action drawTransparency, Action drawColour,
+        Action toggleKrangle, Func<string> krangleTooltip, Func<MaterialAppearanceTitleBarVisibility>? visibility = null)
+    {
+        ArgumentNullException.ThrowIfNull(owner);
+        ArgumentNullException.ThrowIfNull(labels);
+        ArgumentNullException.ThrowIfNull(drawLanguage);
+        ArgumentNullException.ThrowIfNull(toggleCompact);
+        ArgumentNullException.ThrowIfNull(drawTransparency);
+        ArgumentNullException.ThrowIfNull(drawColour);
+        ArgumentNullException.ThrowIfNull(toggleKrangle);
+        ArgumentNullException.ThrowIfNull(krangleTooltip);
+        return new(owner, labels, drawLanguage, toggleCompact, drawTransparency, drawColour, visibility, toggleKrangle, krangleTooltip);
     }
 
     /// <summary>Call before native Begin to retain the consumer's existing main-window visibility preferences.</summary>

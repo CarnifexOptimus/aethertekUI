@@ -251,12 +251,13 @@ fonts and 100%/150% scale; preserve the existing true-overflow wrapping check.
 ## Native titlebar actions
 
 For ImGui windows with native titlebars, place Language, Compact, Transparency,
-and Colour shortcuts in the native titlebar alongside existing window actions.
-Use titlebar icons with localized tooltips. Compact toggles directly; the other
-actions open their existing editors in popups. Retain full appearance controls
-in existing Settings. Body-header shortcuts require an explicitly selected
-exception. Retain existing custom title strips for titleless windows and existing
-browser layouts; this correction does not require adding new chrome.
+Colour and Krangle shortcuts alongside existing window actions. New and adopted
+UIs show Krangle by default on main, mini and auxiliary windows. Use titlebar
+icons with localized tooltips. Compact and Krangle toggle directly on left click;
+Language, Transparency and Colour open their existing editors in popups. Retain
+full appearance controls in existing Settings. Body-header shortcuts require an
+explicitly selected exception. Retain existing custom title strips for titleless
+windows and existing browser layouts; this standard does not require new chrome.
 
 For the approved one-line status rollout, use the separately named
 `MaterialWindowHeader.PaintTitleWithStatus(window, visibleTitle, texture,
@@ -293,27 +294,43 @@ Begin/End retains native ancestry for the existing opacity pass. Preserve the
 after-End/motion-restore/before-opacity lifecycle and existing action reservations;
 do not grow the window or move its native title controls.
 
-For Dalamud windows following this appearance placement rule, reuse
+For Dalamud windows following this placement rule, use
 `AethertekUI.Dalamud.MaterialAppearanceTitleBar.Register(window, labels,
-drawLanguage, toggleCompact, drawTransparency, drawColour, visibility)`.
+drawLanguage, toggleCompact, drawTransparency, drawColour, toggleKrangle,
+krangleTooltip, visibility)` for new and adopted UIs. `toggleKrangle` is an
+`Action`; `krangleTooltip` is a `Func<string>` read on hover for the localized
+current On/Off state. The fifth UserSecret icon invokes the existing saved
+privacy toggle directly on left click. Reuse the consumer's existing masking
+paths and actual privacy semantics, including privacy in status text/tooltips.
+The library owns no privacy configuration, service, global preference or name
+detector and does not automatically redact arbitrary strings. VERMAXION is the
+selected reference integration, replacing its hand-built duplicate with the
+shared action. Other consumers still require selected wiring and a rebuild;
+a library update cannot retrofit every plugin.
+
 Own the returned adapter per existing Window and register once after the owner's
 other title actions. Supply translated `MaterialAppearanceTitleBarLabels` and
-existing editor/save callbacks; Compact toggles the existing setting immediately.
-Language, Transparency and Colour are separate manual popups. Move existing
-body-header shortcuts into these actions unless an explicit exception is selected,
-retaining the grouped Appearance tab and existing account/profile persistence.
-Do not introduce another preference.
+existing editor/save callbacks. The original overload ending in
+`drawColour, visibility = null` retains its four-action compatibility contract.
+Compact toggles the existing setting immediately; Language, Transparency and
+Colour are separate manual popups. Move existing body-header shortcuts into these
+actions unless an explicit exception is selected, retaining the grouped Appearance
+tab and existing account/profile persistence. Do not introduce another preference.
 
 Pass existing main-window visibility flags with the optional
-`Func<MaterialAppearanceTitleBarVisibility>` callback; Colour defaults true when
-the three existing flags are supplied. Auxiliary windows omit the callback to
-show all four. Call `RefreshVisibility()` before native Begin so hidden controls
-do not reserve title space. Four descriptors are created once and reused; refresh
-only attaches/removes those descriptors, preserving original custom descriptors,
-priorities and relative native indices. The current host sorts priorities
-descending before assigning IDs; new appearance priorities sit below the
-existing minimum. The endpoint XML's contrary priority description is not the
-current rendering contract.
+`Func<MaterialAppearanceTitleBarVisibility>` callback. Its four positional fields
+and constructor remain unchanged; Colour defaults true when the three existing
+flags are supplied. The non-positional `Krangle` bool init property defaults true;
+use `visibility with { Krangle = false }` only for an explicitly selected exception.
+Visibility does not force the saved privacy state on. Mini and auxiliary windows
+can omit the callback to show all five actions. Call `RefreshVisibility()` before
+native Begin so hidden controls do not reserve title space. Five descriptors are
+created once and reused by the standard overload, four by the compatibility path.
+Refresh only attaches/removes those descriptors, preserving original custom
+descriptors, priorities and relative native indices. The current host sorts
+priorities descending before assigning IDs; new appearance priorities sit below
+the existing minimum. The endpoint XML's contrary priority description is not
+the current rendering contract.
 
 Call `DrawPopups()` after native End and motion restore, before complete-window
 opacity, including collapsed frames. A central host may instead call it after
@@ -324,8 +341,9 @@ balanced owner Begin/End with no body or decoration draws. This native parent
 scope keeps popup focus and meshes in the owner's existing opacity tree, including
 collapsed owners. Preserve the current title repaint, motion and opacity lifecycle.
 Verify original custom indices through main visibility changes, left-click-only
-actions, collapsed native popup edits and save paths. Native popup interaction
-tests do not prove managed IconFont rendering or consumer/game acceptance.
+actions, Krangle's live localized state tooltip and existing save/masking paths,
+and collapsed native popup edits. Native popup interaction tests do not prove
+managed IconFont rendering or consumer/game acceptance.
 
 For a selected Dalamud titlebar rollout, register fixed `Window.TitleBarButtons`
 once on the existing window owner. Preserve existing registrations and their

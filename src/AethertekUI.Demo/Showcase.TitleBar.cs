@@ -16,6 +16,7 @@ internal sealed partial class Showcase
         private readonly MaterialWindowMotion motion = new();
         private readonly MaterialWindowOpacity opacity = new();
         private readonly MaterialAppearanceTitleBar appearance;
+        private bool krangle;
 
         internal AppearanceTitleBarWindow(Showcase showcase) : base("Appearance titlebar preview###aethertek-appearance-preview")
         {
@@ -24,7 +25,8 @@ internal sealed partial class Showcase
             SizeCondition = ImGuiCond.FirstUseEver;
             appearance = MaterialAppearanceTitleBar.Register(this,
                 () => new("Language", "Compact", "Transparency", "Colour"),
-                DrawLanguage, ToggleCompact, DrawTransparency, DrawColour);
+                DrawLanguage, ToggleCompact, DrawTransparency, DrawColour,
+                ToggleKrangle, () => $"Krangle: {(krangle ? "On" : "Off")}");
         }
 
         public override void PreDraw() => motion.Prepare(this, showcase.reduceMotion, roundedCorners: true);
@@ -34,7 +36,7 @@ internal sealed partial class Showcase
             var native = ImGuiP.FindWindowByName(WindowName);
             if (!native.IsNull)
                 MaterialWindowHeader.PaintTitleWithStatus(native, "Appearance preview v0.3.0", default, Vector2.Zero,
-                    new("Ready - four manual appearance actions", "Ready",
+                    new("Ready - five manual titlebar actions", "Ready",
                         "Ready\nThe appearance editors reuse the Settings showcase values."),
                     TitleBarButtons.Count * (ImGui.GetFontSize() + ImGui.GetStyle().ItemInnerSpacing.X));
             appearance.DrawPopups();
@@ -44,12 +46,15 @@ internal sealed partial class Showcase
         public override void Draw()
         {
             motion.DrawChrome();
-            MaterialText.Text("Four separate manual appearance actions");
+            MaterialText.Text("Five separate manual titlebar actions");
             ImGui.TextWrapped("Use the titlebar icons while expanded or collapsed. These editors share the Settings showcase values.");
             MaterialText.Text($"Language: {showcase.appearanceLanguage}");
             MaterialText.Text($"Compact: {showcase.appearanceCompact}");
             MaterialText.Text($"Opacity: {showcase.appearanceOpacity}%");
+            MaterialText.Text($"Character (mock): {(krangle ? "A*** V***" : "Aster Vale")}");
         }
+
+        private void ToggleKrangle() => krangle = !krangle;
 
         private void DrawLanguage() => MaterialAppearanceSelector.DrawLanguage("titlebar-language",
             ref showcase.appearanceLanguage, showcase.sizingLanguages);

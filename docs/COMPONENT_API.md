@@ -13,6 +13,7 @@ See [Adaptive sizing and host compatibility](ADAPTIVE_SIZING.md) for units, owne
 | MaterialWindowFold.GetLogicalSize() | Expanded pixel geometry for observers inside that window's Draw during a transition |
 | MaterialWindowOpacity.Apply / CurrentOpacity | One owner-tree alpha multiplier after final End; native focus delay, immediate focus restoration, and consumer-owned preferences |
 | AethertekUI.Dalamud.MaterialWindowMotion.Prepare / DrawChrome / Restore | Bridge for one Dalamud Window; prepares fold and optional owned-viewport chrome before Begin, restores body styles first in Draw, then paints chrome and restores managed constraints after End |
+| AethertekUI.Dalamud.MaterialAppearanceTitleBar.Register / RefreshVisibility / DrawPopups | Standard Language, Compact, Transparency, Colour and Krangle titlebar actions; consumer-owned callbacks, localization and privacy state |
 | MaterialSettings.Columns / Section | Compact semantic groups; measured pixel minimum controls wide-to-narrow reflow while retaining caller IDs |
 | MaterialAppearanceTab.Draw | Standard four-group Appearance layout with translated headings and consumer-owned controls/configuration |
 | MaterialAppearanceSelector.DrawPalette | Inline preset swatches and existing custom-colour popup; returns whether the consumer draft changed |
@@ -28,6 +29,49 @@ See [Adaptive sizing and host compatibility](ADAPTIVE_SIZING.md) for units, owne
 | MaterialActionTile.Measure / MaterialTileSizing | Content-aware wrapping and grid measurement; explicit fixed-height option |
 
 All controls are immediate-mode; booleans return activation or value change. Consumers own state and lifecycle.
+
+### Native appearance and Krangle titlebar actions
+
+The optional Dalamud adapter retains the original four-action overload and adds
+an overload for the standard fifth action:
+
+```csharp
+public static MaterialAppearanceTitleBar Register(Window owner,
+    Func<MaterialAppearanceTitleBarLabels> labels,
+    Action drawLanguage, Action toggleCompact,
+    Action drawTransparency, Action drawColour,
+    Func<MaterialAppearanceTitleBarVisibility>? visibility = null);
+
+public static MaterialAppearanceTitleBar Register(Window owner,
+    Func<MaterialAppearanceTitleBarLabels> labels,
+    Action drawLanguage, Action toggleCompact,
+    Action drawTransparency, Action drawColour,
+    Action toggleKrangle, Func<string> krangleTooltip,
+    Func<MaterialAppearanceTitleBarVisibility>? visibility = null);
+```
+
+Both return a consumer-owned `MaterialAppearanceTitleBar`. Labels retain their
+four positional fields: `Language`, `Compact`, `Transparency` and `Colour`.
+`MaterialAppearanceTitleBarVisibility` retains the same four positional boolean
+fields and constructor; `Krangle` is a non-positional `bool` init property that
+defaults true. An existing visibility value can explicitly hide the fifth action
+with `visibility with { Krangle = false }`.
+
+Use the new overload for new and adopted main, mini and auxiliary windows, with
+Krangle visible by default. Its `FontAwesomeIcon.UserSecret` action invokes
+`toggleKrangle` directly on left click. `krangleTooltip` supplies the localized
+current On/Off state when hovered. Compact also toggles directly; Language,
+Transparency and Colour open manual popups. The old overload creates four actions
+for compatibility. Visibility does not change the consumer's saved privacy state.
+
+Register once after existing title actions. Call `RefreshVisibility()` before
+native Begin and `DrawPopups()` after End and motion restore, before opacity,
+including collapsed frames. Existing custom descriptors, priorities, window
+identities and lifecycle remain consumer-owned. Reuse the consumer's existing
+saved privacy toggle and masking rules: the adapter owns no privacy configuration,
+service, global preference or name detector and does not redact arbitrary strings.
+VERMAXION is the selected reference integration; other consumers need selected
+wiring and rebuilds.
 
 ### Windows text shaping
 

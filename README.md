@@ -42,17 +42,31 @@ complete groups at narrow widths. `MaterialAppearanceSelector.DrawPalette` suppl
 inline colour swatches; the Settings showcase demonstrates the layout. Existing
 configuration, native identities and save behavior stay with the consumer.
 
-`MaterialAppearanceTitleBar.Register` adds separate Language, Compact,
-Transparency and Colour actions to a Dalamud window. Register once after its
-existing title actions, supplying translated labels and the existing editor/save
-callbacks. Compact calls the existing toggle immediately; the other actions open
-manual popups. Pass existing main-window visibility flags through the optional
-`MaterialAppearanceTitleBarVisibility` callback and call `RefreshVisibility()`
-before native Begin. Auxiliary windows can omit that callback to show all four.
-Call `DrawPopups()` after End and motion restore, before opacity, including
-collapsed frames; a central host can call it consistently after WindowSystem.Draw.
-Original custom descriptors and priorities are retained. The Sizing lab's
-appearance preview demonstrates the shared Settings values in a native titlebar.
+`MaterialAppearanceTitleBar.Register` supplies the standard native-titlebar actions:
+Language, Compact, Transparency, Colour and Krangle. New and adopted UIs show
+Krangle by default on main, mini and auxiliary windows. Use the overload with
+`toggleKrangle` and `krangleTooltip` after `drawColour`, before optional visibility.
+Its UserSecret icon toggles the consumer's existing saved privacy setting on left
+click; its consumer-localized tooltip reads the current On/Off state when hovered.
+Consumers retain their masking rules; arbitrary strings are not automatically
+redacted. The original four-action overload remains a compatibility path.
+
+Register once after existing title actions, supplying translated labels and
+existing editor/save callbacks. Compact also toggles directly; Language,
+Transparency and Colour open manual popups. Pass existing main-window visibility
+flags through the optional `MaterialAppearanceTitleBarVisibility` callback;
+its four positional fields are retained and its non-positional `Krangle` init
+property defaults true. Auxiliary windows can omit the callback to show all five.
+Call `RefreshVisibility()` before native Begin and `DrawPopups()` after End and
+motion restore, before opacity, including collapsed frames. A central host can
+call it consistently after WindowSystem.Draw. Original custom descriptors and
+priorities are retained. The Sizing lab's appearance preview demonstrates the
+shared Settings values in a native titlebar.
+
+VERMAXION is the selected reference integration, reusing its existing privacy
+setting and masking paths through the shared action. Each other consumer needs
+selected wiring and a rebuild; a library update cannot retrofit every plugin.
+The library adds no privacy configuration, service or global preference.
 
 `MaterialWindowHeader.PaintTitleWithStatus` adds an optional one-line status to
 the same retained title painter. Supply a `MaterialTitlebarStatus` with full and
@@ -240,6 +254,12 @@ for later selected plugin integrations. See [known limitations](docs/KNOWN_LIMIT
 and the [smoke-test guide](docs/PROTOTYPE_SMOKE_TEST.md).
 
 ## Evolution and provenance
+
+2026-10-18: make Krangle the fifth standard titlebar action for new and adopted
+UIs, visible by default on main, mini and auxiliary windows. Reuse consumer-owned
+privacy toggles, masking and localized state tooltips; retain the original
+four-action API. VERMAXION is the selected reference integration; other consumers
+still require selected wiring and rebuilds. Version remains 0.3.0.
 
 2026-10-14: correct readable-width wrapping inside settings children and table
 cells. Only an explicit native SameLine continuation may move to a fresh line;

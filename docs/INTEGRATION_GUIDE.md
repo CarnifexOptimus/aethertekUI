@@ -25,12 +25,39 @@ Call Controller.Apply(newSettings) on configuration change. It validates before 
 
 ## Native titlebar shortcuts
 
-Dalamud consumers can register fixed `Window.TitleBarButtons` on their existing
-owner; this needs no additional AethertekUI registration service. The compiled
-ConsumerContract example shares its existing Enabled handler between a retained
-body switch and a title shortcut. Keep callbacks and translated tooltips in the
-consumer, rechecking current action gates at the click, including while collapsed.
-Retain main body controls and move only explicitly selected mini shortcuts.
+New and adopted UIs use `MaterialAppearanceTitleBar.Register` for Language,
+Compact, Transparency, Colour and Krangle on existing native titlebars. Show
+Krangle by default on main, mini and auxiliary windows. Choose the overload with
+`Action toggleKrangle` and `Func<string> krangleTooltip` after `drawColour` and
+before optional visibility. The UserSecret icon calls the existing privacy
+toggle directly on left click; the tooltip supplies its current localized On/Off
+state. Reuse the consumer's existing saved setting and masking paths, preserving
+its actual privacy semantics. Visibility defaults on independently of that saved
+state. The library owns no privacy configuration, service, global preference or
+name detector and cannot automatically redact arbitrary strings.
+
+Register once after existing title actions. Retain the four positional visibility
+fields; the non-positional `Krangle` init property defaults true and can be set
+with `visibility with { Krangle = false }`. Existing main-window visibility flags
+continue to apply; mini and auxiliary windows can omit the visibility callback
+to show all five. Call `RefreshVisibility()` before native Begin and `DrawPopups()`
+after End and motion restore, before opacity, including collapsed frames. Compact
+toggles directly; Language, Transparency and Colour keep their manual popups and
+existing Settings editors/save handlers. The original four-action overload remains
+available for compatibility.
+
+VERMAXION is the selected reference integration, replacing its duplicate Krangle
+button with the shared action while retaining its saved privacy setting and
+masking. Each other consumer still needs selected wiring and a rebuild; updating
+the library alone does not roll Krangle out to every plugin. Retain existing
+custom title strips for titleless windows and existing browser layouts.
+
+For other native shortcuts, consumers can register fixed `Window.TitleBarButtons`
+on their existing owner. The compiled ConsumerContract example shares its existing
+Enabled handler between a retained body switch and a title shortcut. Keep callbacks
+and translated tooltips in the consumer, rechecking current action gates at the
+click, including while collapsed. Retain main body controls except the appearance
+shortcuts covered by this standard or explicitly selected mini shortcuts.
 
 Preserve registration/priority order, native close/collapse/dragging and original
 window identities. Icon offsets are logical units scaled by Dalamud. Custom title

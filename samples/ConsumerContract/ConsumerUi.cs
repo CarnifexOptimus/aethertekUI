@@ -69,6 +69,16 @@ public sealed class ConsumerUi : IDisposable
         finally { ImGui.PopFont(); }
     }
 
+    // The consumer's callback toggles/saves its existing Krangle setting; its own text paths apply the mask.
+    // Supply a localized current On/Off tooltip. Register once after the owner's existing title actions.
+    // RefreshVisibility before native Begin; DrawPopups after End/motion restore and before opacity.
+    public static MaterialAppearanceTitleBar RegisterAppearanceTitleBar(Window owner,
+        Func<MaterialAppearanceTitleBarLabels> labels, Action drawLanguage, Action toggleCompact,
+        Action drawTransparency, Action drawColour, Action toggleKrangle, Func<string> krangleTooltip,
+        Func<MaterialAppearanceTitleBarVisibility>? visibility = null)
+        => MaterialAppearanceTitleBar.Register(owner, labels, drawLanguage, toggleCompact, drawTransparency,
+            drawColour, toggleKrangle, krangleTooltip, visibility);
+
     // Cache the returned exact theme outside Draw; the consumer updates it on its own preference changes.
     public static bool DrawReadableNativeNumber(string originalId, ref int value)
     {

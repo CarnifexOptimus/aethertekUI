@@ -336,6 +336,166 @@ public unsafe class IntegrationNativeTests
         Assert.Equal(fixedDescriptors, hostOrder.Skip(2));
     }
 
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void KrangleTitlebarActionSharesConsumerStateAndPreservesExistingControls(bool collapsed)
+    {
+        using var host = new NativeTestContext(1000, 500);
+        var owners = new[]
+        {
+            new AppearanceProbeWindow("First###krangle-first") { IsOpen = true },
+            new AppearanceProbeWindow("Second###krangle-second") { IsOpen = true },
+        };
+        var original = owners.Select(_ => new[]
+        {
+            new TitleBarButton { Icon = FontAwesomeIcon.PowerOff, Priority = 3 },
+            new TitleBarButton { Icon = FontAwesomeIcon.Cog, Priority = -2 },
+        }).ToArray();
+        var privacy = false;
+        var toggles = 0;
+        var compact = 0;
+        var editors = new int[3];
+        var observed = new string[2];
+        var tooltips = new string[2];
+        var bodyIds = new uint[2];
+        var visibility = new MaterialAppearanceTitleBarVisibility(true, true, true, true);
+        var labels = new MaterialAppearanceTitleBarLabels("Language", "Compact", "Transparency", "Colour");
+        var closeEditor = false;
+        var actions = owners.Select((owner, index) =>
+        {
+            owner.TitleBarButtons.AddRange(original[index]);
+            return MaterialAppearanceTitleBar.Register(owner, () => labels,
+                () => Editor(0), () => compact++, () => Editor(1), () => Editor(2),
+                () => { privacy = !privacy; toggles++; },
+                () => tooltips[index] = privacy ? "Show character names" : "Krangle character names",
+                () => visibility);
+        }).ToArray();
+        var fixedDescriptors = owners.Select(owner => owner.TitleBarButtons.OrderByDescending(button => button.Priority).ToArray()).ToArray();
+        var priorIcons = new[] { FontAwesomeIcon.Language, FontAwesomeIcon.CompressAlt, FontAwesomeIcon.Adjust, FontAwesomeIcon.Palette };
+        var hoverOwner = -1;
+
+        void Editor(int index)
+        {
+            editors[index]++;
+            if (closeEditor) ImGui.CloseCurrentPopup();
+        }
+
+        void Draw()
+        {
+            for (var index = 0; index < owners.Length; index++)
+            {
+                actions[index].RefreshVisibility();
+                ImGui.SetNextWindowPos(new Vector2(20 + index * 480, 20), ImGuiCond.FirstUseEver);
+                ImGui.SetNextWindowSize(new Vector2(440, 200), ImGuiCond.FirstUseEver);
+                ImGui.SetNextWindowCollapsed(collapsed);
+                var shown = ImGui.Begin(owners[index].WindowName, ImGuiWindowFlags.NoSavedSettings);
+                bodyIds[index] = ImGui.GetID("Retained body action");
+                observed[index] = privacy ? "Private character" : "Visible character";
+                if (shown)
+                {
+                    ImGui.TextUnformatted(observed[index]);
+                    ImGui.Button("Retained body action");
+                }
+                ImGui.End();
+                actions[index].DrawPopups();
+                if (hoverOwner == index) fixedDescriptors[index][6].ShowTooltip!();
+            }
+        }
+
+        host.Frame(Draw); host.Frame(Draw);
+        var natives = owners.Select(owner => ImGuiP.FindWindowByName(owner.WindowName)).ToArray();
+        var nativeIds = natives.Select(window => window.ID).ToArray();
+        var positions = natives.Select(window => window.Pos).ToArray();
+        var sizes = natives.Select(window => window.SizeFull).ToArray();
+        var originalBodyIds = bodyIds.ToArray();
+        foreach (var index in new[] { 0, 1 })
+        {
+            Assert.Equal(7, fixedDescriptors[index].Length);
+            Assert.Same(original[index][0], fixedDescriptors[index][0]);
+            Assert.Same(original[index][1], fixedDescriptors[index][1]);
+            Assert.Equal(priorIcons, fixedDescriptors[index].Skip(2).Take(4).Select(button => button.Icon));
+            Assert.Equal(FontAwesomeIcon.UserSecret, fixedDescriptors[index][6].Icon);
+            Assert.Equal(new[] { 3, -2, -3, -4, -5, -6, -7 }, fixedDescriptors[index].Select(button => button.Priority));
+            hoverOwner = index;
+            host.Frame(Draw);
+            Assert.Equal("Krangle character names", tooltips[index]);
+        }
+        hoverOwner = -1;
+
+        // Use the production descriptors: this covers callbacks, independently of managed icon rendering.
+        fixedDescriptors[0][6].Click!(ImGuiMouseButton.Right);
+        Assert.False(privacy);
+        Assert.Equal(0, toggles);
+        fixedDescriptors[0][6].Click!(ImGuiMouseButton.Left);
+        Assert.True(privacy);
+        Assert.Equal(1, toggles);
+        hoverOwner = 1;
+        host.Frame(Draw);
+        Assert.Equal(new[] { "Private character", "Private character" }, observed);
+        Assert.Equal("Show character names", tooltips[1]);
+        Assert.Equal(new[] { 0, 0, 0 }, editors);
+        fixedDescriptors[1][6].Click!(ImGuiMouseButton.Left);
+        Assert.False(privacy);
+        Assert.Equal(2, toggles);
+        hoverOwner = 0;
+        host.Frame(Draw);
+        Assert.Equal(new[] { "Visible character", "Visible character" }, observed);
+        Assert.Equal("Krangle character names", tooltips[0]);
+        hoverOwner = -1;
+
+        // Visibility is re-read by the callback, even before the next refresh removes its descriptor.
+        visibility = visibility with { Krangle = false };
+        fixedDescriptors[0][6].Click!(ImGuiMouseButton.Left);
+        Assert.Equal(2, toggles);
+        host.Frame(Draw);
+        foreach (var index in new[] { 0, 1 })
+        {
+            actions[index].RefreshVisibility();
+            Assert.Equal(fixedDescriptors[index].Take(6), owners[index].TitleBarButtons.OrderByDescending(button => button.Priority));
+            fixedDescriptors[index][6].Click!(ImGuiMouseButton.Left);
+            fixedDescriptors[index][6].Click!(ImGuiMouseButton.Right);
+        }
+        Assert.False(privacy);
+        Assert.Equal(2, toggles);
+        visibility = visibility with { Krangle = true };
+        foreach (var action in actions) { action.RefreshVisibility(); action.RefreshVisibility(); }
+        host.Frame(Draw);
+        foreach (var index in new[] { 0, 1 })
+        {
+            Assert.Equal(fixedDescriptors[index], owners[index].TitleBarButtons.OrderByDescending(button => button.Priority));
+            Assert.Equal(nativeIds[index], natives[index].ID);
+            Assert.Equal(positions[index], natives[index].Pos);
+            Assert.Equal(sizes[index], natives[index].SizeFull);
+            Assert.Equal(originalBodyIds[index], bodyIds[index]);
+            Assert.Equal(collapsed, natives[index].Collapsed);
+        }
+
+        fixedDescriptors[0][3].Click!(ImGuiMouseButton.Right);
+        Assert.Equal(0, compact);
+        fixedDescriptors[0][3].Click!(ImGuiMouseButton.Left);
+        Assert.Equal(1, compact);
+        foreach (var descriptor in new[] { 2, 4, 5 })
+        {
+            fixedDescriptors[0][descriptor].Click!(ImGuiMouseButton.Right);
+            host.Frame(Draw);
+            Assert.Equal(new[] { 0, 0, 0 }, editors);
+        }
+        closeEditor = true;
+        foreach (var descriptor in new[] { 2, 4, 5 })
+        {
+            fixedDescriptors[0][descriptor].Click!(ImGuiMouseButton.Left);
+            host.Frame(Draw); host.Frame(Draw);
+        }
+        Assert.All(editors, count => Assert.True(count > 0));
+        Assert.False(privacy);
+        Assert.Equal(2, toggles);
+
+        var legacy = new AppearanceProbeWindow("Legacy###krangle-legacy");
+        MaterialAppearanceTitleBar.Register(legacy, () => labels, () => { }, () => { }, () => { }, () => { });
+        Assert.Equal(priorIcons, legacy.TitleBarButtons.Select(button => button.Icon));
+    }
+
     private sealed class AppearanceProbeWindow(string name) : Window(name)
     {
         public override void Draw() { }
