@@ -8,7 +8,13 @@ public readonly record struct MaterialSegment<T>(T Value, string Label, Material
 public static class MaterialSegmented
 {
     public static bool Draw<T>(string id, ReadOnlySpan<MaterialSegment<T>> segments, ref T value, float width = -1, bool disabled = false)
+        => Draw(id,segments,ref value,width,disabled,true);
+
+    /// <summary>Retains option icons for icon-only view switches; original overload keeps its selected check.</summary>
+    public static bool Draw<T>(string id, ReadOnlySpan<MaterialSegment<T>> segments, ref T value, float width, bool disabled,
+        bool showSelectionCheck, float? cornerRadius = null)
     {
+        if(cornerRadius is { } radius && (!float.IsFinite(radius) || radius<0)) throw new ArgumentOutOfRangeException(nameof(cornerRadius));
         if(segments.Length<2) throw new ArgumentException("At least two segments are required.",nameof(segments));
         var m=MaterialTheme.Metrics; var c=MaterialTheme.Current.Colors;
         var controls=MaterialControls.Metrics;
@@ -38,14 +44,15 @@ public static class MaterialSegmented
             var emphasis=MaterialDraw.Animate(state.Id,1,selected?1:0);
             var corners=i==0?ImDrawFlags.RoundCornersLeft:i==segments.Length-1?ImDrawFlags.RoundCornersRight:ImDrawFlags.RoundCornersNone;
             var bg=Vector4.Lerp(c.SurfaceContainerLow,c.SecondaryContainer,emphasis);
-            MaterialDraw.Shape(state,bg,c.OnSecondaryContainer,size.Y*.5f,false,corners);
+            var rounding=cornerRadius.HasValue?Math.Min(size.Y*.5f,cornerRadius.Value*m.Scale):size.Y*.5f;
+            MaterialDraw.Shape(state,bg,c.OnSecondaryContainer,rounding,false,corners);
             MaterialDraw.Content(state,segments[i].Label,selected?c.OnSecondaryContainer:c.OnSurface,
-                selected?MaterialIcon.Check:segments[i].Icon,MaterialIcon.None);
+                selected&&showSelectionCheck?MaterialIcon.Check:segments[i].Icon,MaterialIcon.None);
             if(state.Visible)
             {
                 var dl=ImGui.GetWindowDrawList();
                 // Straight shared boundaries, rounded outer corners only.
-                dl.AddRect(state.Min,state.Max,MaterialDraw.Color(c.OutlineVariant,state.Alpha),size.Y*.5f,corners,m.Border);
+                dl.AddRect(state.Min,state.Max,MaterialDraw.Color(selected&&!showSelectionCheck?c.Primary:c.OutlineVariant,state.Alpha),rounding,corners,m.Border);
             }
             ImGui.PopID();
         }

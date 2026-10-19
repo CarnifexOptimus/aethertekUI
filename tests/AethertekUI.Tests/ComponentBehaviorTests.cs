@@ -117,7 +117,7 @@ public class ComponentBehaviorTests
         host.Frame(Draw);host.Frame(Draw);Assert.True(seen);
     }
 
-    [Theory] [InlineData(0)] [InlineData(1)] [InlineData(2)] [InlineData(3)] [InlineData(4)]
+    [Theory] [InlineData(0)] [InlineData(1)] [InlineData(2)] [InlineData(3)] [InlineData(4)] [InlineData(5)]
     public void SelectionAndNavigationControlsActivate(int control)
     {
         using var host=new NativeTestContext();var theme=new MaterialTheme(new Vector3(.3f,.7f,.4f));
@@ -133,13 +133,14 @@ public class ComponentBehaviorTests
                 1=>MaterialNavigation.Item("nav","Data",MaterialIcon.Table,value),
                 2=>MaterialActionTile.Draw("tile",MaterialIcon.Play,"Start"),
                 3=>MaterialSelection.Checkbox("checkbox","Check",ref value),
+                5=>MaterialChip.FilterChip("chip","Selected",ref value,new MaterialControlAppearance(theme.Colors.Primary,theme.Colors.OnPrimary,theme.Colors.Outline,24),showSelectionCheck:false),
                 _=>MaterialSelection.Radio("radio","Choice",1,ref choice)
             };
             center=(ImGui.GetItemRectMin()+ImGui.GetItemRectMax())*.5f;
             ImGui.End();
         }
         host.Frame(Draw);host.Frame(Draw);host.Click(center,Draw);Assert.True(activated);
-        if(control is 0 or 3)Assert.True(value);
+        if(control is 0 or 3 or 5)Assert.True(value);
         if(control==4)Assert.Equal(1,choice);
     }
 

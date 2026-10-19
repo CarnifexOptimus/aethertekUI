@@ -6,7 +6,8 @@ namespace AethertekUI.Demo;
 internal sealed partial class Showcase
 {
     private bool enabled=true, checkedValue, chip, dialogOpen, cardSelected;
-    private int two,three,four,limited,radio;
+    private int two,three,four,limited,radio,viewMode;
+    private bool emphasisFilter;
     private string search="",text="Evening gathering";
     private float progress=.62f;
 
@@ -38,6 +39,12 @@ internal sealed partial class Showcase
                 if(ImGui.IsItemHovered(ImGuiHoveredFlags.AllowWhenDisabled)) ImGui.SetTooltip("Consumer-owned tooltip explains the disabled state.");
                 MaterialSelection.Radio("localRadio","Local",0,ref radio);
                 ImGui.SameLine(); MaterialSelection.Radio("sharedRadio","Shared",1,ref radio);
+                MaterialSegment<int>[] views=[new(0,"",MaterialIcon.Grid),new(1,"",MaterialIcon.List)];
+                MaterialSegmented.Draw<int>("viewMode",views,ref viewMode,112,false,false,6);
+                var colors=MaterialTheme.Current.Colors;
+                var emphasis=new MaterialControlAppearance(emphasisFilter?colors.Primary:Vector4.Zero,
+                    emphasisFilter?colors.OnPrimary:colors.OnSurface,emphasisFilter?colors.Primary:colors.Outline,24);
+                MaterialChip.FilterChip("emphasisFilter","All plugins",ref emphasisFilter,emphasis,showSelectionCheck:false);
             }
         }
     }

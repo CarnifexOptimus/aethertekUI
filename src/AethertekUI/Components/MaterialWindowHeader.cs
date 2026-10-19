@@ -15,15 +15,26 @@ public static class MaterialWindowHeader
         ImTextureID texture, Vector2 textureSize, float extraRightWidth = 0, bool showCloseButton = true)
         => PaintTitleCore(window, visibleTitle, texture, textureSize, null, extraRightWidth, showCloseButton);
 
+    /// <summary>Use the font that emitted the native caption, including fonts from a separate host atlas.</summary>
+    public static unsafe void PaintTitle(ImGuiWindowPtr window, string visibleTitle,
+        ImTextureID texture, Vector2 textureSize, ImFontPtr nativeCaptionFont, float extraRightWidth = 0, bool showCloseButton = true)
+        => PaintTitleCore(window, visibleTitle, texture, textureSize, null, extraRightWidth, showCloseButton, nativeCaptionFont);
+
     /// <summary>Append one measured status line and a noninteractive title tooltip; consumers own its data and visibility.</summary>
     public static unsafe void PaintTitleWithStatus(ImGuiWindowPtr window, string visibleTitle,
         ImTextureID texture, Vector2 textureSize, MaterialTitlebarStatus status,
         float extraRightWidth = 0, bool showCloseButton = true)
         => PaintTitleCore(window, visibleTitle, texture, textureSize, status, extraRightWidth, showCloseButton);
 
+    /// <summary>Preserves an explicitly captured native caption font when the replacement borrows another font.</summary>
+    public static unsafe void PaintTitleWithStatus(ImGuiWindowPtr window, string visibleTitle,
+        ImTextureID texture, Vector2 textureSize, MaterialTitlebarStatus status, ImFontPtr nativeCaptionFont,
+        float extraRightWidth = 0, bool showCloseButton = true)
+        => PaintTitleCore(window, visibleTitle, texture, textureSize, status, extraRightWidth, showCloseButton, nativeCaptionFont);
+
     private static unsafe void PaintTitleCore(ImGuiWindowPtr window, string visibleTitle,
         ImTextureID texture, Vector2 textureSize, MaterialTitlebarStatus? status,
-        float extraRightWidth, bool showCloseButton)
+        float extraRightWidth, bool showCloseButton, ImFontPtr nativeCaptionFont = default)
     {
         if (window.IsNull || !window.Active || (window.Flags & ImGuiWindowFlags.NoTitleBar) != 0) return;
         var context = ImGui.GetCurrentContext();
@@ -57,6 +68,8 @@ public static class MaterialWindowHeader
         // Erase only native caption glyphs. Repainting a background would multiply alpha
         // and cover the retained rounded chrome or native/custom title controls.
         var paintFont = ImGui.GetFont();
+        if (!nativeCaptionFont.IsNull && nativeCaptionFont != paintFont)
+            MaterialNativeCaption.HideGlyphs(list, 0, nativeCaptionFont, nativeTitle, title.Min, title.Max);
         MaterialNativeCaption.HideGlyphs(list, 0, paintFont, nativeTitle, title.Min, title.Max);
         // A consumer may borrow a different body font after End. The original
         // native caption can still belong to the host's atlas/default font.

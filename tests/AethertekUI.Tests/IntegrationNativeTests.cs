@@ -9,6 +9,47 @@ namespace AethertekUI.Tests;
 
 public unsafe class IntegrationNativeTests
 {
+    [Fact]
+    public void CapturedCaptionFontReplacesNativeInkFromASeparateHostAtlas()
+    {
+        using var host=new NativeTestContext();
+        var atlas=ImGui.ImFontAtlas();
+        try
+        {
+            var nativeFont=atlas.AddFontFromFileTTF(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Fonts),"seguisb.ttf"),22);
+            byte* pixels=null;int width=0,height=0;
+            atlas.GetTexDataAsRGBA32(0,&pixels,&width,&height);atlas.SetTexID(0,new ImTextureID((nint)71));
+            var theme=new MaterialTheme(new Vector3(.3f,.7f,.4f));
+            void Draw()
+            {
+                using var palette=MaterialTheme.Push(theme,1,MaterialStyleMode.ColorsOnly);
+                ImGui.GetStyle().WindowMenuButtonPosition=ImGuiDir.Right;
+                ImGui.PushFont(nativeFont);
+                ImGui.SetNextWindowPos(new(30,30));ImGui.SetNextWindowSize(new(680,200));
+                var open=true;
+                ImGui.Begin("Original###private-caption",ref open,ImGuiWindowFlags.NoSavedSettings);
+                var window=ImGuiP.GetCurrentWindow();
+                ImGui.End();ImGui.PopFont();
+                var list=window.DrawList;
+                var before=Enumerable.Range(0,list.VtxBuffer.Size).Select(i=>list.VtxBuffer[i]).ToArray();
+                var identity=window.ID;var size=window.SizeFull;
+                MaterialWindowHeader.PaintTitleWithStatus(window,"Replacement v1.0",default,Vector2.Zero,
+                    new("Ready","Ready"),nativeFont,80);
+                var changed=0;
+                for(var i=0;i<before.Length;i++)
+                {
+                    Assert.Equal(before[i].Pos,list.VtxBuffer[i].Pos);Assert.Equal(before[i].Uv,list.VtxBuffer[i].Uv);
+                    if(before[i].Col==list.VtxBuffer[i].Col) continue;
+                    changed++;Assert.Equal(before[i].Col&0x00FFFFFF,list.VtxBuffer[i].Col);
+                }
+                Assert.Equal("Original".Length*4,changed);
+                Assert.Equal(identity,window.ID);Assert.Equal(size,window.SizeFull);
+            }
+            host.Frame(Draw);host.Frame(Draw);
+        }
+        finally { ImGui.Destroy(atlas); }
+    }
+
     [Theory]
     [InlineData(MaterialDensity.Compact, 1f, false)]
     [InlineData(MaterialDensity.Standard, 1.5f, true)]

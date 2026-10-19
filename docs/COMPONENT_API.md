@@ -293,10 +293,12 @@ Tables remain native BeginTable/EndTable with a MaterialTable.PushStyle scope an
 | MaterialTheme | constructor(seed,density,generator), Push(theme,globalScale), Colors, SurfaceOpacity, Density, Motion | Cached immutable RGB scheme; opacity/density mutable |
 | MaterialButton | FilledButton, FilledTonalButton, OutlinedButton, TextButton, Draw, IconButton | Activation bool; stable id separate from label |
 | MaterialSegmented | Draw<T>(id, segments, ref value, width, disabled) | Value changed bool; options include Disabled and Icon |
+| MaterialSegmented | Draw<T>(id, segments, ref value, width, disabled, showSelectionCheck, cornerRadius) | Opt-in icon-preserving view switch and logical corner radius; original overload/IDs remain unchanged |
 | MaterialSwitch | Draw(id,label,ref value,disabled) | Changed bool; thumb interpolation |
 | MaterialSelection | Checkbox; Radio<T> | Changed bool; caller owns setting |
 | MaterialSurface | Begin; Card; ClickableCard; Color(elevation) | Ref-struct child scope / activation bool |
 | MaterialChip | FilterChip; ActionChip | Ref bool selection / activation |
+| MaterialChip | FilterChip(id, label, ref selected, appearance, disabled, icon, showSelectionCheck) | Explicit fill/foreground/border/radius; consumer can keep the filter caption without a selected check |
 | MaterialTextField | SearchField; TextField | Changed bool; native string editing, flags, maxLength |
 | MaterialNavigation | Rail; Item; ListItem | Child scope / activation |
 | MaterialTabs | Begin; Item | Native tab scopes with Visible |
@@ -414,7 +416,12 @@ Options/models must be owned per control or deliberately shared; sharing a Mater
 cursor or item ID. Missing/invalid textures draw nothing; the caller reserves
 layout space. `PaintTitle` runs after final End and motion/decorations restoration,
 before complete-window opacity. It masks only native caption glyphs and retains
-native controls, background, geometry and IDs. Supply existing custom/host-button
+native controls, background, geometry and IDs. If replacement text borrows a different font, capture
+`ImGui.GetFont()` before that borrow and use the overload accepting
+`nativeCaptionFont` after texture size (after status for `PaintTitleWithStatus`).
+The original native font can belong to a separate host atlas outside IO.Fonts;
+the explicit font preserves its glyph identity. Original overloads are unchanged.
+Supply existing custom/host-button
 reservation in pixels; native Close/collapse are budgeted separately. It always
 reserves one native-font-size image box plus inner spacing, including when the
 image is unavailable or the body is collapsed. The consumer owns the texture

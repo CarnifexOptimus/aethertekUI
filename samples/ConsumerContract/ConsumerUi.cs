@@ -10,6 +10,15 @@ namespace ConsumerContract;
 /// <summary>Compiles against project references AND packages. No GBR source or services.</summary>
 public sealed class ConsumerUi : IDisposable
 {
+    public static void DrawViewAndFilter(string label,ref int view,ref bool filter)
+    {
+        MaterialSegment<int>[] choices=[new(0,"",MaterialIcon.Grid),new(1,"",MaterialIcon.List)];
+        MaterialSegmented.Draw<int>("view",choices,ref view,112,false,false,6);
+        var c=MaterialTheme.Current.Colors;
+        MaterialChip.FilterChip("filter",label,ref filter,new MaterialControlAppearance(filter?c.Primary:Vector4.Zero,
+            filter?c.OnPrimary:c.OnSurface,filter?c.Primary:c.Outline,24),showSelectionCheck:false);
+    }
+
     // Repaint only the external label: the native editor keeps its original ID and user text.
     public static bool DrawTranslatedNativeCount(string nativeLabel, string caption, ref int value)
     {
@@ -203,8 +212,9 @@ public sealed class ConsumerUi : IDisposable
         {
             motion.Restore(this);
             var native = ImGuiP.FindWindowByName(WindowName);
+            var nativeCaptionFont = ImGui.GetFont(); // Capture before borrowing any replacement font.
             if (!native.IsNull)
-                MaterialWindowHeader.PaintTitle(native, "Consumer integration contract", BorrowedImage, BorrowedImageSize,
+                MaterialWindowHeader.PaintTitle(native, "Consumer integration contract", BorrowedImage, BorrowedImageSize, nativeCaptionFont,
                     (TitleBarButtons.Count + 1) * (ImGuiP.CalcFontSize(native) + ImGui.GetStyle().ItemInnerSpacing.X), ShowCloseButton);
             // Consumer-owned preferences can replace these defaults; the theme is still active.
             opacity.Apply(WindowName);

@@ -89,8 +89,8 @@ public unsafe class NativeInteractionTests
         }
     }
 
-    [Theory] [InlineData(false)] [InlineData(true)]
-    public void MouseActivatesSwitchAndSegmentButDisabledControlsDoNotChange(bool disabled)
+    [Theory] [InlineData(false,false)] [InlineData(true,false)] [InlineData(false,true)] [InlineData(true,true)]
+    public void MouseActivatesSwitchAndSegmentButDisabledControlsDoNotChange(bool disabled,bool keepIcons)
     {
         using var host=new NativeTestContext();
         var theme=new MaterialTheme(new Vector3(.3f,.7f,.4f));
@@ -104,7 +104,8 @@ public unsafe class NativeInteractionTests
             ImGui.Begin("Interactions",ImGuiWindowFlags.NoSavedSettings|ImGuiWindowFlags.NoTitleBar);
             MaterialSwitch.Draw("switch","Enabled",ref enabled,disabled);
             switchCenter=(ImGui.GetItemRectMin()+ImGui.GetItemRectMax())*.5f;
-            MaterialSegmented.Draw<int>("segments",options,ref selected,300,disabled);
+            if(keepIcons) MaterialSegmented.Draw<int>("segments",options,ref selected,300,disabled,false,6);
+            else MaterialSegmented.Draw<int>("segments",options,ref selected,300,disabled);
             segmentCenter=(ImGui.GetItemRectMin()+ImGui.GetItemRectMax())*.5f;
             ImGui.End();
         }

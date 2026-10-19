@@ -189,6 +189,13 @@ Zero/negative sizing conventions vary by component; consult
 Retain native ImGui editing, focus, navigation, clipping, sorting and disabled
 behavior. Consumers configure input/navigation and route any controller events.
 
+For icon-only Cards/Table switches, the `MaterialSegmented.Draw` overload with
+`showSelectionCheck: false` retains the selected option's icon; `cornerRadius`
+uses logical units. `MaterialChip.FilterChip` also accepts
+`MaterialControlAppearance` and an optional selected-check flag for emphasized
+filters. The original overloads keep their defaults and native IDs. The gallery's
+secondary tab and independent consumer show these opt-in controls.
+
 Set an auto-sized window's required width before native Begin, using the
 consumer's PreDraw hook where available. Calling SetWindowSize from Draw can
 leave that frame's work rectangle narrow and feed a collapsed width back into
@@ -283,6 +290,12 @@ warning under that owner, and emit its text after the native title repaint.
 Caption-glyph removal can otherwise erase matching timer letters. Preserve
 the captured font, size, colour and actual timer reservation.
 
+When borrowing a replacement font after End, capture
+the native font with `ImGui.GetFont()` before the borrow and pass it through the
+`PaintTitle`/`PaintTitleWithStatus` overload accepting `nativeCaptionFont`.
+Botology's private-atlas regression showed that scanning only the paint font and
+IO.Fonts can leave every original caption glyph visible. The original overloads
+remain available; the independent consumer demonstrates the explicit font route.
 The shared painter retains icon/title/version first, then a semantic dot and
 quieter measured status in the existing remaining rectangle. Full text gives way
 to ShortText, then a grapheme-safe ellipsis; no meaningful fit emits no status ink.
