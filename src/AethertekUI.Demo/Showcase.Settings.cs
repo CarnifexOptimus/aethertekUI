@@ -13,14 +13,29 @@ internal sealed partial class Showcase
     private float appearanceFadeDelay=10;
     private string appearanceLanguage="en";
     private static readonly string[] Routes=["Nearest node","Lowest cost","Preferred location"];
+    private void RebuildTheme()
+    {
+        theme = new(seed, colorChoices, (MaterialDensity)density) { SurfaceOpacity = opacity };
+        theme.Motion.Enabled = !reduceMotion;
+        appliedColorChoices = colorChoices;
+    }
+
+    private void DrawColourEditor(string id)
+    {
+        if (MaterialAppearanceSelector.DrawColors(id, ref colorChoices, ref seed,
+            new("Colour", "Language", "Teal", "Blue", "Pink", "Custom RGB"),
+            new("Auto", "Picker", "DEFAULT", "Background, controls and text follow your theme.", "Theme colour",
+                "Choose each colour independently.", "Background", "Controls", "Text", "Aa  Preview text", "Control",
+                "Switch to Picker to set each colour yourself.", "Switch back to Auto to use the automatic theme."))) RebuildTheme();
+    }
+
     private void Settings()
     {
         MaterialText.Text("Window appearance");
         MaterialAppearanceTab.Draw("groupedAppearance",new("THEME & LANGUAGE","MAIN WINDOW CONTROLS","WINDOW OPACITY","WHEN UNFOCUSED"),
             360*MaterialTheme.Metrics.Scale,() =>
         {
-            if(MaterialAppearanceSelector.DrawPalette("appearance",ref seed,new("Color","Language","Teal","Blue","Pink","Custom RGB")))
-                theme=new(seed,(MaterialDensity)density) { SurfaceOpacity=opacity };
+            DrawColourEditor("appearance");
             MaterialText.Text("Language");ImGui.SameLine();
             MaterialAppearanceSelector.DrawLanguage("appearance",ref appearanceLanguage,sizingLanguages);
             ImGui.Checkbox("Compact mode",ref appearanceCompact);

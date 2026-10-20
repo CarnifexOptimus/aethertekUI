@@ -38,6 +38,51 @@ public sealed class MaterialColorScheme
     public Vector4 InverseOnSurface { get; init; }
     public Vector4 InversePrimary { get; init; }
     public Vector4 Scrim { get; init; }
+
+    /// <summary>Three explicit colour families; semantic error colours retain their original meaning.</summary>
+    internal MaterialColorScheme(MaterialColorScheme automatic, Vector3 background, Vector3 controls, Vector3 text)
+    {
+        var backdrop = new Vector4(background, 1);
+        var control = new Vector4(controls, 1);
+        var foreground = new Vector4(text, 1);
+        var reference = MaterialColor.SrgbToOklab(new(automatic.Background.X, automatic.Background.Y, automatic.Background.Z)).X;
+        var selected = MaterialColor.LabToLch(MaterialColor.SrgbToOklab(background));
+        Vector4 SurfaceTone(Vector4 role)
+        {
+            var lightness = MaterialColor.SrgbToOklab(new(role.X, role.Y, role.Z)).X;
+            var offset = lightness - reference;
+            // Keep a visible surface hierarchy for light backgrounds too. The chosen base stays exact.
+            if (selected.X > .7f) offset = -offset;
+            return new(MaterialColor.GamutMap(selected.X + offset, selected.Y, selected.Z), 1);
+        }
+
+        Background = backdrop;
+        OnBackground = OnSurface = OnSurfaceVariant = foreground;
+        Surface = SurfaceTone(automatic.Surface);
+        SurfaceContainerLowest = SurfaceTone(automatic.SurfaceContainerLowest);
+        SurfaceContainerLow = SurfaceTone(automatic.SurfaceContainerLow);
+        SurfaceContainer = SurfaceTone(automatic.SurfaceContainer);
+        SurfaceContainerHigh = SurfaceTone(automatic.SurfaceContainerHigh);
+        SurfaceContainerHighest = SurfaceTone(automatic.SurfaceContainerHighest);
+        SurfaceVariant = SurfaceTone(automatic.SurfaceVariant);
+        Primary = Secondary = Tertiary = control;
+        SecondaryContainer = control;
+        PrimaryContainer = MaterialColor.Layer(backdrop, control, .65f);
+        TertiaryContainer = MaterialColor.Layer(backdrop, control, .45f);
+        OnPrimary = OnSecondary = OnTertiary = foreground;
+        OnPrimaryContainer = OnSecondaryContainer = OnTertiaryContainer = foreground;
+        Outline = MaterialColor.Layer(backdrop, control, .8f);
+        OutlineVariant = MaterialColor.Layer(backdrop, control, .5f);
+        InverseSurface = foreground;
+        InverseOnSurface = backdrop;
+        InversePrimary = control;
+        Error = automatic.Error;
+        OnError = automatic.OnError;
+        ErrorContainer = automatic.ErrorContainer;
+        OnErrorContainer = automatic.OnErrorContainer;
+        Scrim = automatic.Scrim;
+    }
+
     public MaterialColorScheme(MaterialPalette palette)
     {
         Primary = palette.Primary[80];

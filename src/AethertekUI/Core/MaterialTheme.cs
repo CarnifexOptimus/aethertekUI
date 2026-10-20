@@ -31,6 +31,10 @@ public sealed class MaterialTheme
         Colors = colors ?? throw new ArgumentNullException(nameof(colors));
         Density = density;
     }
+    public MaterialTheme(Vector3 seed, MaterialColorSettings colorSettings, MaterialDensity density = MaterialDensity.Compact,
+        IPaletteGenerator? generator = null)
+        : this((colorSettings ?? throw new ArgumentNullException(nameof(colorSettings)))
+            .Apply(new MaterialColorScheme((generator ?? new OklchPaletteGenerator()).Generate(seed))), density) { }
     public Vector4 SurfaceColor(Vector4 role) => MaterialColor.Alpha(role,SurfaceOpacity);
     public static ThemeScope Push(MaterialTheme theme, float globalScale = 1, bool applyMetrics = true)
         => new(theme,globalScale,applyMetrics ? MaterialStyleMode.Compatible : MaterialStyleMode.ColorsOnly);

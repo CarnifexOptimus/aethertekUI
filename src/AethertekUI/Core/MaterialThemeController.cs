@@ -11,6 +11,7 @@ public sealed record MaterialThemeSettings
     public float SurfaceOpacity { get; init; } = .94f;
     public MaterialDensity Density { get; init; } = MaterialDensity.Compact;
     public bool ReducedMotion { get; init; }
+    public MaterialColorSettings Colors { get; init; } = new();
 
     public void Validate()
     {
@@ -20,6 +21,8 @@ public sealed record MaterialThemeSettings
         if (!float.IsFinite(SurfaceOpacity) || SurfaceOpacity is < 0 or > 1)
             throw new ArgumentOutOfRangeException(nameof(SurfaceOpacity));
         if (!Enum.IsDefined(Density)) throw new ArgumentOutOfRangeException(nameof(Density));
+        ArgumentNullException.ThrowIfNull(Colors);
+        Colors.Validate();
     }
 }
 
@@ -43,7 +46,8 @@ public sealed class MaterialThemeController
         ArgumentNullException.ThrowIfNull(settings);
         settings.Validate();
         if (settings == Settings) return false;
-        if (settings.SeedRed != Settings.SeedRed || settings.SeedGreen != Settings.SeedGreen || settings.SeedBlue != Settings.SeedBlue)
+        if (settings.SeedRed != Settings.SeedRed || settings.SeedGreen != Settings.SeedGreen || settings.SeedBlue != Settings.SeedBlue
+            || settings.Colors != Settings.Colors)
             Theme = Create(settings);
         else
         {
@@ -57,7 +61,7 @@ public sealed class MaterialThemeController
 
     private MaterialTheme Create(MaterialThemeSettings settings)
     {
-        var result = new MaterialTheme(new Vector3(settings.SeedRed, settings.SeedGreen, settings.SeedBlue), settings.Density, generator)
+        var result = new MaterialTheme(new Vector3(settings.SeedRed, settings.SeedGreen, settings.SeedBlue), settings.Colors, settings.Density, generator)
         { SurfaceOpacity = settings.SurfaceOpacity };
         result.Motion.Enabled = !settings.ReducedMotion;
         return result;

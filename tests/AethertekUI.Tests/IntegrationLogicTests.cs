@@ -86,6 +86,24 @@ public class IntegrationLogicTests
         Assert.Equal(new MaterialThemeSettings(),
             Newtonsoft.Json.JsonConvert.DeserializeObject<MaterialThemeSettings>("{}"));
     }
+
+    [Fact]
+    public void PickerChangesRebuildTheThemeOnceAndAutoRestoresEveryOriginalRole()
+    {
+        var generator = new CountingGenerator();
+        var host = new MaterialThemeController(generator: generator);
+        var original = host.Theme.Colors;
+        var picked = host.Settings with { Colors = new() { Mode = MaterialColorMode.Picker } };
+        Assert.True(host.Apply(picked));
+        Assert.Equal(2, generator.Calls);
+        Assert.Equal(new Vector4(MaterialColorSettings.Rgb(picked.Colors.ControlsRgb), 1), host.Theme.Colors.Primary);
+        Assert.False(host.Apply(picked with { Colors = picked.Colors with { } }));
+        Assert.Equal(2, generator.Calls);
+        Assert.True(host.Apply(picked with { Colors = picked.Colors with { Mode = MaterialColorMode.Auto } }));
+        Assert.Equal(3, generator.Calls);
+        foreach (var property in typeof(MaterialColorScheme).GetProperties())
+            Assert.Equal(property.GetValue(original), property.GetValue(host.Theme.Colors));
+    }
     [Fact]
     public void FilteredOptionsRetainValueIdentityAcrossReplacementAndRejectDuplicateKeys()
     {

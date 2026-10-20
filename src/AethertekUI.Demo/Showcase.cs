@@ -12,6 +12,8 @@ internal sealed partial class Showcase
     internal MaterialDensity DemoDensity { set { density=(int)value; theme.Density=value; } }
     private Vector3 seed = new(.36f,.72f,.46f);
     private MaterialTheme theme = new(new Vector3(.36f,.72f,.46f));
+    private MaterialColorSettings colorChoices = new();
+    private MaterialColorSettings? appliedColorChoices;
     private float opacity=.94f;
     private int density;
     private bool expanded=true;
@@ -49,6 +51,7 @@ internal sealed partial class Showcase
     public void Draw(float globalScale = 1)
     {
         if(!IsOpen&&!overlayOpen&&!windowMotionOpen&&!HindiPreviewOpen&&!appearanceWindow.IsOpen) return;
+        if (colorChoices != appliedColorChoices) RebuildTheme();
         // The theme scope wraps Begin/End, so it also styles the outer window.
         using var scope=MaterialTheme.Push(theme,globalScale,MaterialStyleMode.Material);
         using var chrome=MaterialWindowChrome.Push();
@@ -151,7 +154,7 @@ internal sealed partial class Showcase
         if(ImGui.ColorEdit3("Accent",ref seed,ImGuiColorEditFlags.NoInputs))
         {
             var motion=theme.Motion.Enabled;
-            theme=new(seed,(MaterialDensity)density) { SurfaceOpacity=opacity };
+            RebuildTheme();
             theme.Motion.Enabled=motion;
             notice="Accent palette regenerated.";
         }

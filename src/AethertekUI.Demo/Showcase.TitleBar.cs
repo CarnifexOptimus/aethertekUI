@@ -80,9 +80,7 @@ internal sealed partial class Showcase
 
         private void DrawColour()
         {
-            if (MaterialAppearanceSelector.DrawPalette("titlebar-colour", ref showcase.seed,
-                new("Colour", "Language", "Teal", "Blue", "Pink", "Custom RGB")))
-                showcase.theme = new(showcase.seed, (MaterialDensity)showcase.density) { SurfaceOpacity = showcase.opacity };
+            showcase.DrawColourEditor("titlebar-colour");
         }
     }
 }

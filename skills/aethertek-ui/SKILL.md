@@ -222,6 +222,29 @@ its table footer, and verify the final native child content and scroll range.
 
 ## Grouped settings and Appearance standard
 
+For the approved three-colour editor, use `MaterialAppearanceSelector.DrawColors`
+in both the native-titlebar Colour popup and Settings. Show Auto and Picker as
+radio options, with Auto as the default. Auto retains the consumer's existing
+automatic palette, seed and preset/custom RGB controls exactly. Picker stores
+independent Background, Controls and Text RGB choices in consumer-owned
+`MaterialColorSettings`; retain them when switching back to Auto. Apply the
+settings to the existing automatic scheme with `settings.Apply(scheme)`, or use
+the colour-settings `MaterialTheme` constructor/`MaterialThemeSettings.Colors`.
+Do not replace a consumer's established Auto palette with the library default.
+Picker keeps its chosen base RGB values exact, derives related surface roles,
+and preserves semantic error/status colours. Do not silently adjust user colours
+to enforce contrast. Keep all windows and popups on the same choice.
+
+Keep the editor's colour/seed drafts outside Draw. `DrawColors` updates the
+drafts during native editing and returns true only for mode/preset changes or
+completed RGB edits. Save through the consumer's existing global appearance
+owner at that boundary, and rebuild the cached theme at the next frame boundary
+when the draft changes. Supply translated `MaterialColorLabels`, measure the
+longest row and preserve the original Auto `DrawPalette` ID root. The showcase
+Settings and native-titlebar preview share this editor; FrenRider is the first
+selected product. Other consumers still need their own selected integration,
+native/save checks and user-controlled host acceptance.
+
 Use the approved grouped Appearance layout through `MaterialAppearanceTab.Draw`:
 Theme & Language and Main window controls on the left; Window opacity and When
 unfocused on the right. Pass translated `MaterialAppearanceSections` labels and

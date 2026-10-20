@@ -93,6 +93,48 @@ public class ColorTests
         Assert.Throws<ArgumentOutOfRangeException>(()=>t.SurfaceOpacity=float.NaN);
         Assert.Throws<ArgumentOutOfRangeException>(()=>new OklchPaletteGenerator().Generate(new(float.NaN,0,0)));
     }
+
+    [Theory]
+    [InlineData(0x000000u, 0x000000u, 0x000000u)]
+    [InlineData(0xFFFFFFu, 0xFFFFFFu, 0xFFFFFFu)]
+    [InlineData(0x132334u, 0x365C84u, 0xE5F2FFu)]
+    public void PickerKeepsChosenRgbExactAndFamiliesIndependent(uint background, uint controls, uint text)
+    {
+        var automatic = new MaterialTheme(new Vector3(.3f, .7f, .4f)).Colors;
+        var settings = new MaterialColorSettings { Mode = MaterialColorMode.Picker,
+            BackgroundRgb = background, ControlsRgb = controls, TextRgb = text };
+        Assert.Same(automatic, (settings with { Mode = MaterialColorMode.Auto }).Apply(automatic));
+        var chosen = settings.Apply(automatic);
+        Assert.Equal(new Vector4(MaterialColorSettings.Rgb(background), 1), chosen.Background);
+        Assert.Equal(new Vector4(MaterialColorSettings.Rgb(controls), 1), chosen.Primary);
+        Assert.Equal(chosen.Primary, chosen.SecondaryContainer);
+        Assert.Equal(new Vector4(MaterialColorSettings.Rgb(text), 1), chosen.OnSurface);
+        Assert.Equal(chosen.OnSurface, chosen.OnPrimary);
+        Assert.Equal(automatic.Error, chosen.Error); Assert.Equal(automatic.OnError, chosen.OnError);
+        Assert.Equal(automatic.ErrorContainer, chosen.ErrorContainer); Assert.Equal(automatic.OnErrorContainer, chosen.OnErrorContainer);
+        var newBackground = (settings with { BackgroundRgb = 0xABCDE0 }).Apply(automatic);
+        Assert.Equal(chosen.Primary, newBackground.Primary); Assert.Equal(chosen.OnSurface, newBackground.OnSurface);
+        var newControls = (settings with { ControlsRgb = 0xABCDE0 }).Apply(automatic);
+        Assert.Equal(chosen.Background, newControls.Background); Assert.Equal(chosen.Surface, newControls.Surface);
+        Assert.Equal(chosen.OnSurface, newControls.OnSurface);
+        var newText = (settings with { TextRgb = 0xABCDE0 }).Apply(automatic);
+        Assert.Equal(chosen.Background, newText.Background); Assert.Equal(chosen.Primary, newText.Primary);
+        Assert.Equal(chosen.SurfaceContainerHigh, newText.SurfaceContainerHigh);
+        foreach (var property in typeof(MaterialColorScheme).GetProperties()) Valid((Vector4)property.GetValue(chosen)!);
+    }
+
+    [Fact]
+    public void PickerSettingsRoundTripInBothHostSerializersAndLegacySettingsStayAutomatic()
+    {
+        var settings = new MaterialThemeSettings { Colors = new() { Mode = MaterialColorMode.Picker,
+            BackgroundRgb = 0x010203, ControlsRgb = 0x040506, TextRgb = 0x070809 } };
+        Assert.Equal(settings, System.Text.Json.JsonSerializer.Deserialize<MaterialThemeSettings>(System.Text.Json.JsonSerializer.Serialize(settings)));
+        Assert.Equal(settings, Newtonsoft.Json.JsonConvert.DeserializeObject<MaterialThemeSettings>(Newtonsoft.Json.JsonConvert.SerializeObject(settings)));
+        Assert.Equal(MaterialColorMode.Auto, System.Text.Json.JsonSerializer.Deserialize<MaterialThemeSettings>("{}")!.Colors.Mode);
+        Assert.Equal(MaterialColorMode.Auto, Newtonsoft.Json.JsonConvert.DeserializeObject<MaterialThemeSettings>("{}")!.Colors.Mode);
+        Assert.Throws<ArgumentOutOfRangeException>(() => (settings.Colors with { Mode = (MaterialColorMode)9 }).Validate());
+        Assert.Throws<ArgumentOutOfRangeException>(() => (settings.Colors with { TextRgb = 0x1000000 }).Validate());
+    }
     private static void Valid(Vector4 c)
     {
         foreach(var v in new[]{c.X,c.Y,c.Z,c.W}) { Assert.True(float.IsFinite(v)); Assert.InRange(v,0,1); }

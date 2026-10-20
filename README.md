@@ -42,6 +42,17 @@ complete groups at narrow widths. `MaterialAppearanceSelector.DrawPalette` suppl
 inline colour swatches; the Settings showcase demonstrates the layout. Existing
 configuration, native identities and save behavior stay with the consumer.
 
+The approved Colour editor now adds **Auto** (the default) and **Picker** radio
+options through `MaterialAppearanceSelector.DrawColors`. Auto retains the host's
+existing automatic scheme and accent controls. Picker remembers three independent
+RGB choices for Background, Controls and Text, with native colour/hex editors
+and a preview; returning to Auto retains those choices. `MaterialColorSettings`
+applies them to the host's existing scheme and leaves semantic error colours
+unchanged. Hosts retain drafts, configuration and completed-edit saves. Settings
+and the native-titlebar showcase share the editor; FrenRider is the first
+selected consumer. Live host visual acceptance and other consumer integrations
+remain separate.
+
 `MaterialAppearanceTitleBar.Register` supplies the standard native-titlebar actions:
 Language, Compact, Transparency, Colour and Krangle. New and adopted UIs show
 Krangle by default on main, mini and auxiliary windows. Use the overload with

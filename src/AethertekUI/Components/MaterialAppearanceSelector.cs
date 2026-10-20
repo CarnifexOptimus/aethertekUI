@@ -7,7 +7,7 @@ public readonly record struct MaterialAppearanceChange(bool AccentChanged, bool 
 public readonly record struct MaterialAppearanceLabels(string Color, string Language, string Teal, string Blue, string Pink, string Custom);
 
 /// <summary>Consumer owns labels, language options, edit draft, persistence, and frame-boundary theme updates.</summary>
-public static class MaterialAppearanceSelector
+public static partial class MaterialAppearanceSelector
 {
     /// <summary>Inline palette choices and the retained custom-colour popup for grouped appearance tabs.</summary>
     public static bool DrawPalette(string id, ref Vector3 accent, MaterialAppearanceLabels labels)
