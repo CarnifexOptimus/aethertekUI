@@ -245,6 +245,22 @@ Settings and native-titlebar preview share this editor; FrenRider is the first
 selected product. Other consumers still need their own selected integration,
 native/save checks and user-controlled host acceptance.
 
+Bind cached editor drafts to the actual configuration owner as well as its saved
+values. MOGTOME can switch account profiles with identical appearance values;
+refresh the draft at frame and editor entry when that owner changes, and save
+through its existing per-account route. For public/private hosts sharing JSON,
+extend the native merge/load/copy/save paths together and preserve unknown data,
+contract identity and separate language ownership. Check actual compiled hosts;
+stubbed release guards do not prove appearance persistence. Apply Picker settings
+to nested alternate themes too, and keep fixed decorative-fill shortcuts from
+overriding a manually selected Background.
+
+A selected browser companion uses its native appearance controls and storage
+instead of referencing ImGui. AutoParty implements Auto/Picker with the same
+three RGB roles in its header and Settings, retaining existing GET/hash
+preferences and the administration page's script-free CSP. Browser checks and
+synthetic save callbacks do not establish live host or game acceptance.
+
 Use the approved grouped Appearance layout through `MaterialAppearanceTab.Draw`:
 Theme & Language and Main window controls on the left; Window opacity and When
 unfocused on the right. Pass translated `MaterialAppearanceSections` labels and
