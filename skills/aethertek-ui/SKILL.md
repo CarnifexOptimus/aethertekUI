@@ -231,6 +231,15 @@ its table footer, and verify the final native child content and scroll range.
 
 ## Grouped settings and Appearance standard
 
+Use `MaterialText.SingleLine` for summary captions that must stay within one
+row. It fits a grapheme-safe ellipsis to the available width and restores inherited
+wrapping. Choose the summary's intended entity before bounding its text; keep full
+rosters and diagnostic payloads in existing detail surfaces, not giant tooltips.
+When an approved design summarizes accounts, collapse repeated session observations
+in presentation using existing identity rules, without altering transport records.
+Keep unresolved identities and conflicting live sessions explicit. Check long
+captions over several frames, both densities/scales and larger text.
+
 For the approved three-colour editor, use `MaterialAppearanceSelector.DrawColors`
 in both the native-titlebar Colour popup and Settings. Show Auto and Picker as
 radio options, with Auto as the default. Auto retains the consumer's existing

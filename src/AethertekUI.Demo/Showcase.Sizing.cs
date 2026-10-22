@@ -64,6 +64,10 @@ internal sealed partial class Showcase
                 ImGui.EndTable();
             }
         }
+        MaterialStatus.SectionHeader("BOUNDED SUMMARY TEXT");
+        MaterialText.SingleLine("Fixture account");
+        MaterialText.SingleLine("A fixture character with a longer display name@ExampleWorld");
+        MaterialText.SingleLine("Waiting for the current activity to finish before preparing the next assignment.");
         MaterialStatus.SectionHeader("CONTENT-SIZED ACTION");
         MaterialActionTile.Draw("measured-action",MaterialIcon.Play,"Start a longer named action",
             "This status wraps and the tile grows to fit.",new Vector2(240,72));

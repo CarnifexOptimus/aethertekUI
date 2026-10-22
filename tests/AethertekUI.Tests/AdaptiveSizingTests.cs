@@ -6,6 +6,84 @@ namespace AethertekUI.Tests;
 
 public class AdaptiveSizingTests
 {
+    [Fact]
+    public void AccountRowDetailsRetainTheLegacyCardActionId()
+    {
+        using var host = new NativeTestContext();
+        for (var frame = 0; frame < 3; frame++)
+            host.Frame(() =>
+            {
+                ImGui.SetNextWindowSize(new(700, 400));
+                ImGui.Begin("Account details identity", ImGuiWindowFlags.NoSavedSettings);
+                var caller = ImGui.GetID("caller-probe");
+                var legacyCards = ImGui.GetID("dad-home-participant-cards");
+                Assert.True(ImGui.BeginTable("dad-home-participant-cards", 1));
+                ImGui.TableNextColumn();
+                Assert.True(ImGui.BeginTable("dad-home-participant-fixture-worker", 1));
+                ImGui.TableNextColumn();
+                ImGui.Button("Details##dad-home-participant-details");
+                var previousAction = ImGuiP.GetItemID();
+                ImGui.EndTable();
+                ImGui.EndTable();
+                Assert.Equal(caller, ImGui.GetID("caller-probe"));
+
+                Assert.True(ImGui.BeginTable("dad-account-summary", 2));
+                ImGui.TableNextColumn();
+                ImGui.PushID("fixture-account");
+                var account = ImGui.GetID("account-probe");
+                ImGuiP.PushOverrideID(legacyCards);
+                ImGui.PushID("dad-home-participant-fixture-worker");
+                ImGui.Button("Details##dad-home-participant-details");
+                Assert.Equal(previousAction, ImGuiP.GetItemID());
+                ImGui.PopID();
+                ImGui.PopID();
+                Assert.Equal(account, ImGui.GetID("account-probe"));
+                ImGui.PopID();
+                ImGui.EndTable();
+                Assert.Equal(caller, ImGui.GetID("caller-probe"));
+                ImGui.End();
+            });
+    }
+
+    [Theory]
+    [InlineData(false, 1f, 1f)]
+    [InlineData(true, 1f, 1f)]
+    [InlineData(false, 1.5f, 1f)]
+    [InlineData(true, 1.5f, 1f)]
+    [InlineData(false, 1f, 2f)]
+    [InlineData(true, 1f, 2f)]
+    [InlineData(false, 1.5f, 2f)]
+    [InlineData(true, 1.5f, 2f)]
+    public void LongSummaryCaptionsStaySingleLineAndRestoreWrapping(bool compact, float scale, float fontScale)
+    {
+        using var host = new NativeTestContext(1800, 1400, fontScale);
+        var theme = new MaterialTheme(new Vector3(.3f, .7f, .4f), compact ? MaterialDensity.Compact : MaterialDensity.Standard);
+        var caption = "Waiting\r\n" + string.Join(" ", Enumerable.Repeat("A long translated summary caption with e\u0301 accents.", 160));
+        for (var frame = 0; frame < 3; frame++)
+            host.Frame(() =>
+            {
+                using var scope = MaterialTheme.Push(theme, scale, MaterialStyleMode.Material);
+                ImGui.SetNextWindowSize(new(720 * scale, 600 * scale));
+                ImGui.Begin("Bounded summary captions", ImGuiWindowFlags.NoSavedSettings);
+                ImGui.PushTextWrapPos(0);
+                var wrap = ImGuiP.GetCurrentWindow().DC.TextWrapPos;
+                var width = ImGui.GetContentRegionAvail().X;
+                var start = ImGui.GetCursorScreenPos();
+                MaterialText.SingleLine("Idle");
+                var lineHeight = ImGui.GetItemRectSize().Y;
+                var longStart = ImGui.GetCursorScreenPos();
+                MaterialText.SingleLine(caption);
+                Assert.Equal(lineHeight, ImGui.GetItemRectSize().Y);
+                Assert.True(ImGui.GetItemRectSize().X <= width + .01f);
+                Assert.Equal(wrap, ImGuiP.GetCurrentWindow().DC.TextWrapPos);
+                ImGui.Button("Details##retained-details");
+                Assert.True(ImGui.GetItemRectMin().Y - longStart.Y < lineHeight + ImGui.GetStyle().ItemSpacing.Y + 1);
+                Assert.True(ImGui.GetCursorScreenPos().Y - start.Y < lineHeight * 3 + ImGui.GetFrameHeightWithSpacing() * 2);
+                ImGui.PopTextWrapPos();
+                ImGui.End();
+            });
+    }
+
     public static IEnumerable<object[]> Contexts()
     {
         foreach (var density in Enum.GetValues<MaterialDensity>())

@@ -1,3 +1,4 @@
+using System.Globalization;
 using System.Numerics;
 using System.Text;
 using Dalamud.Bindings.ImGui;
@@ -242,6 +243,33 @@ public static partial class MaterialText
         if (MaterialTextRenderer.Current is { } renderer && RequiresShaping(text))
             renderer.Draw(drawList, position, color, text, fontSize, Math.Max(0, wrapWidth));
         else drawList.AddText(font, fontSize, position, color, text, wrapWidth);
+    }
+
+    /// <summary>Draw one informational line within the available width, with a grapheme-safe ellipsis.</summary>
+    public static void SingleLine(string text)
+    {
+        ArgumentNullException.ThrowIfNull(text);
+        var line = text.Replace('\r', ' ').Replace('\n', ' ').Trim();
+        var width = Math.Max(1, ImGui.GetContentRegionAvail().X);
+        if (Measure(line).X > width)
+        {
+            const string ellipsis = "...";
+            var boundaries = StringInfo.ParseCombiningCharacters(line);
+            var low = 0;
+            var high = boundaries.Length;
+            while (low < high)
+            {
+                var middle = (low + high + 1) / 2;
+                var end = middle == boundaries.Length ? line.Length : boundaries[middle];
+                if (Measure(line[..end] + ellipsis).X <= width) low = middle;
+                else high = middle - 1;
+            }
+            var length = low == boundaries.Length ? line.Length : boundaries[low];
+            line = Measure(ellipsis).X <= width ? line[..length] + ellipsis : string.Empty;
+        }
+        ImGui.PushTextWrapPos(-1);
+        try { Text(line); }
+        finally { ImGui.PopTextWrapPos(); }
     }
 
     public static void Text(string text, float wrapWidth = 0)
