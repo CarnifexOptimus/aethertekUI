@@ -189,6 +189,15 @@ Zero/negative sizing conventions vary by component; consult
 Retain native ImGui editing, focus, navigation, clipping, sorting and disabled
 behavior. Consumers configure input/navigation and route any controller events.
 
+First-use guide offers use ordinary titled nonmodal windows. Keep the parent
+interactive without dimming or an input-blocking backdrop; neither
+`BeginPopupModal` nor `MaterialDialog` meets this requirement. Preserve each
+offer's native identity, translations, consumed/visited distinction and owner
+cleanup. Escape dismisses only the focused offer. Pair every native `Begin`
+with `End`, including collapsed windows, and retire an offer when the parent
+opens its guide directly. Verify actual parent interaction and close/save state
+at both densities; changing only the dim colour does not establish nonmodal behavior.
+
 For icon-only Cards/Table switches, the `MaterialSegmented.Draw` overload with
 `showSelectionCheck: false` retains the selected option's icon; `cornerRadius`
 uses logical units. `MaterialChip.FilterChip` also accepts
