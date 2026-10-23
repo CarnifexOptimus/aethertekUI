@@ -16,6 +16,7 @@ See [Adaptive sizing and host compatibility](ADAPTIVE_SIZING.md) for units, owne
 | AethertekUI.Dalamud.MaterialAppearanceTitleBar.Register / RefreshVisibility / DrawPopups | Standard Language, Compact, Transparency, Colour and Krangle titlebar actions; consumer-owned callbacks, localization and privacy state |
 | MaterialColorMode.Lcars / MaterialColorLabels.Lcars, LcarsHelp | Opt-in third colour mode; retains Auto/Picker values and semantic error roles |
 | MaterialLcars.Header / PanelHeading / PanelFrame / Footer / NativeButtonStyle | Shared elbow/rail/panel geometry and retained native-button styling; caller retains IDs and scopes |
+| MaterialAppearanceTitleBar.SetLcarsIcons / MaterialLcars.ControlBlue / MaterialIcon.Chocobo | Opt-in titlebar glyphs, blue control accent and a bird silhouette; original icon ordinals and actions retained |
 | MaterialTheme.Feedback / MaterialLcars.Feedback | Host-owned activation feedback; disabled controls remain silent |
 | MaterialUiSoundPlayer.TryPlay / Stop / Dispose | Optional original Click/Toggle/Preview PCM on one owned Windows waveOut handle; consumer owns mute and lifetime |
 | MaterialSettings.Columns / Section | Compact semantic groups; measured pixel minimum controls wide-to-narrow reflow while retaining caller IDs |

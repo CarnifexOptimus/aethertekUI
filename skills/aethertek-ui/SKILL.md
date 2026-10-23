@@ -245,8 +245,12 @@ alone is not this skin. Pass translated headings and the current density/scale.
 Headings wrap at their measured available width. Paint `PanelFrame` in the
 owner's existing background channel, keeping original tables, native IDs, fonts,
 controls and actions. `NativeButtonStyle()` adapts retained native buttons with
-contrasting captions and respects explicit caller fills. Keep its returned
-style scope lexical. `MaterialCanvas.Color` already applies native style alpha;
+dark outlined faces and contrasting captions; its accent overload supplies a
+specific border colour while respecting explicit semantic fills. Enter it after
+control metrics and keep its returned style scope lexical. `ControlBlue` supplies
+the approved switch/slider accent; pastel panels remain separate. Reserve the
+twelve-pixel PanelFrame band outside content so it cannot cover controls.
+`MaterialCanvas.Color` already applies native style alpha;
 do not multiply it again.
 
 UI sounds are optional, default muted, and consumer-owned. Cache one
@@ -271,6 +275,13 @@ the existing publish-before-consumer GitHub Actions guidance when publication
 is authorized: verify the new library commit is available, then pin and publish
 the consumer. Native CPU renders and tests remain distinct from game/GPU and
 audible-output acceptance.
+
+Bind the existing Krangle action using the titlebar overload that accepts its
+toggle and tooltip; the older four-action overload cannot show that button.
+Call `SetLcarsIcons(theme.IsLcars)` on the retained adapter to select globe,
+monitor and droplet glyphs without changing priorities, IDs or callbacks.
+Verify the complete Settings owner including selected navigation: LCARS uses
+dark selected text on a lilac fill, not dark text on PrimaryContainer.
 
 ## Grouped settings and Appearance standard
 

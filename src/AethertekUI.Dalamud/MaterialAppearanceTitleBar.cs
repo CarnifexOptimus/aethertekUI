@@ -106,6 +106,14 @@ public sealed class MaterialAppearanceTitleBar
     private MaterialAppearanceTitleBarVisibility GetVisibility()
         => visibility?.Invoke() ?? new(true, true, true, true);
 
+    /// <summary>Opt-in glyphs matching LCARS mockups; changes no action, priority, native ID or visibility.</summary>
+    public void SetLcarsIcons(bool enabled)
+    {
+        buttons[0].Button.Icon = enabled ? FontAwesomeIcon.Globe : FontAwesomeIcon.Language;
+        buttons[1].Button.Icon = enabled ? FontAwesomeIcon.Desktop : FontAwesomeIcon.CompressAlt;
+        buttons[2].Button.Icon = enabled ? FontAwesomeIcon.Tint : FontAwesomeIcon.Adjust;
+    }
+
     /// <summary>
     /// Draw after native End and motion restore, before opacity, including collapsed frames.
     /// A central host may instead call after WindowSystem.Draw, consistently in that scope.

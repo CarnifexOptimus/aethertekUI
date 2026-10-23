@@ -88,6 +88,18 @@ public sealed class LcarsTests
             MaterialButton.FilledButton("run", "Run", disabled: disabled);
             id = ImGui.GetCurrentContext().LastItemData.ID;
             button = (ImGui.GetItemRectMin() + ImGui.GetItemRectMax()) * .5f;
+            if (theme.IsLcars)
+            {
+                var previousFill = ImGui.GetStyle().Colors[(int)ImGuiCol.Button];
+                using (MaterialLcars.NativeButtonStyle(MaterialLcars.Amber))
+                {
+                    Assert.Equal(MaterialLcars.Background, ImGui.GetStyle().Colors[(int)ImGuiCol.Button]);
+                    Assert.Equal(MaterialLcars.Amber, ImGui.GetStyle().Colors[(int)ImGuiCol.Border]);
+                    Assert.True(ImGui.GetStyle().FrameBorderSize > 0);
+                    Assert.True(MaterialColor.Contrast(ImGui.GetStyle().Colors[(int)ImGuiCol.Button], ImGui.GetStyle().Colors[(int)ImGuiCol.Text]) > 12);
+                }
+                Assert.Equal(previousFill, ImGui.GetStyle().Colors[(int)ImGuiCol.Button]);
+            }
             ImGui.End();
         }
         host.Frame(Draw); host.Frame(Draw);

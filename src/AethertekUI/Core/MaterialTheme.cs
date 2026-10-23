@@ -83,9 +83,9 @@ public sealed class MaterialTheme
             style.Color(ImGuiCol.Header,theme.IsLcars ? c.PrimaryContainer : c.SecondaryContainer);
             style.Color(ImGuiCol.HeaderHovered,MaterialColor.Layer(c.SurfaceContainer,c.OnSurface,.08f));
             style.Color(ImGuiCol.HeaderActive,c.PrimaryContainer);
-            style.Color(ImGuiCol.CheckMark,c.Primary);
-            style.Color(ImGuiCol.SliderGrab,c.Primary);
-            style.Color(ImGuiCol.SliderGrabActive,c.OnPrimaryContainer);
+            style.Color(ImGuiCol.CheckMark,theme.IsLcars ? MaterialLcars.ControlBlue : c.Primary);
+            style.Color(ImGuiCol.SliderGrab,theme.IsLcars ? MaterialLcars.ControlBlue : c.Primary);
+            style.Color(ImGuiCol.SliderGrabActive,theme.IsLcars ? MaterialLcars.ControlBlue : c.OnPrimaryContainer);
             style.Color(ImGuiCol.Separator,c.OutlineVariant);
             style.Color(ImGuiCol.SeparatorHovered,c.Primary);
             style.Color(ImGuiCol.SeparatorActive,c.Primary);
@@ -117,7 +117,7 @@ public sealed class MaterialTheme
             style.Style(ImGuiStyleVar.ChildRounding,m.OuterRadius);
             style.Style(ImGuiStyleVar.PopupRounding,m.Radius);
             // Native checkboxes, steppers and narrow editors are not pill buttons.
-            style.Style(ImGuiStyleVar.FrameRounding,(theme.IsLcars ? 16 : 4)*scale);
+            style.Style(ImGuiStyleVar.FrameRounding,4*scale);
             style.Style(ImGuiStyleVar.GrabRounding,m.Radius);
             style.Style(ImGuiStyleVar.TabRounding,m.Radius*.5f);
             style.Style(ImGuiStyleVar.ScrollbarRounding,m.Radius);

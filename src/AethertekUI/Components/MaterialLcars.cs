@@ -12,6 +12,7 @@ public static class MaterialLcars
     public static Vector4 Amber => new(1, 204f / 255, 153f / 255, 1);
     public static Vector4 Background => new(7f / 255, 9f / 255, 13f / 255, 1);
     public static Vector4 Text => new(244f / 255, 241f / 255, 234f / 255, 1);
+    public static Vector4 ControlBlue => new(53f / 255, 156f / 255, 1, 1);
 
     public static Vector4 Accent(int index) => ((index % 4 + 4) % 4) switch
     {
@@ -23,8 +24,10 @@ public static class MaterialLcars
         if (activated && MaterialTheme.Current.IsLcars) MaterialTheme.Current.Feedback?.Invoke(cue);
     }
 
-    /// <summary>Pastel native buttons with contrasting captions; respects explicit caller fills and native IDs.</summary>
-    public static MaterialStyleScope NativeButtonStyle()
+    /// <summary>Dark outlined native buttons; explicit semantic fills and native IDs remain owned by the caller.</summary>
+    public static MaterialStyleScope NativeButtonStyle() => NativeButtonStyle(Lilac);
+
+    public static MaterialStyleScope NativeButtonStyle(Vector4 accent)
     {
         var scope = new MaterialStyleScope();
         if (!MaterialTheme.Current.IsLcars) return scope;
@@ -32,10 +35,13 @@ public static class MaterialLcars
         var fill = ImGui.GetStyle().Colors[(int)ImGuiCol.Button];
         if (fill == c.SurfaceContainerHighest)
         {
-            fill = Lilac;
+            fill = Background;
             scope.Color(ImGuiCol.Button, fill);
-            scope.Color(ImGuiCol.ButtonHovered, MaterialColor.Layer(fill, Background, .08f));
-            scope.Color(ImGuiCol.ButtonActive, MaterialColor.Layer(fill, Background, .16f));
+            scope.Color(ImGuiCol.ButtonHovered, MaterialColor.Layer(fill, accent, .12f));
+            scope.Color(ImGuiCol.ButtonActive, MaterialColor.Layer(fill, accent, .22f));
+            scope.Color(ImGuiCol.Border, accent);
+            scope.Style(ImGuiStyleVar.FrameBorderSize, 1.5f * MaterialTheme.Metrics.Scale);
+            scope.Style(ImGuiStyleVar.FrameRounding, 6 * MaterialTheme.Metrics.Scale);
         }
         if (fill.W > .01f)
             scope.Color(ImGuiCol.Text, MaterialColor.Contrast(fill, Background) >= MaterialColor.Contrast(fill, Text) ? Background : Text);
@@ -84,7 +90,7 @@ public static class MaterialLcars
         var min = ImGui.GetCursorScreenPos();
         var dl = ImGui.GetWindowDrawList();
         dl.PushClipRect(min, min + new Vector2(width, height), true);
-        dl.AddRectFilled(min, min + new Vector2(width, height), Ink(Accent(accent)), height * .5f);
+        dl.AddRectFilled(min, min + new Vector2(width, height), Ink(Accent(accent)), 5 * scale);
         MaterialText.AddText(dl, min + new Vector2(14 * scale, (height - text.Y) * .5f),
             Ink(Background), title, wrap);
         dl.PopClipRect();
@@ -96,9 +102,14 @@ public static class MaterialLcars
     {
         var scale = MaterialTheme.Metrics.Scale;
         var dl = ImGui.GetWindowDrawList();
-        dl.AddRectFilled(min, max, Ink(MaterialTheme.Current.Colors.Background), 6 * scale);
-        dl.AddLine(new(min.X, min.Y + 12 * scale), new(min.X, max.Y - 5 * scale), Ink(Accent(accent)), 2 * scale);
-        dl.AddLine(new(min.X + 3 * scale, max.Y), new(Math.Min(max.X, min.X + 50 * scale), max.Y), Ink(Accent(accent)), 3 * scale);
+        var colour = Ink(Accent(accent));
+        var radius = Math.Min(18 * scale, Math.Min(max.X - min.X, max.Y - min.Y) * .5f);
+        dl.AddRectFilled(min, max, Ink(Background), radius);
+        dl.AddRect(min, max, colour, radius, ImDrawFlags.None, 2 * scale);
+        // The caller reserves this twelve-pixel band outside its content bounds.
+        dl.AddRectFilled(min, new(min.X + 12 * scale, max.Y), colour, radius, ImDrawFlags.RoundCornersLeft);
+        dl.AddRectFilled(min + new Vector2(9 * scale, 0),
+            new(Math.Min(max.X, min.X + 44 * scale), min.Y + 8 * scale), colour);
     }
 
     public static void Footer(string caption)

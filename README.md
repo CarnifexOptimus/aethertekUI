@@ -65,6 +65,13 @@ Settings and titlebar mute share the consumer's existing configuration/save path
 The source/API change is the 2026-10-23 LCARS addition; library version remains
 0.3.0. See the [usage skill](skills/aethertek-ui/SKILL.md) for lifecycle details.
 
+The 2026-10-23 FrenRider follow-up aligns LCARS native controls with the artwork:
+dark outlined buttons, blue switches/sliders, substantial panel wraps and an
+explicit Chocobo vector icon. The titlebar adapter's opt-in `SetLcarsIcons`
+selects globe/monitor/droplet glyphs while retaining native actions and IDs.
+Consumers still bind their existing Krangle toggle through the five-action
+registration overload. Full-owner navigation verification covers selected ink.
+
 `MaterialAppearanceTitleBar.Register` supplies the standard native-titlebar actions:
 Language, Compact, Transparency, Colour and Krangle. New and adopted UIs show
 Krangle by default on main, mini and auxiliary windows. Use the overload with

@@ -3,7 +3,7 @@ using Dalamud.Bindings.ImGui;
 
 namespace AethertekUI;
 
-public enum MaterialIcon { None, Search, Close, Settings, Check, Play, Pause, Stop, ArrowRight, Return, Edit, Delete, More, ChevronDown, Home, Grid, Table, Sliders, Info, Document, Database, Refresh, Chart, ExternalLink, Download, Palette, Globe, Map, Clock, Link, Calculator, Person, Shield, Monitor, Location, Send, Save, Copy, Heart, List, Sword, Star, Folder, Egg, Wrench, DoorExit, Cube, Chest, Cart, Chat, Group, Warning, Plus, Pulse, Utensils, Crystal, Calendar, Crown, Book, Sparkle, Bell, Terminal, Power, Target, MapPin, HeartOutline, Discord, KoFi, Backpack }
+public enum MaterialIcon { None, Search, Close, Settings, Check, Play, Pause, Stop, ArrowRight, Return, Edit, Delete, More, ChevronDown, Home, Grid, Table, Sliders, Info, Document, Database, Refresh, Chart, ExternalLink, Download, Palette, Globe, Map, Clock, Link, Calculator, Person, Shield, Monitor, Location, Send, Save, Copy, Heart, List, Sword, Star, Folder, Egg, Wrench, DoorExit, Cube, Chest, Cart, Chat, Group, Warning, Plus, Pulse, Utensils, Crystal, Calendar, Crown, Book, Sparkle, Bell, Terminal, Power, Target, MapPin, HeartOutline, Discord, KoFi, Backpack, Chocobo }
 
 /// <summary>Small vector icons; no font or texture dependency.</summary>
 public static class MaterialIcons
@@ -21,6 +21,16 @@ public static class MaterialIcons
         void L(float x,float y,float a,float b) => dl.AddLine(P(x,y),P(a,b),ink,stroke);
         switch(icon)
         {
+            case MaterialIcon.Chocobo:
+                for(var i=0;i<32;i++) { var angle=i*MathF.Tau/32; dl.PathLineTo(P(.42f+MathF.Cos(angle)*.26f,.53f+MathF.Sin(angle)*.22f)); }
+                dl.PathFillConvex(ink);
+                dl.AddRectFilled(P(.57f,.25f),P(.73f,.58f),ink,size*.06f);
+                dl.AddCircleFilled(P(.69f,.22f),size*.13f,ink,20);
+                dl.AddTriangleFilled(P(.78f,.2f),P(.94f,.26f),P(.78f,.3f),ink);
+                dl.AddTriangleFilled(P(.16f,.52f),P(.04f,.29f),P(.29f,.43f),ink);
+                L(.36f,.69f,.32f,.88f); L(.52f,.69f,.56f,.88f);
+                L(.23f,.89f,.41f,.89f); L(.48f,.89f,.67f,.89f);
+                break;
             case MaterialIcon.Backpack:
                 dl.AddRect(P(.37f,.08f),P(.63f,.29f),ink,size*.08f,ImDrawFlags.RoundCornersAll,stroke);
                 dl.AddRect(P(.19f,.22f),P(.81f,.9f),ink,size*.12f,ImDrawFlags.RoundCornersAll,stroke);
