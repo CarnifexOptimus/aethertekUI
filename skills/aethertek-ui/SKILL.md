@@ -229,6 +229,49 @@ upward. DhogNav's narrow Japanese warning otherwise measured as one line but
 rendered two. Use the same reservation when budgeting the enclosing card and
 its table footer, and verify the final native child content and scroll range.
 
+## LCARS appearance and UI sounds
+
+LCARS is the third `MaterialColorMode`, after unchanged Auto (0) and Picker (1).
+Opt a consumer into the third radio with the existing `MaterialColorLabels`
+constructor plus `Lcars` and `LcarsHelp` init properties. Localize those captions
+through that consumer. Older callers retain their two-choice editor. Selecting
+LCARS preserves the saved Picker RGB values; its fixed black/orange/lilac/
+periwinkle scheme keeps the original semantic error colours.
+
+Create/cache the theme through the existing colour-settings path and use
+`theme.IsLcars` to select `MaterialLcars.Header`, `PanelHeading`, `PanelFrame`
+and `Footer`. These draw actual elbows, segmented rails and panel bars; a palette
+alone is not this skin. Pass translated headings and the current density/scale.
+Headings wrap at their measured available width. Paint `PanelFrame` in the
+owner's existing background channel, keeping original tables, native IDs, fonts,
+controls and actions. `NativeButtonStyle()` adapts retained native buttons with
+contrasting captions and respects explicit caller fills. Keep its returned
+style scope lexical. `MaterialCanvas.Color` already applies native style alpha;
+do not multiply it again.
+
+UI sounds are optional, default muted, and consumer-owned. Cache one
+`MaterialUiSoundPlayer` per UI owner and attach `theme.Feedback` when creating
+or rebuilding that cached theme. Core hit controls notify only on activation;
+retained native wrappers can call `MaterialLcars.Feedback(activated, cue)`.
+Do not double-notify nested wrappers, beep on every numeric-drag frame, or let
+disabled controls submit sounds. A preview should emit one Preview cue rather
+than both Click and Preview.
+
+The player's Click/Toggle/Preview tones are original bounded PCM; no external
+pack or dependency is needed. `TryPlay` is explicit and `Error` describes an
+unavailable output. Share one saved mute setting between Settings and the
+native titlebar. Stop the owned player on mute or leaving LCARS, and dispose it
+on unload; do not reset it every Draw frame or stop process-wide sound. The
+player owns its waveOut handle/buffer and is used on the UI thread. Offline tests
+capture feedback and inspect PCM without opening a real audio device.
+
+FrenRider is the first LCARS pilot. Preserve its existing Main/Mini/Settings/
+auxiliary actions; further consumers need their own selected adoption. Follow
+the existing publish-before-consumer GitHub Actions guidance when publication
+is authorized: verify the new library commit is available, then pin and publish
+the consumer. Native CPU renders and tests remain distinct from game/GPU and
+audible-output acceptance.
+
 ## Grouped settings and Appearance standard
 
 Use `MaterialText.SingleLine` for summary captions that must stay within one

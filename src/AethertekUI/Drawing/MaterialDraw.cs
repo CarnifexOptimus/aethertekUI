@@ -26,6 +26,7 @@ internal static class MaterialDraw
             ImGui.IsItemHovered(),ImGui.IsItemActive(),ImGui.IsItemFocused(),ImGui.IsItemVisible());
         ImGui.EndDisabled();
         style.Dispose();
+        MaterialLcars.Feedback(clicked);
         return clicked;
     }
     public static float Animate(uint id, byte channel, float target)

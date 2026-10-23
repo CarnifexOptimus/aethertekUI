@@ -33,7 +33,8 @@ public sealed unsafe class ColorPickerNativeTests
                     new("Colour", "Language", "Teal", "Blue", "Pink", "Custom RGB"),
                     new("Auto", "Picker", "DEFAULT", "Background, controls and text follow your theme.", "Theme colour",
                         "Choose each colour independently.", "Background", "Controls", "Text", "Aa  Preview text", "Control",
-                        "Switch to Picker to set each colour yourself.", "Switch back to Auto to use the automatic theme.")))
+                        "Switch to Picker to set each colour yourself.", "Switch back to Auto to use the automatic theme.")
+                        { Lcars = "LCARS", LcarsHelp = "LCARS panels, bars and controls" }))
                 { saved = settings; saves++; }
             });
         void Draw()
@@ -78,6 +79,10 @@ public sealed unsafe class ColorPickerNativeTests
             Assert.Equal(field == 2 ? expected : before.TextRgb, saved.TextRgb);
         }
         var manual = settings;
+        host.Click(Center("LCARS"), Draw);
+        host.Frame(Draw); host.Frame(Draw);
+        Assert.Equal(manual with { Mode = MaterialColorMode.Lcars }, saved);
+        Assert.True(theme.IsLcars);
         host.Click(Center("Auto"), Draw);
         Assert.Equal(manual with { Mode = MaterialColorMode.Auto }, saved);
         host.Click(Center("Picker"), Draw);

@@ -26,11 +26,13 @@ internal sealed partial class Showcase
             new("Colour", "Language", "Teal", "Blue", "Pink", "Custom RGB"),
             new("Auto", "Picker", "DEFAULT", "Background, controls and text follow your theme.", "Theme colour",
                 "Choose each colour independently.", "Background", "Controls", "Text", "Aa  Preview text", "Control",
-                "Switch to Picker to set each colour yourself.", "Switch back to Auto to use the automatic theme."))) RebuildTheme();
+                "Switch to Picker to set each colour yourself.", "Switch back to Auto to use the automatic theme.")
+                { Lcars = "LCARS", LcarsHelp = "LCARS panels, bars and controls" })) RebuildTheme();
     }
 
     private void Settings()
     {
+        if (theme.IsLcars) MaterialLcars.Header("AethertekUI · LCARS");
         MaterialText.Text("Window appearance");
         MaterialAppearanceTab.Draw("groupedAppearance",new("THEME & LANGUAGE","MAIN WINDOW CONTROLS","WINDOW OPACITY","WHEN UNFOCUSED"),
             360*MaterialTheme.Metrics.Scale,() =>

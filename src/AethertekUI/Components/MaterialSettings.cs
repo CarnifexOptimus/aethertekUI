@@ -46,6 +46,12 @@ public static class MaterialSettings
 
     public static void Section(string label)
     {
+        if (MaterialTheme.Current.IsLcars)
+        {
+            ImGui.Dummy(new Vector2(0, 6 * MaterialTheme.Metrics.Scale));
+            MaterialLcars.PanelHeading(label, 1);
+            return;
+        }
         var scale = MaterialTheme.Metrics.Scale;
         ImGui.Dummy(new Vector2(0, 6 * scale));
         var start = ImGui.GetCursorScreenPos();

@@ -5,7 +5,12 @@ namespace AethertekUI;
 
 public readonly record struct MaterialColorLabels(string Auto, string Picker, string Default, string AutoHelp,
     string ThemeColor, string PickerHelp, string Background, string Controls, string Text,
-    string PreviewText, string PreviewControl, string AutoHint, string PickerHint);
+    string PreviewText, string PreviewControl, string AutoHint, string PickerHint)
+{
+    /// <summary>Opt in after the consumer supports LCARS chrome; older consumers retain their two-mode editor.</summary>
+    public string? Lcars { get; init; }
+    public string? LcarsHelp { get; init; }
+}
 
 public static partial class MaterialAppearanceSelector
 {
@@ -44,6 +49,13 @@ public static partial class MaterialAppearanceSelector
                 if (ImGui.GetItemRectMax().X + ImGui.GetStyle().ItemSpacing.X + nextWidth
                     <= ImGui.GetWindowPos().X + ImGui.GetWindowContentRegionMax().X) ImGui.SameLine();
                 committed |= MaterialSelection.Radio("picker", labels.Picker, MaterialColorMode.Picker, ref mode);
+                if (!string.IsNullOrWhiteSpace(labels.Lcars))
+                {
+                    var lcarsWidth = MaterialText.Measure(labels.Lcars).X + MaterialControls.Metrics.Height + 2 * MaterialControls.Metrics.Gap;
+                    if (ImGui.GetItemRectMax().X + ImGui.GetStyle().ItemSpacing.X + lcarsWidth
+                        <= ImGui.GetWindowPos().X + ImGui.GetWindowContentRegionMax().X) ImGui.SameLine();
+                    committed |= MaterialSelection.Radio("lcars", labels.Lcars, MaterialColorMode.Lcars, ref mode);
+                }
             }
             if (mode != choices.Mode) choices = choices with { Mode = mode };
             ImGui.Separator();
@@ -69,6 +81,12 @@ public static partial class MaterialAppearanceSelector
                 }
                 Preview(choices, labels, width);
                 Wrapped(labels.PickerHint);
+            }
+            else if (mode == MaterialColorMode.Lcars)
+            {
+                if (!string.IsNullOrWhiteSpace(labels.LcarsHelp)) Wrapped(labels.LcarsHelp);
+                // Fixed chrome also previews correctly on the frame before the owner rebuilds its cached theme.
+                MaterialLcars.Header(labels.Lcars ?? "LCARS");
             }
             else
             {

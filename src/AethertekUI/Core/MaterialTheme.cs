@@ -13,6 +13,9 @@ public sealed class MaterialTheme
     public static MaterialTheme Current => current ?? throw new InvalidOperationException("Enter MaterialTheme.Push before drawing components.");
     public static MaterialMetrics Metrics => current is null ? throw new InvalidOperationException("No theme scope.") : metrics;
     public MaterialColorScheme Colors { get; }
+    public bool IsLcars => Colors.IsLcars;
+    /// <summary>Optional host-owned feedback. No playback occurs unless the host supplies this callback.</summary>
+    public Action<MaterialUiSoundCue>? Feedback { get; set; }
     public MaterialDensity Density { get; set; }
     public MaterialMotion Motion { get; } = new();
     private float surfaceOpacity = .94f;
@@ -72,10 +75,12 @@ public sealed class MaterialTheme
             style.Color(ImGuiCol.FrameBg,c.SurfaceContainerHighest);
             style.Color(ImGuiCol.FrameBgHovered,MaterialColor.Layer(c.SurfaceContainerHighest,c.OnSurface,.08f));
             style.Color(ImGuiCol.FrameBgActive,c.SurfaceVariant);
-            style.Color(ImGuiCol.Button,c.SecondaryContainer);
-            style.Color(ImGuiCol.ButtonHovered,MaterialColor.Layer(c.SecondaryContainer,c.OnSecondaryContainer,.08f));
-            style.Color(ImGuiCol.ButtonActive,MaterialColor.Layer(c.SecondaryContainer,c.OnSecondaryContainer,.14f));
-            style.Color(ImGuiCol.Header,c.SecondaryContainer);
+            var nativeButton = theme.IsLcars ? c.SurfaceContainerHighest : c.SecondaryContainer;
+            var nativeButtonText = theme.IsLcars ? c.OnSurface : c.OnSecondaryContainer;
+            style.Color(ImGuiCol.Button,nativeButton);
+            style.Color(ImGuiCol.ButtonHovered,MaterialColor.Layer(nativeButton,nativeButtonText,.08f));
+            style.Color(ImGuiCol.ButtonActive,MaterialColor.Layer(nativeButton,nativeButtonText,.14f));
+            style.Color(ImGuiCol.Header,theme.IsLcars ? c.PrimaryContainer : c.SecondaryContainer);
             style.Color(ImGuiCol.HeaderHovered,MaterialColor.Layer(c.SurfaceContainer,c.OnSurface,.08f));
             style.Color(ImGuiCol.HeaderActive,c.PrimaryContainer);
             style.Color(ImGuiCol.CheckMark,c.Primary);
@@ -96,7 +101,7 @@ public sealed class MaterialTheme
             style.Color(ImGuiCol.ResizeGripActive,c.Primary);
             style.Color(ImGuiCol.TextSelectedBg,MaterialColor.Alpha(c.Primary,.3f));
             style.Color(ImGuiCol.Tab,c.SurfaceContainer);
-            style.Color(ImGuiCol.TabHovered,c.SecondaryContainer);
+            style.Color(ImGuiCol.TabHovered,theme.IsLcars ? c.PrimaryContainer : c.SecondaryContainer);
             style.Color(ImGuiCol.TabActive,c.PrimaryContainer);
             style.Color(ImGuiCol.TabUnfocused,c.SurfaceContainerLow);
             style.Color(ImGuiCol.TabUnfocusedActive,c.SecondaryContainer);
@@ -112,7 +117,7 @@ public sealed class MaterialTheme
             style.Style(ImGuiStyleVar.ChildRounding,m.OuterRadius);
             style.Style(ImGuiStyleVar.PopupRounding,m.Radius);
             // Native checkboxes, steppers and narrow editors are not pill buttons.
-            style.Style(ImGuiStyleVar.FrameRounding,4*scale);
+            style.Style(ImGuiStyleVar.FrameRounding,(theme.IsLcars ? 16 : 4)*scale);
             style.Style(ImGuiStyleVar.GrabRounding,m.Radius);
             style.Style(ImGuiStyleVar.TabRounding,m.Radius*.5f);
             style.Style(ImGuiStyleVar.ScrollbarRounding,m.Radius);

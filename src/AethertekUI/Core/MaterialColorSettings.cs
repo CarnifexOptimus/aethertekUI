@@ -2,7 +2,7 @@ using System.Numerics;
 
 namespace AethertekUI;
 
-public enum MaterialColorMode { Auto, Picker }
+public enum MaterialColorMode { Auto, Picker, Lcars }
 
 /// <summary>Consumer-owned appearance choices. Auto retains the supplied automatic scheme unchanged.</summary>
 public sealed record MaterialColorSettings
@@ -24,8 +24,12 @@ public sealed record MaterialColorSettings
     {
         ArgumentNullException.ThrowIfNull(automatic);
         Validate();
-        return Mode == MaterialColorMode.Auto ? automatic
-            : new MaterialColorScheme(automatic, Rgb(BackgroundRgb), Rgb(ControlsRgb), Rgb(TextRgb));
+        return Mode switch
+        {
+            MaterialColorMode.Auto => automatic,
+            MaterialColorMode.Lcars => new MaterialColorScheme(automatic),
+            _ => new MaterialColorScheme(automatic, Rgb(BackgroundRgb), Rgb(ControlsRgb), Rgb(TextRgb)),
+        };
     }
 
     public static Vector3 Rgb(uint rgb) => new(((rgb >> 16) & 255) / 255f, ((rgb >> 8) & 255) / 255f, (rgb & 255) / 255f);

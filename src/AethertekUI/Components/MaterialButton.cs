@@ -56,6 +56,7 @@ public static class MaterialButton
         if(appearance is { } a) { bg=a.Fill; fg=a.Foreground; }
         if(disabled) { bg=variant is MaterialButtonVariant.Filled or MaterialButtonVariant.Tonal ? c.SurfaceVariant : Vector4.Zero; fg=c.OnSurface; }
         var radius=cornerRadius.HasValue ? Math.Min(cornerRadius.Value*MaterialTheme.Metrics.Scale,Math.Min(actual.X,actual.Y)*.5f) : actual.Y*.5f;
+        if (MaterialTheme.Current.IsLcars) radius = Math.Min(actual.X, actual.Y) * .5f;
         MaterialDraw.Shape(state,bg,fg,radius,appearance.HasValue || variant==MaterialButtonVariant.Outlined,border:appearance?.Border);
         MaterialDraw.Content(state,label,fg,leading,trailing);
         ImGui.PopID();

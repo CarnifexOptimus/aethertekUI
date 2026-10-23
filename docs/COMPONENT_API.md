@@ -14,6 +14,10 @@ See [Adaptive sizing and host compatibility](ADAPTIVE_SIZING.md) for units, owne
 | MaterialWindowOpacity.Apply / CurrentOpacity | One owner-tree alpha multiplier after final End; native focus delay, immediate focus restoration, and consumer-owned preferences |
 | AethertekUI.Dalamud.MaterialWindowMotion.Prepare / DrawChrome / Restore | Bridge for one Dalamud Window; prepares fold and optional owned-viewport chrome before Begin, restores body styles first in Draw, then paints chrome and restores managed constraints after End |
 | AethertekUI.Dalamud.MaterialAppearanceTitleBar.Register / RefreshVisibility / DrawPopups | Standard Language, Compact, Transparency, Colour and Krangle titlebar actions; consumer-owned callbacks, localization and privacy state |
+| MaterialColorMode.Lcars / MaterialColorLabels.Lcars, LcarsHelp | Opt-in third colour mode; retains Auto/Picker values and semantic error roles |
+| MaterialLcars.Header / PanelHeading / PanelFrame / Footer / NativeButtonStyle | Shared elbow/rail/panel geometry and retained native-button styling; caller retains IDs and scopes |
+| MaterialTheme.Feedback / MaterialLcars.Feedback | Host-owned activation feedback; disabled controls remain silent |
+| MaterialUiSoundPlayer.TryPlay / Stop / Dispose | Optional original Click/Toggle/Preview PCM on one owned Windows waveOut handle; consumer owns mute and lifetime |
 | MaterialSettings.Columns / Section | Compact semantic groups; measured pixel minimum controls wide-to-narrow reflow while retaining caller IDs |
 | MaterialAppearanceTab.Draw | Standard four-group Appearance layout with translated headings and consumer-owned controls/configuration |
 | MaterialAppearanceSelector.DrawPalette | Inline preset swatches and existing custom-colour popup; returns whether the consumer draft changed |

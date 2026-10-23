@@ -53,6 +53,18 @@ and the native-titlebar showcase share the editor; FrenRider is the first
 selected consumer. Live host visual acceptance and other consumer integrations
 remain separate.
 
+The FrenRider LCARS pilot adds an opt-in third colour mode with black surfaces,
+orange/lilac/periwinkle accents, real elbow/rail/panel chrome and retained native
+controls. `MaterialColorLabels.Lcars` and `LcarsHelp` expose the third radio;
+older callers keep Auto/Picker. `MaterialLcars` provides the shared drawing and
+native-button scopes. Picker RGB values and semantic error colours are retained.
+`MaterialTheme.Feedback` optionally routes actual control activations to an
+owner's default-muted `MaterialUiSoundPlayer`. Its original short PCM tones use
+an owned Windows waveOut handle, with no external assets or dependencies.
+Settings and titlebar mute share the consumer's existing configuration/save path.
+The source/API change is the 2026-10-23 LCARS addition; library version remains
+0.3.0. See the [usage skill](skills/aethertek-ui/SKILL.md) for lifecycle details.
+
 `MaterialAppearanceTitleBar.Register` supplies the standard native-titlebar actions:
 Language, Compact, Transparency, Colour and Krangle. New and adopted UIs show
 Krangle by default on main, mini and auxiliary windows. Use the overload with

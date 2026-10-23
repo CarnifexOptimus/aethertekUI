@@ -5,6 +5,7 @@ namespace AethertekUI;
 /// <summary>Immutable opaque RGB roles. Apply surface opacity at rendering time.</summary>
 public sealed class MaterialColorScheme
 {
+    internal bool IsLcars { get; init; }
     public Vector4 Primary { get; init; }
     public Vector4 OnPrimary { get; init; }
     public Vector4 PrimaryContainer { get; init; }
@@ -81,6 +82,27 @@ public sealed class MaterialColorScheme
         ErrorContainer = automatic.ErrorContainer;
         OnErrorContainer = automatic.OnErrorContainer;
         Scrim = automatic.Scrim;
+    }
+
+    internal MaterialColorScheme(MaterialColorScheme automatic)
+        : this(automatic, MaterialColorSettings.Rgb(0x07090D), MaterialColorSettings.Rgb(0xFFAA66), MaterialColorSettings.Rgb(0xF4F1EA))
+    {
+        IsLcars = true;
+        Surface = SurfaceContainerLowest = SurfaceContainerLow = Background;
+        SurfaceContainer = new(.045f, .047f, .063f, 1);
+        SurfaceContainerHigh = new(.07f, .07f, .10f, 1);
+        SurfaceContainerHighest = SurfaceVariant = new(.105f, .105f, .15f, 1);
+        OnSurfaceVariant = new(.77f, .77f, .82f, 1);
+        Primary = MaterialLcars.Orange;
+        Secondary = SecondaryContainer = MaterialLcars.Lilac;
+        Tertiary = MaterialLcars.Periwinkle;
+        PrimaryContainer = new(.27f, .16f, .12f, 1);
+        TertiaryContainer = new(.16f, .16f, .29f, 1);
+        OnPrimary = OnSecondary = OnSecondaryContainer = OnTertiary = Background;
+        OnPrimaryContainer = OnTertiaryContainer = OnSurface;
+        Outline = MaterialLcars.Lilac;
+        OutlineVariant = new(.29f, .25f, .34f, 1);
+        InversePrimary = Primary;
     }
 
     public MaterialColorScheme(MaterialPalette palette)
