@@ -64,4 +64,24 @@ public class DemoRenderTests
         if(Environment.GetEnvironmentVariable("AETHERTEKUI_PREVIEW_DIR") is { Length:>0 } directory)
             SoftwarePreview.Save(Path.Combine(directory,"settings-150-percent.png"),host);
     }
+
+    [Theory]
+    [InlineData(0,MaterialColorMode.Lcars)] [InlineData(4,MaterialColorMode.Lcars)]
+    [InlineData(0,MaterialColorMode.Glassmorphism)] [InlineData(4,MaterialColorMode.Glassmorphism)]
+    [InlineData(0,MaterialColorMode.Spatial)] [InlineData(4,MaterialColorMode.Spatial)]
+    [InlineData(0,MaterialColorMode.Cyberpunk)] [InlineData(4,MaterialColorMode.Cyberpunk)]
+    public void ActualDemoMaterialPagesRenderWithoutStackErrors(int page,MaterialColorMode mode)
+    {
+        using var host=new NativeTestContext();
+        var selected=new MaterialColorSettings { Mode=mode };
+        var demo=new Showcase { IsOpen=true,Page=page,DemoColors=selected with { GlassAnimation=false } };
+        for(var i=0;i<4;i++) host.Frame(()=>
+        {
+            ImGui.SetNextWindowPos(new(0,0));
+            demo.Draw();
+        });
+        Assert.True(ImGui.GetDrawData().TotalVtxCount>100);
+        if(Environment.GetEnvironmentVariable("AETHERTEKUI_PREVIEW_DIR") is { Length:>0 } directory)
+            SoftwarePreview.Save(Path.Combine(directory,$"page-{page}-{mode}.png"),host);
+    }
 }

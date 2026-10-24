@@ -45,6 +45,7 @@ internal sealed partial class Showcase
         }
         public override void Draw()
         {
+            MaterialSkin.Backdrop();
             motion.DrawChrome();
             MaterialText.Text("Five separate manual titlebar actions");
             ImGui.TextWrapped("Use the titlebar icons while expanded or collapsed. These editors share the Settings showcase values.");
@@ -56,8 +57,10 @@ internal sealed partial class Showcase
 
         private void ToggleKrangle() => krangle = !krangle;
 
-        private void DrawLanguage() => MaterialAppearanceSelector.DrawLanguage("titlebar-language",
-            ref showcase.appearanceLanguage, showcase.sizingLanguages);
+        private void DrawLanguage()
+        {
+            MaterialAppearanceSelector.DrawLanguage("titlebar-language", ref showcase.appearanceLanguage, showcase.sizingLanguages);
+        }
 
         private void ToggleCompact()
         {

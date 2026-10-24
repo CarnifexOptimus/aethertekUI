@@ -6,6 +6,7 @@ namespace AethertekUI;
 public sealed class MaterialColorScheme
 {
     internal bool IsLcars { get; init; }
+    internal MaterialColorSettings? AppearanceSettings { get; init; }
     public Vector4 Primary { get; init; }
     public Vector4 OnPrimary { get; init; }
     public Vector4 PrimaryContainer { get; init; }
@@ -85,24 +86,72 @@ public sealed class MaterialColorScheme
     }
 
     internal MaterialColorScheme(MaterialColorScheme automatic)
-        : this(automatic, MaterialColorSettings.Rgb(0x07090D), MaterialColorSettings.Rgb(0xFFAA66), MaterialColorSettings.Rgb(0xF4F1EA))
+        : this(automatic, new MaterialColorSettings { Mode = MaterialColorMode.Lcars }) { }
+
+    /// <summary>Approved material palettes and their relative roles; saved base colours remain exact.</summary>
+    internal MaterialColorScheme(MaterialColorScheme automatic, MaterialColorSettings settings)
     {
-        IsLcars = true;
-        Surface = SurfaceContainerLowest = SurfaceContainerLow = Background;
-        SurfaceContainer = new(.045f, .047f, .063f, 1);
-        SurfaceContainerHigh = new(.07f, .07f, .10f, 1);
-        SurfaceContainerHighest = SurfaceVariant = new(.105f, .105f, .15f, 1);
-        OnSurfaceVariant = new(.77f, .77f, .82f, 1);
-        Primary = MaterialLcars.Orange;
-        Secondary = SecondaryContainer = MaterialLcars.Lilac;
-        Tertiary = MaterialLcars.Periwinkle;
-        PrimaryContainer = new(.27f, .16f, .12f, 1);
-        TertiaryContainer = new(.16f, .16f, .29f, 1);
-        OnPrimary = OnSecondary = OnSecondaryContainer = OnTertiary = Background;
-        OnPrimaryContainer = OnTertiaryContainer = OnSurface;
-        Outline = MaterialLcars.Lilac;
-        OutlineVariant = new(.29f, .25f, .34f, 1);
-        InversePrimary = Primary;
+        AppearanceSettings = settings;
+        IsLcars = settings.Mode == MaterialColorMode.Lcars;
+        var palette = IsLcars ? default : settings.GetPalette(settings.Mode);
+        var background = new Vector4(MaterialColorSettings.Rgb(IsLcars ? settings.LcarsBackgroundRgb : palette.BackgroundRgb), 1);
+        var primary = new Vector4(MaterialColorSettings.Rgb(IsLcars ? settings.LcarsBar1Rgb : palette.ControlsRgb), 1);
+        var text = IsLcars ? ReadableInk(background) : new Vector4(MaterialColorSettings.Rgb(palette.TextRgb), 1);
+        static Vector4 Mix(Vector4 a, Vector4 b, float amount) => Vector4.Lerp(a, b, amount) with { W = 1 };
+        Vector4 Rotate(float angle, float chroma = 1)
+        {
+            var lch = MaterialColor.LabToLch(MaterialColor.SrgbToOklab(new(primary.X, primary.Y, primary.Z)));
+            return new(MaterialColor.GamutMap(lch.X, lch.Y * chroma, lch.Z + angle), 1);
+        }
+
+        var light = ReadableInk(background).X == 0;
+        var surface = IsLcars ? background : Mix(background, Vector4.One, light ? .55f : .045f);
+        if (settings.Mode == MaterialColorMode.Cyberpunk) surface = Mix(surface, primary, .045f);
+        var well = IsLcars ? background : Mix(background, new(0, 0, 0, 1), light ? .045f : .18f);
+        var secondary = IsLcars ? new Vector4(MaterialColorSettings.Rgb(settings.LcarsBar2Rgb), 1)
+            : settings.Mode == MaterialColorMode.Cyberpunk ? Rotate(2.35f, 1.5f) : Rotate(1.2f);
+        var tertiary = IsLcars ? new Vector4(MaterialColorSettings.Rgb(settings.LcarsBar3Rgb), 1)
+            : Rotate(settings.Mode == MaterialColorMode.Cyberpunk ? 1.2f : 2.35f);
+
+        Background = background;
+        OnBackground = text;
+        Surface = surface;
+        OnSurface = text;
+        SurfaceContainerLowest = well;
+        SurfaceContainerLow = surface;
+        SurfaceContainer = IsLcars ? background : Mix(surface, text, .025f);
+        SurfaceContainerHigh = Mix(surface, text, .055f);
+        SurfaceContainerHighest = Mix(surface, text, .1f);
+        SurfaceVariant = Mix(surface, text, .16f);
+        OnSurfaceVariant = IsLcars ? ReadableInk(SurfaceVariant) : Mix(text, background, .23f);
+        Outline = Mix(background, primary, .5f);
+        OutlineVariant = Mix(background, primary, .25f);
+        Primary = primary;
+        OnPrimary = ReadableInk(primary);
+        PrimaryContainer = IsLcars ? background : Mix(surface, primary, .1f);
+        OnPrimaryContainer = text;
+        Secondary = secondary;
+        OnSecondary = ReadableInk(secondary);
+        SecondaryContainer = IsLcars ? secondary : Mix(surface, primary, .18f);
+        OnSecondaryContainer = IsLcars ? ReadableInk(SecondaryContainer) : text;
+        Tertiary = tertiary;
+        OnTertiary = ReadableInk(tertiary);
+        TertiaryContainer = Mix(surface, tertiary, .12f);
+        OnTertiaryContainer = IsLcars ? ReadableInk(TertiaryContainer) : text;
+        InverseSurface = text;
+        InverseOnSurface = background;
+        InversePrimary = primary;
+        Error = automatic.Error;
+        OnError = automatic.OnError;
+        ErrorContainer = automatic.ErrorContainer;
+        OnErrorContainer = automatic.OnErrorContainer;
+        Scrim = automatic.Scrim;
+    }
+
+    private static Vector4 ReadableInk(Vector4 background)
+    {
+        var black = new Vector4(0, 0, 0, 1);
+        return MaterialColor.Contrast(background, black) >= MaterialColor.Contrast(background, Vector4.One) ? black : Vector4.One;
     }
 
     public MaterialColorScheme(MaterialPalette palette)

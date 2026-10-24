@@ -54,10 +54,12 @@ public static class MaterialButton
         var bg=variant switch { MaterialButtonVariant.Filled=>c.Primary, MaterialButtonVariant.Tonal=>c.SecondaryContainer, _=>Vector4.Zero };
         var fg=variant switch { MaterialButtonVariant.Filled=>c.OnPrimary, MaterialButtonVariant.Tonal=>c.OnSecondaryContainer, _=>c.Primary };
         if(appearance is { } a) { bg=a.Fill; fg=a.Foreground; }
-        if(disabled) { bg=variant is MaterialButtonVariant.Filled or MaterialButtonVariant.Tonal ? c.SurfaceVariant : Vector4.Zero; fg=c.OnSurface; }
+        if(disabled && (!appearance.HasValue || !MaterialSkin.HasMaterial)) { bg=variant is MaterialButtonVariant.Filled or MaterialButtonVariant.Tonal ? c.SurfaceVariant : Vector4.Zero; fg=c.OnSurface; }
         var radius=cornerRadius.HasValue ? Math.Min(cornerRadius.Value*MaterialTheme.Metrics.Scale,Math.Min(actual.X,actual.Y)*.5f) : actual.Y*.5f;
         if (MaterialTheme.Current.IsLcars && !cornerRadius.HasValue) radius = Math.Min(6 * MaterialTheme.Metrics.Scale, Math.Min(actual.X, actual.Y) * .5f);
-        MaterialDraw.Shape(state,bg,fg,radius,appearance.HasValue || variant==MaterialButtonVariant.Outlined,border:appearance?.Border);
+        else if (MaterialSkin.HasMaterial && !cornerRadius.HasValue)
+            radius = Math.Min((MaterialTheme.Current.IsCyberpunk ? 3 : 6) * MaterialTheme.Metrics.Scale, Math.Min(actual.X, actual.Y) * .5f);
+        MaterialDraw.Shape(state,bg,fg,radius,appearance.HasValue || variant==MaterialButtonVariant.Outlined,border:appearance?.Border,preserveFill:appearance.HasValue);
         MaterialDraw.Content(state,label,fg,leading,trailing);
         ImGui.PopID();
         return clicked;

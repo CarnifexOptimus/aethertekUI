@@ -10,6 +10,17 @@ namespace ConsumerContract;
 /// <summary>Compiles against project references AND packages. No GBR source or services.</summary>
 public sealed class ConsumerUi : IDisposable
 {
+    // Settings and titlebar popups share consumer-owned drafts, defaults, labels and save policy.
+    public static bool DrawStyleColors(string id, ref MaterialColorSettings choices, ref Vector3 accent,
+        MaterialAppearanceLabels palette, MaterialColorLabels labels, MaterialColorSettings defaults,
+        Vector3 defaultAccent, Action save)
+    {
+        var committed = MaterialAppearanceSelector.DrawColors(id, ref choices, ref accent,
+            palette, labels, defaults, defaultAccent);
+        if (committed) save();
+        return committed;
+    }
+
     public static void DrawViewAndFilter(string label,ref int view,ref bool filter)
     {
         MaterialSegment<int>[] choices=[new(0,"",MaterialIcon.Grid),new(1,"",MaterialIcon.List)];
@@ -158,9 +169,20 @@ public sealed class ConsumerUi : IDisposable
     { example.BorrowedImage = image; example.BorrowedImageSize = dimensions; }
 
     // Consumer calls this from its existing draw subscription.
-    public void Draw() => material.Draw(windows);
+    public void Draw()
+    {
+        using var frame = material.BeginFrame();
+        using var backdrop = MaterialSkin.BackdropStyle();
+        windows.Draw();
+    }
     // Retained layout can opt into outer corners without changing its padding or spacing.
-    public void DrawRoundedCorners() => material.Draw(windows, applyMetrics: false, roundedCorners: true);
+    public void DrawRoundedCorners()
+    {
+        using var frame = material.BeginFrame(applyMetrics: false);
+        using var chrome = MaterialWindowChrome.Push();
+        using var backdrop = MaterialSkin.BackdropStyle();
+        windows.Draw();
+    }
     // Consumer persists these settings using its own configuration service.
     public void ApplySettings(MaterialThemeSettings settings) => material.Controller.Apply(settings);
 
@@ -223,6 +245,7 @@ public sealed class ConsumerUi : IDisposable
         public override void Draw()
         {
             motion.DrawChrome();
+            MaterialSkin.Backdrop();
             var origin = ImGui.GetCursorScreenPos();
             MaterialCanvas.DrawImage(ImGui.GetWindowDrawList(), BorrowedImage, BorrowedImageSize,
                 origin, origin + new Vector2(36 * MaterialTheme.Metrics.Scale));

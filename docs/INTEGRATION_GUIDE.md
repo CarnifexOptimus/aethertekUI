@@ -21,7 +21,35 @@ The scope must surround Begin/End, not just a Window.Draw method. Existing PreDr
 
 For a game-anchored overlay, material.BeginFrame(applyMetrics: false) applies colors while retaining the host's geometry styles. Its Material metrics are still available if deliberately used by a new component; it does not force existing domain DrawList code to adopt those metrics.
 
-Call Controller.Apply(newSettings) on configuration change. It validates before mutation, skips identical values and regenerates palettes only when seed RGB changes. Density, alpha and reduced motion reuse the cached palette. Keep one controller/theme per ImGui context and do not switch contexts or threads inside scopes.
+Call Controller.Apply(newSettings) on configuration change. It validates before mutation, skips identical values and rebuilds the theme when seed RGB or Colors settings change. Density, alpha and reduced motion reuse the cached palette. Keep one controller/theme per ImGui context and do not switch contexts or threads inside scopes.
+
+## Shared materials and colour preferences
+
+Store `MaterialColorSettings` through the consumer's existing configuration.
+Apply it to the existing automatic scheme or set `MaterialThemeSettings.Colors`;
+keep the resulting theme/controller outside Draw. Auto and Picker remain intact,
+with LCARS, Glassmorphism, Spatial and Cyberpunk available through opt-in labels.
+The three new styles each own a three-colour palette; LCARS owns Background plus
+three bars. Glass additionally owns three wave colours, animation and speed.
+
+Reuse `DrawColors` in Settings and the Colour popup. Supply translated optional
+labels plus the consumer's defaults/default accent overload for resets. Retain
+live drafts and save completed edits through the existing owner; rebuild the
+theme next frame. Do not translate stable IDs or replace an established Auto
+palette. See [the full colour/material contract](COMPONENT_API.md#shared-colour-modes-and-material-rendering).
+
+Use `MaterialSkin.BackdropStyle()` around the adopted owner's Begin, dispose it
+after Begin, then call `MaterialSkin.Backdrop()` first in visible content under
+the complete lifecycle theme. For a native popup, pass `popup: true` around
+BeginPopup and dispose before its content so nested native pickers keep their
+backgrounds. The optional titlebar adapter handles its appearance popups.
+Shared surfaces/controls adopt material geometry;
+retained native wrappers can use the skin's panel, button and field helpers in
+their existing draw channels. A palette alone cannot reproduce the material.
+Keep explicit semantic fills, original IDs, caller geometry and balanced scopes.
+Glass is procedural wave/glow geometry, with reduced-motion support; GPU/game
+appearance still needs consumer acceptance. No other plugin is converted by
+updating this library.
 
 ## Native titlebar shortcuts
 

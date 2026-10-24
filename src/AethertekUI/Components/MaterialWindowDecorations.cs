@@ -20,7 +20,7 @@ public sealed class MaterialWindowDecorations
         if (!native.ViewportOwned || native.DockIsActive || (native.Flags & excluded) != 0) return;
         window = native;
         context = ImGui.GetCurrentContext();
-        radius = MaterialTheme.Metrics.OuterRadius;
+        radius = MaterialSkin.HasMaterial ? ImGui.GetStyle().WindowRounding : MaterialTheme.Metrics.OuterRadius;
         ownerFontSize = null;
     }
 
@@ -47,6 +47,7 @@ public sealed class MaterialWindowDecorations
         var min = native.Pos;
         var max = min + native.Size;
         var titleHeight = ImGuiP.TitleBarHeight(native);
+        var material = MaterialSkin.HasMaterial;
         var originalVertices = list.VtxBuffer.Size;
         // Match native geometry and its atlas white UV; retain emitted colors,
         // including host fades, docking opacity and navigation-resize feedback.
@@ -93,7 +94,7 @@ public sealed class MaterialWindowDecorations
             }
             return color;
         }
-        var background = native.Collapsed || flags.HasFlag(ImGuiWindowFlags.NoBackground) ? 0 :
+        var background = material || native.Collapsed || flags.HasFlag(ImGuiWindowFlags.NoBackground) ? 0 :
             Erase(() => list.AddRectFilled(min + new Vector2(0, titleHeight), max, uint.MaxValue));
         var title = flags.HasFlag(ImGuiWindowFlags.NoTitleBar) ? 0 :
             Erase(() => list.AddRectFilled(min, min + new Vector2(native.Size.X, titleHeight), uint.MaxValue));
@@ -103,12 +104,12 @@ public sealed class MaterialWindowDecorations
             Erase(() => list.AddRect(min + Vector2.One, max + Vector2.One, uint.MaxValue, 0, ImDrawFlags.None, native.WindowBorderSize));
         var menuMin = min + new Vector2(native.WindowBorderSize, titleHeight);
         var menuMax = Vector2.Min(max, min + new Vector2(native.Size.X - native.WindowBorderSize, titleHeight + ImGuiP.MenuBarHeight(native)));
-        var menu = !native.Collapsed && flags.HasFlag(ImGuiWindowFlags.MenuBar) ?
+        var menu = !material && !native.Collapsed && flags.HasFlag(ImGuiWindowFlags.MenuBar) ?
             Erase(() => list.AddRectFilled(menuMin, menuMax, uint.MaxValue)) : 0;
         var horizontal = native.ScrollbarX && !native.Collapsed ? ImGuiP.GetWindowScrollbarRect(native, ImGuiAxis.X) : default;
         var vertical = native.ScrollbarY && !native.Collapsed ? ImGuiP.GetWindowScrollbarRect(native, ImGuiAxis.Y) : default;
-        var scrollX = native.ScrollbarX && !native.Collapsed ? Erase(() => list.AddRectFilled(horizontal.Min, horizontal.Max, uint.MaxValue)) : 0;
-        var scrollY = native.ScrollbarY && !native.Collapsed ? Erase(() => list.AddRectFilled(vertical.Min, vertical.Max, uint.MaxValue)) : 0;
+        var scrollX = !material && native.ScrollbarX && !native.Collapsed ? Erase(() => list.AddRectFilled(horizontal.Min, horizontal.Max, uint.MaxValue)) : 0;
+        var scrollY = !material && native.ScrollbarY && !native.Collapsed ? Erase(() => list.AddRectFilled(vertical.Min, vertical.Max, uint.MaxValue)) : 0;
         var canResize = !native.Collapsed && (flags & (ImGuiWindowFlags.NoResize | ImGuiWindowFlags.AlwaysAutoResize)) == 0 &&
             native.AutoFitFramesX <= 0 && native.AutoFitFramesY <= 0;
         var grip0 = canResize ? Erase(() => Grip(0, 0, uint.MaxValue)) : 0;
@@ -138,13 +139,16 @@ public sealed class MaterialWindowDecorations
                 if (!native.ScrollbarX) corners |= ImDrawFlags.RoundCornersBottomRight;
                 list.AddRectFilled(vertical.Min, vertical.Max, scrollY, radius, corners);
             }
-            Grip(0, radius, grip0); Grip(1, radius, grip1);
-            if (held != 0) HeldBorder(radius, held);
+            if (!material)
+            {
+                Grip(0, radius, grip0); Grip(1, radius, grip1);
+                if (held != 0) HeldBorder(radius, held);
+            }
         }
         list.AddRectFilled(min, min + new Vector2(native.Size.X, titleHeight), title, radius,
             native.Collapsed ? ImDrawFlags.RoundCornersAll : ImDrawFlags.RoundCornersTop);
         if (shadow != 0) list.AddRect(min + Vector2.One, max + Vector2.One, shadow, radius, ImDrawFlags.None, native.WindowBorderSize);
-        if (border != 0) list.AddRect(min, max, border, radius, ImDrawFlags.None, native.WindowBorderSize);
+        if (!material && border != 0) list.AddRect(min, max, border, radius, ImDrawFlags.None, native.WindowBorderSize);
         var lastCommand = list.CmdBuffer.Size - 1;
         // Index/vertex offsets, textures and clips are preserved with each moved command.
         for (var n = firstCommand; n <= lastCommand; n++)
@@ -155,6 +159,19 @@ public sealed class MaterialWindowDecorations
         }
         list.PopClipRect();
         list.AddDrawCmd();
+        if (material)
+        {
+            // Material backdrops fill the padded body, so its border/grips must remain above that mesh.
+            list.PushClipRect(viewport.Pos - Vector2.One, viewport.Pos + viewport.Size + Vector2.One, false);
+            if (border != 0) list.AddRect(min, max, border, radius, ImDrawFlags.None, native.WindowBorderSize);
+            if (!native.Collapsed)
+            {
+                Grip(0, radius, grip0); Grip(1, radius, grip1);
+                if (held != 0) HeldBorder(radius, held);
+            }
+            list.PopClipRect();
+            list.AddDrawCmd();
+        }
 
         void Grip(int n, float rounding, uint color)
         {

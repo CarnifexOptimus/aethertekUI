@@ -235,8 +235,11 @@ LCARS is the third `MaterialColorMode`, after unchanged Auto (0) and Picker (1).
 Opt a consumer into the third radio with the existing `MaterialColorLabels`
 constructor plus `Lcars` and `LcarsHelp` init properties. Localize those captions
 through that consumer. Older callers retain their two-choice editor. Selecting
-LCARS preserves the saved Picker RGB values; its fixed black/orange/lilac/
-periwinkle scheme keeps the original semantic error colours.
+LCARS preserves the saved Picker RGB values and semantic error colours. Its
+Background and three bar colours are saved independently; the defaults retain
+black/orange/lilac/periwinkle styling. Supply all three `LcarsBar1`–`LcarsBar3`
+labels to expose those fields. Captions derive readable black/white foregrounds
+from the selected colours.
 
 Create/cache the theme through the existing colour-settings path and use
 `theme.IsLcars` to select `MaterialLcars.Header`, `PanelHeading`, `PanelFrame`
@@ -281,7 +284,60 @@ toggle and tooltip; the older four-action overload cannot show that button.
 Call `SetLcarsIcons(theme.IsLcars)` on the retained adapter to select globe,
 monitor and droplet glyphs without changing priorities, IDs or callbacks.
 Verify the complete Settings owner including selected navigation: LCARS uses
-dark selected text on a lilac fill, not dark text on PrimaryContainer.
+readable black/white text on the chosen second bar colour (lilac by default).
+
+## Shared Glassmorphism, Spatial and Cyberpunk materials
+
+These are additional modes, preserving Auto=0, Picker=1 and Lcars=2:
+Glassmorphism=3, Spatial=4, Cyberpunk=5. Supply all three translated style-name
+init properties on `MaterialColorLabels` to expose them. Each owns independent
+Background/Controls/Text RGB choices in `MaterialColorSettings`; use
+`GetPalette`/`WithPalette` for Picker and the new styles. Do not merge palettes
+or treat a recoloured Picker as equivalent to the approved material geometry.
+
+Use the `DrawColors` overload accepting consumer `defaults` and
+`defaultAccent` before optional minimum width. Supply translated `Reset` and
+`ResetColors` labels for per-role/current-palette resets, retaining other
+styles. Auto reset uses the supplied existing seed, not the library seed.
+Glass exposes `Animation`, `AnimationSpeed`, `WaveColors`,
+`GlassWave1`–`GlassWave3` and `ResetWaveColors` labels. Animation defaults
+on, speed is bounded to 0.1–10x/default 1x, and all three independent wave
+colours remain editable with motion off. Palette resets retain wave choices.
+Keep drafts outside Draw; save completed edits via the existing configuration,
+then rebuild the cached theme at the next frame boundary.
+
+Enter `MaterialSkin.BackdropStyle()` around the adopted owner's native Begin,
+dispose it after Begin, then call `MaterialSkin.Backdrop()` first in visible
+content under the existing full Begin/End theme. Use `popup: true` around
+BeginPopup, disposing before content so nested native pickers retain their
+backgrounds. The optional titlebar adapter handles its appearance popups.
+Call Backdrop before tables or draw-channel splits; an existing splitter is
+rejected before mutation so the owner's native channels remain intact.
+This replaces one native background without stacking SurfaceOpacity. Auto,
+Picker and LCARS retain native backgrounds. Standard surfaces and controls adopt the
+selected geometry: Glass ribbons/frosted panes/coloured glow, opaque raised and
+inset Spatial surfaces, or graphite Cyberpunk plates with cyan/ice tabs and
+relative magenta details. `Heading` and `PanelFrame` support retained layouts;
+paint frames in the existing background channel, reserving LCARS rail space.
+Retain explicit appearances, radii, semantic fills and original native IDs.
+`Heading` retains supplied casing; localize capitalization in the consumer.
+
+For native wrappers, `NativeButtonStyle` sets material metrics; draw the native
+button under `TransparentButtonFace`, end that face scope and paint
+`PaintButton` behind the caption in the caller's background channel. Capture
+disabled alpha before ending its scope and pass it to the painter. Enter
+`NativeFieldStyle` immediately before one single-row native input, after its
+width/height scopes. Keep scopes lexical and complete-window opacity applied
+once after End. Glass uses bounded procedural ribbons and outlines, not a blur
+of the game framebuffer; theme reduced motion freezes the ribbons too.
+
+The showcase Settings and five-action titlebar popup demonstrate the same
+shared preferences. FrenRider is the accepted pilot; this library update does
+not authorize conversions of other consumers. Preserve their native storage,
+public/private merge boundaries and localization. Local native checks and
+diagnostic renders remain separate from game/GPU acceptance. See the
+[API contract](../../docs/COMPONENT_API.md#shared-colour-modes-and-material-rendering)
+for labels and lifecycle.
 
 ## Grouped settings and Appearance standard
 

@@ -6,17 +6,19 @@ namespace AethertekUI;
 /// <summary>LCARS chrome inside existing owner bounds. It does not replace windows, controls or their native IDs.</summary>
 public static class MaterialLcars
 {
-    public static Vector4 Orange => new(1, 170f / 255, 102f / 255, 1);
-    public static Vector4 Lilac => new(204f / 255, 153f / 255, 204f / 255, 1);
-    public static Vector4 Periwinkle => new(153f / 255, 153f / 255, 1, 1);
+    public static Vector4 Orange => ActiveColors?.Primary ?? new(1, 170f / 255, 102f / 255, 1);
+    public static Vector4 Lilac => ActiveColors?.Secondary ?? new(204f / 255, 153f / 255, 204f / 255, 1);
+    public static Vector4 Periwinkle => ActiveColors?.Tertiary ?? new(153f / 255, 153f / 255, 1, 1);
     public static Vector4 Amber => new(1, 204f / 255, 153f / 255, 1);
-    public static Vector4 Background => new(7f / 255, 9f / 255, 13f / 255, 1);
-    public static Vector4 Text => new(244f / 255, 241f / 255, 234f / 255, 1);
+    public static Vector4 Background => ActiveColors?.Background ?? new(7f / 255, 9f / 255, 13f / 255, 1);
+    public static Vector4 Text => ActiveColors?.OnSurface ?? new(244f / 255, 241f / 255, 234f / 255, 1);
     public static Vector4 ControlBlue => new(53f / 255, 156f / 255, 1, 1);
 
-    public static Vector4 Accent(int index) => ((index % 4 + 4) % 4) switch
+    private static MaterialColorScheme? ActiveColors => MaterialTheme.CurrentOrNull is { IsLcars: true } theme ? theme.Colors : null;
+
+    public static Vector4 Accent(int index) => ((index % 3 + 3) % 3) switch
     {
-        1 => Lilac, 2 => Periwinkle, 3 => Amber, _ => Orange,
+        1 => Lilac, 2 => Periwinkle, _ => Orange,
     };
 
     public static void Feedback(bool activated, MaterialUiSoundCue cue = MaterialUiSoundCue.Click)
@@ -44,7 +46,7 @@ public static class MaterialLcars
             scope.Style(ImGuiStyleVar.FrameRounding, 6 * MaterialTheme.Metrics.Scale);
         }
         if (fill.W > .01f)
-            scope.Color(ImGuiCol.Text, MaterialColor.Contrast(fill, Background) >= MaterialColor.Contrast(fill, Text) ? Background : Text);
+            scope.Color(ImGuiCol.Text, MaterialSkin.ReadableInk(fill));
         return scope;
     }
 
@@ -92,7 +94,7 @@ public static class MaterialLcars
         dl.PushClipRect(min, min + new Vector2(width, height), true);
         dl.AddRectFilled(min, min + new Vector2(width, height), Ink(Accent(accent)), 5 * scale);
         MaterialText.AddText(dl, min + new Vector2(14 * scale, (height - text.Y) * .5f),
-            Ink(Background), title, wrap);
+            Ink(MaterialSkin.ReadableInk(Accent(accent))), title, wrap);
         dl.PopClipRect();
         ImGui.Dummy(new(width, height));
     }

@@ -35,7 +35,7 @@ public static class MaterialChip
         var clicked=MaterialDraw.Hit("##chip",size,disabled,out var state);
         var foreground=appearance?.Foreground??(selected?c.OnSecondaryContainer:c.OnSurface);
         MaterialDraw.Shape(state,appearance?.Fill??(selected?c.SecondaryContainer:Vector4.Zero),foreground,
-            appearance?.Radius(m.Scale)??size.Y*.5f,appearance.HasValue||!selected,border:appearance?.Border);
+            appearance?.Radius(m.Scale)??size.Y*.5f,appearance.HasValue||!selected,border:appearance?.Border,preserveFill:appearance.HasValue);
         MaterialDraw.Content(state,label,foreground,icon,MaterialIcon.None);
         ImGui.PopID();
         return clicked;

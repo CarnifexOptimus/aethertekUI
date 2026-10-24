@@ -10,9 +10,12 @@ internal sealed partial class Showcase
     internal ImTextureID BorrowedImage;
     internal Vector2 BorrowedImageSize;
     internal MaterialDensity DemoDensity { set { density=(int)value; theme.Density=value; } }
-    private Vector3 seed = new(.36f,.72f,.46f);
-    private MaterialTheme theme = new(new Vector3(.36f,.72f,.46f));
-    private MaterialColorSettings colorChoices = new();
+    internal MaterialColorSettings DemoColors { set => colorChoices = value; }
+    private static readonly Vector3 DefaultSeed = new(.36f,.72f,.46f);
+    private static readonly MaterialColorSettings DefaultColorChoices = new();
+    private Vector3 seed = DefaultSeed;
+    private MaterialTheme theme = new(DefaultSeed);
+    private MaterialColorSettings colorChoices = DefaultColorChoices;
     private MaterialColorSettings? appliedColorChoices;
     private float opacity=.94f;
     private int density;
@@ -61,8 +64,12 @@ internal sealed partial class Showcase
             ImGui.SetNextWindowSize(new Vector2(1000,760)*scale,ImGuiCond.FirstUseEver);
             ImGui.SetNextWindowSizeConstraints(new Vector2(780,500)*scale,new(float.MaxValue));
             showcaseFold.PreDraw("AethertekUI Showcase###crmaterial", null, null, true, prepareShowcaseDecorations);
-            if(ImGui.Begin("AethertekUI Showcase###crmaterial",ref IsOpen,ImGuiWindowFlags.NoTitleBar|ImGuiWindowFlags.NoSavedSettings))
+            bool visible;
+            using (MaterialSkin.BackdropStyle())
+                visible = ImGui.Begin("AethertekUI Showcase###crmaterial",ref IsOpen,ImGuiWindowFlags.NoTitleBar|ImGuiWindowFlags.NoSavedSettings);
+            if(visible)
             {
+                MaterialSkin.Backdrop();
                 showcaseDecorations.Paint();
                 var action=MaterialWindowHeader.Draw("AethertekUI Showcase","Compact surfaces. Native behavior. Mock data.",HeaderActions);
                 if(action==0) expanded=!expanded;
@@ -114,7 +121,11 @@ internal sealed partial class Showcase
         if(overlayOpen) DrawOverlay();
         if(windowMotionOpen) DrawWindowMotion();
         if(HindiPreviewOpen) DrawHindiPreview();
-        if (appearanceWindow.IsOpen) appearanceWindows.Draw();
+        if (appearanceWindow.IsOpen)
+        {
+            using var backdrop = MaterialSkin.BackdropStyle();
+            appearanceWindows.Draw();
+        }
     }
     private void DrawWindowMotion()
     {
@@ -123,8 +134,11 @@ internal sealed partial class Showcase
         ImGui.SetNextWindowSize(new Vector2(420,260)*scale,ImGuiCond.FirstUseEver);
         ImGui.SetNextWindowSizeConstraints(new Vector2(320,180)*scale,new Vector2(700,500)*scale);
         windowFold.PreDraw(name, null, null, false, prepareWindowDecorations);
-        if(ImGui.Begin(name,ref windowMotionOpen))
+        bool visible;
+        using (MaterialSkin.BackdropStyle()) visible = ImGui.Begin(name,ref windowMotionOpen);
+        if(visible)
         {
+            MaterialSkin.Backdrop();
             windowDecorations.Paint();
             var imageOrigin = ImGui.GetCursorScreenPos();
             MaterialCanvas.DrawImage(ImGui.GetWindowDrawList(), BorrowedImage, BorrowedImageSize,

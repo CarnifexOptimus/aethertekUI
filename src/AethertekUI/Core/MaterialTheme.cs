@@ -11,9 +11,15 @@ public sealed class MaterialTheme
     [ThreadStatic] private static MaterialTheme? current;
     [ThreadStatic] private static MaterialMetrics metrics;
     public static MaterialTheme Current => current ?? throw new InvalidOperationException("Enter MaterialTheme.Push before drawing components.");
+    internal static MaterialTheme? CurrentOrNull => current;
     public static MaterialMetrics Metrics => current is null ? throw new InvalidOperationException("No theme scope.") : metrics;
     public MaterialColorScheme Colors { get; }
+    internal MaterialColorSettings? AppearanceSettings => Colors.AppearanceSettings;
+    public MaterialColorMode ColorMode => AppearanceSettings?.Mode ?? (Colors.IsLcars ? MaterialColorMode.Lcars : MaterialColorMode.Auto);
     public bool IsLcars => Colors.IsLcars;
+    public bool IsGlassmorphism => ColorMode == MaterialColorMode.Glassmorphism;
+    public bool IsSpatial => ColorMode == MaterialColorMode.Spatial;
+    public bool IsCyberpunk => ColorMode == MaterialColorMode.Cyberpunk;
     /// <summary>Optional host-owned feedback. No playback occurs unless the host supplies this callback.</summary>
     public Action<MaterialUiSoundCue>? Feedback { get; set; }
     public MaterialDensity Density { get; set; }
@@ -72,8 +78,9 @@ public sealed class MaterialTheme
             style.Color(ImGuiCol.ChildBg,theme.SurfaceColor(c.SurfaceContainer));
             style.Color(ImGuiCol.PopupBg,theme.SurfaceColor(c.SurfaceContainerHigh));
             style.Color(ImGuiCol.Border,c.OutlineVariant);
-            style.Color(ImGuiCol.FrameBg,c.SurfaceContainerHighest);
-            style.Color(ImGuiCol.FrameBgHovered,MaterialColor.Layer(c.SurfaceContainerHighest,c.OnSurface,.08f));
+            var frameBackground = theme.IsSpatial ? c.Surface : c.SurfaceContainerHighest;
+            style.Color(ImGuiCol.FrameBg,frameBackground);
+            style.Color(ImGuiCol.FrameBgHovered,MaterialColor.Layer(frameBackground,c.OnSurface,.08f));
             style.Color(ImGuiCol.FrameBgActive,c.SurfaceVariant);
             var nativeButton = theme.IsLcars ? c.SurfaceContainerHighest : c.SecondaryContainer;
             var nativeButtonText = theme.IsLcars ? c.OnSurface : c.OnSecondaryContainer;
@@ -125,7 +132,7 @@ public sealed class MaterialTheme
             var controls = MaterialControls.Metrics;
             style.Style(ImGuiStyleVar.WindowBorderSize,0);
             style.Style(ImGuiStyleVar.ChildBorderSize,m.Border);
-            style.Style(ImGuiStyleVar.FrameBorderSize,0);
+            style.Style(ImGuiStyleVar.FrameBorderSize,theme.IsSpatial ? m.Border : 0);
             style.Style(ImGuiStyleVar.PopupBorderSize,m.Border);
             style.Style(ImGuiStyleVar.WindowPadding,new Vector2(m.Padding));
             style.Style(ImGuiStyleVar.FramePadding,controls.NativePadding);

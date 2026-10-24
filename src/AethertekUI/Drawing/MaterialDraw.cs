@@ -20,6 +20,7 @@ internal static class MaterialDraw
         style.Color(ImGuiCol.ButtonHovered,Vector4.Zero);
         style.Color(ImGuiCol.ButtonActive,Vector4.Zero);
         style.Color(ImGuiCol.NavHighlight,Vector4.Zero);
+        if (MaterialTheme.Current.IsSpatial) style.Style(ImGuiStyleVar.FrameBorderSize,0);
         ImGui.BeginDisabled(disabled);
         var clicked = ImGui.Button(id,size);
         state = new(ImGui.GetItemRectMin(),ImGui.GetItemRectMax(),ImGui.GetID(id),ImGui.GetStyle().Alpha,
@@ -33,14 +34,16 @@ internal static class MaterialDraw
         => MaterialTheme.Current.Motion.Sample(((ulong)id << 8) | channel,target,ImGui.GetIO().DeltaTime,ImGui.GetFrameCount());
 
     public static void Shape(in MaterialState state, Vector4 background, Vector4 foreground, float radius,
-        bool outline = false, ImDrawFlags corners = ImDrawFlags.RoundCornersAll, Vector4? border = null)
+        bool outline = false, ImDrawFlags corners = ImDrawFlags.RoundCornersAll, Vector4? border = null, bool preserveFill = false)
     {
         if (!state.Visible) return;
         var c = MaterialTheme.Current.Colors;
         var m = MaterialTheme.Metrics;
         var layer = Animate(state.Id,0,state.Pressed ? .14f : state.Hovered ? .08f : 0);
         var dl = ImGui.GetWindowDrawList();
-        dl.AddRectFilled(state.Min,state.Max,Color(MaterialColor.Layer(background,foreground,layer),state.Alpha),radius,corners);
+        var fill = MaterialColor.Layer(background,foreground,layer);
+        if (MaterialSkin.HasMaterial) MaterialSkin.PaintControl(state,fill,radius,corners,preserveFill);
+        else dl.AddRectFilled(state.Min,state.Max,Color(fill,state.Alpha),radius,corners);
         if (outline || state.Focused)
             dl.AddRect(state.Min+new Vector2(m.Border*.5f),state.Max-new Vector2(m.Border*.5f),
                 Color(state.Focused ? c.Primary : border ?? c.OutlineVariant,state.Alpha),radius,corners,state.Focused ? m.Border*2 : m.Border);

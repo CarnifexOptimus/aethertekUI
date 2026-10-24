@@ -149,8 +149,14 @@ public sealed class MaterialAppearanceTitleBar
 
         static void Draw(string id, Action editor, bool shown)
         {
-            if (!ImGui.BeginPopup(id, ImGuiWindowFlags.NoSavedSettings)) return;
-            try { if (shown) editor(); else ImGui.CloseCurrentPopup(); }
+            bool open;
+            using (MaterialSkin.BackdropStyle(popup: true)) open = ImGui.BeginPopup(id, ImGuiWindowFlags.NoSavedSettings);
+            if (!open) return;
+            try
+            {
+                MaterialSkin.Backdrop();
+                if (shown) editor(); else ImGui.CloseCurrentPopup();
+            }
             finally { ImGui.EndPopup(); }
         }
     }

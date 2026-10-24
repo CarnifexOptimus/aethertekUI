@@ -27,12 +27,21 @@ internal sealed partial class Showcase
             new("Auto", "Picker", "DEFAULT", "Background, controls and text follow your theme.", "Theme colour",
                 "Choose each colour independently.", "Background", "Controls", "Text", "Aa  Preview text", "Control",
                 "Switch to Picker to set each colour yourself.", "Switch back to Auto to use the automatic theme.")
-                { Lcars = "LCARS", LcarsHelp = "LCARS panels, bars and controls" })) RebuildTheme();
+                {
+                    Lcars = "LCARS", LcarsHelp = "Choose the LCARS background and three panel bar colours.",
+                    Glassmorphism = "Glassmorphism", Spatial = "Spatial", Cyberpunk = "Cyberpunk",
+                    LcarsBar1 = "Bar colour 1", LcarsBar2 = "Bar colour 2", LcarsBar3 = "Bar colour 3",
+                    Reset = "Reset", ResetColors = "Reset colours", Animation = "Animation", AnimationSpeed = "Movement speed (x)",
+                    WaveColors = "Wave colours", GlassWave1 = "Wave colour 1", GlassWave2 = "Wave colour 2", GlassWave3 = "Wave colour 3",
+                    ResetWaveColors = "Reset wave colours",
+                }, DefaultColorChoices, DefaultSeed)) RebuildTheme();
     }
 
     private void Settings()
     {
         if (theme.IsLcars) MaterialLcars.Header("AethertekUI · LCARS");
+        else if (theme.IsGlassmorphism || theme.IsSpatial || theme.IsCyberpunk)
+            MaterialSkin.Heading("AethertekUI · " + colorChoices.Mode);
         MaterialText.Text("Window appearance");
         MaterialAppearanceTab.Draw("groupedAppearance",new("THEME & LANGUAGE","MAIN WINDOW CONTROLS","WINDOW OPACITY","WHEN UNFOCUSED"),
             360*MaterialTheme.Metrics.Scale,() =>

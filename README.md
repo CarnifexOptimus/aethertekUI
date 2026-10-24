@@ -42,28 +42,32 @@ complete groups at narrow widths. `MaterialAppearanceSelector.DrawPalette` suppl
 inline colour swatches; the Settings showcase demonstrates the layout. Existing
 configuration, native identities and save behavior stay with the consumer.
 
-The approved Colour editor now adds **Auto** (the default) and **Picker** radio
-options through `MaterialAppearanceSelector.DrawColors`. Auto retains the host's
-existing automatic scheme and accent controls. Picker remembers three independent
-RGB choices for Background, Controls and Text, with native colour/hex editors
-and a preview; returning to Auto retains those choices. `MaterialColorSettings`
-applies them to the host's existing scheme and leaves semantic error colours
-unchanged. Hosts retain drafts, configuration and completed-edit saves. Settings
-and the native-titlebar showcase share the editor; FrenRider is the first
-selected consumer. Live host visual acceptance and other consumer integrations
-remain separate.
+The shared Colour editor supports **Auto** (the default), **Picker**, **LCARS**,
+**Glassmorphism**, **Spatial** and **Cyberpunk**. The three new styles each retain
+their own Background, Controls and Text choices. LCARS exposes Background and
+three bar colours. Glass adds smooth coloured waves, three independent wave
+colours, default-on animation and a 0.1–10x speed control (default 1x). Per-colour,
+current-palette and wave resets retain the other choices. The overload accepting
+consumer defaults and an Auto accent resets to that consumer's actual defaults.
+Existing callers keep their original editor unless they supply the new labels.
 
-The FrenRider LCARS pilot adds an opt-in third colour mode with black surfaces,
-orange/lilac/periwinkle accents, real elbow/rail/panel chrome and retained native
-controls. `MaterialColorLabels.Lcars` and `LcarsHelp` expose the third radio;
-older callers keep Auto/Picker. `MaterialLcars` provides the shared drawing and
-native-button scopes. Picker RGB values and semantic error colours are retained.
+`MaterialColorSettings` applies these preferences to the host's existing scheme,
+preserving Auto/Picker behavior and semantic error roles. `MaterialSkin` provides
+Glass ribbons, frosted panes and coloured edge glow; opaque raised/inset Spatial
+surfaces; and graphite Cyberpunk plates with cyan/ice tabs and relative magenta
+details. Standard controls and surfaces receive material geometry; retained
+native wrappers can use its painting/style helpers without changing their IDs.
+`MaterialLcars` supplies configurable elbows, rails and panel chrome. Settings
+and the native-titlebar showcase share the editor. Hosts own drafts, persistence,
+translated labels and complete-window opacity. FrenRider remains the accepted
+pilot; other consumers require their selected adoption and host acceptance.
+
 `MaterialTheme.Feedback` optionally routes actual control activations to an
 owner's default-muted `MaterialUiSoundPlayer`. Its original short PCM tones use
 an owned Windows waveOut handle, with no external assets or dependencies.
 Settings and titlebar mute share the consumer's existing configuration/save path.
-The source/API change is the 2026-10-23 LCARS addition; library version remains
-0.3.0. See the [usage skill](skills/aethertek-ui/SKILL.md) for lifecycle details.
+Library version remains 0.3.0. See the [usage skill](skills/aethertek-ui/SKILL.md)
+for lifecycle details.
 
 The 2026-10-23 FrenRider follow-up aligns LCARS native controls with the artwork:
 dark outlined buttons, blue switches/sliders, substantial panel wraps and an

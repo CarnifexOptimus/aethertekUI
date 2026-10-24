@@ -14,7 +14,11 @@ See [Adaptive sizing and host compatibility](ADAPTIVE_SIZING.md) for units, owne
 | MaterialWindowOpacity.Apply / CurrentOpacity | One owner-tree alpha multiplier after final End; native focus delay, immediate focus restoration, and consumer-owned preferences |
 | AethertekUI.Dalamud.MaterialWindowMotion.Prepare / DrawChrome / Restore | Bridge for one Dalamud Window; prepares fold and optional owned-viewport chrome before Begin, restores body styles first in Draw, then paints chrome and restores managed constraints after End |
 | AethertekUI.Dalamud.MaterialAppearanceTitleBar.Register / RefreshVisibility / DrawPopups | Standard Language, Compact, Transparency, Colour and Krangle titlebar actions; consumer-owned callbacks, localization and privacy state |
-| MaterialColorMode.Lcars / MaterialColorLabels.Lcars, LcarsHelp | Opt-in third colour mode; retains Auto/Picker values and semantic error roles |
+| MaterialColorMode.Auto / Picker / Lcars / Glassmorphism / Spatial / Cyberpunk | Values 0–5; added styles preserve legacy ordinals, independent palettes and semantic error roles |
+| MaterialColorSettings.GetPalette / WithPalette / DefaultPalette | Three RGB roles per Picker/new style; LCARS and Glass waves have separate saved roles |
+| MaterialAppearanceSelector.DrawColors | Native colour/hex editor; optional translated labels expose styles, LCARS bars, resets and Glass motion/waves |
+| MaterialSkin.BackdropStyle / Backdrop / PanelFrame / Heading | Shared material geometry; suppress the adopted native background before Begin, then paint the backdrop first and frames behind controls |
+| MaterialSkin.NativeButtonStyle / NativeFieldStyle / PaintButton / TransparentButtonFace | Retained native wrappers keep original actions/IDs while adopting selected materials |
 | MaterialLcars.Header / PanelHeading / PanelFrame / Footer / NativeButtonStyle | Shared elbow/rail/panel geometry and retained native-button styling; caller retains IDs and scopes |
 | MaterialAppearanceTitleBar.SetLcarsIcons / MaterialLcars.ControlBlue / MaterialIcon.Chocobo | Opt-in titlebar glyphs, blue control accent and a bird silhouette; original icon ordinals and actions retained |
 | MaterialTheme.Feedback / MaterialLcars.Feedback | Host-owned activation feedback; disabled controls remain silent |
@@ -34,6 +38,59 @@ See [Adaptive sizing and host compatibility](ADAPTIVE_SIZING.md) for units, owne
 | MaterialActionTile.Measure / MaterialTileSizing | Content-aware wrapping and grid measurement; explicit fixed-height option |
 
 All controls are immediate-mode; booleans return activation or value change. Consumers own state and lifecycle.
+
+### Shared colour modes and material rendering
+
+`MaterialColorSettings` is an immutable, consumer-owned record. Auto=0, Picker=1
+and Lcars=2 retain their ordinals; Glassmorphism=3, Spatial=4 and Cyberpunk=5 are
+additions. `GetPalette(mode)`, `WithPalette(mode, background, controls, text)` and
+`DefaultPalette(mode)` support Picker and the three new styles. LCARS uses
+`LcarsBackgroundRgb` and `LcarsBar1Rgb`–`LcarsBar3Rgb`. Glass uses
+`GlassAnimation` (true), `GlassAnimationSpeed` (normalized to 0.1–10, default 1)
+and `GlassWave1Rgb`–`GlassWave3Rgb`; waves remain editable while motion is off.
+`Apply(automaticScheme)` retains supplied semantic errors and Auto behavior.
+
+The original `DrawColors(id, ref choices, ref accent, palette, labels,
+minimumWidth)` remains supported. The added overload accepts
+`MaterialColorSettings defaults, Vector3 defaultAccent` before `minimumWidth`.
+Use that overload to reset to the consumer's actual defaults. Both update live
+drafts, returning true for completed edits, mode changes and resets. Persist via
+the existing consumer save path and refresh its cached theme next frame.
+
+Supply translated `MaterialColorLabels.Glassmorphism`, `Spatial` and `Cyberpunk`
+together to expose the three additions. Supply `Lcars`/`LcarsHelp` and all three
+`LcarsBar1`–`LcarsBar3` captions for the four-role LCARS editor. `Reset` and
+`ResetColors` enable per-role and current-palette resets; `Animation`,
+`AnimationSpeed`, `WaveColors`, `GlassWave1`–`GlassWave3` and `ResetWaveColors`
+enable the Glass controls. Resets preserve other styles and separate wave
+choices. Legacy callers retain their choices, field IDs and layout.
+
+Theme the complete native Begin/End lifecycle. Enter
+`MaterialSkin.BackdropStyle()` around the adopted owner's native Begin, then
+dispose it before drawing content. Use `popup: true` around BeginPopup instead;
+disposing immediately after Begin restores native backgrounds for nested
+colour/combo popups. Call `MaterialSkin.Backdrop()` first in visible content.
+Call it before tables or draw-channel splits; it rejects an existing splitter
+before mutation. Its bounded background merge preserves native chrome above it.
+The pair replaces one native background rather than stacking its opacity.
+Auto/Picker and LCARS retain their native backgrounds. The optional titlebar
+adapter handles this pair for its own manual appearance popups.
+`MaterialSurface` and default shaped controls automatically use the selected
+material. Retained layouts paint `PanelFrame(min, max, accent, inset)` in their
+existing background channel, behind controls. LCARS frames require the existing
+twelve-logical-pixel rail reservation. Explicit appearances and corner radii
+remain caller-owned.
+
+For retained native buttons, enter `NativeButtonStyle`, capture disabled alpha,
+draw the original button under `TransparentButtonFace`, then dispose that face
+scope before calling `PaintButton` in the background channel. Pass captured
+alpha when the disabled scope has ended. This retains native hit testing,
+caption, focus and original IDs. `NativeFieldStyle` paints one single-row field
+immediately before its native input, after width/height scopes. Keep styles
+lexical and apply complete-window opacity once after End. Glass ribbons and
+glow are bounded draw-list geometry; they do not blur the game framebuffer.
+Theme reduced motion also freezes the Glass backdrop.
+`Heading` retains supplied casing; consumers own translated capitalization.
 
 ### Native appearance and Krangle titlebar actions
 
