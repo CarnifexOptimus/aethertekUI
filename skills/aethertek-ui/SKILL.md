@@ -399,6 +399,81 @@ Use `MaterialSettings.Section` for compact semantic headings and
 `MaterialAppearanceSelector.DrawPalette` for inline colour swatches and the retained
 custom-colour popup. The showcase Settings page demonstrates the standard.
 
+A theme scope changes colours, metrics and chrome; it does not rebuild a
+consumer's layout. For an approved redesign, replace the selected view's actual
+row/card composition and bind each control to its existing value and compound
+change/save handler. An opaque `DrawNode` callback retains its original label
+placement and control order. Do not accept that callback inside newly painted
+panels as evidence that the approved layout was implemented. Inspect the actual
+native rows and rendered geometry against the approved board.
+
+Dispatch retained widgets from an explicit set of supported field/value types,
+not presentation attributes alone: BMR's `GroupDetails` also decorates an enum
+array. Preserve the original custom/unknown renderers and `DrawCustom` route.
+
+For selected wrapping checkbox/radio captions, use the explicit pixel-width
+overloads:
+
+```csharp
+if (MaterialSelection.Checkbox(nativeLabel, display, ref enabled, rowWidthPixels))
+    ExistingChangedHandler(enabled);
+if (MaterialSelection.Radio(nativeLabel, display, option, ref selected, rowWidthPixels))
+    ExistingChangedHandler(selected);
+MaterialSettings.Field(nativeLabel, display, editorWidthPixels,
+    label => ImGui.InputInt(label, ref count, 1), rowWidthPixels);
+MaterialSettings.Section(displayHeading, rowWidthPixels);
+if (MaterialSwitch.Row(nativeLabel, display, ref enabled, onText, offText,
+    rowWidthPixels, helpText)) ExistingChangedHandler(enabled);
+```
+
+The new selection overloads submit a native full-row hit target with exactly
+`ImGui.GetID(nativeLabel)`, wrap the display caption within the measured row
+and return its change. They retain native keyboard/navigation, inherited disabled
+state and alpha, and mark changes edited. Unlike the older component overloads,
+they add no component ID scope. Retain the exact original label, including
+`##`/`###` suffixes, and preserve its original parent root when moving it into
+a presentation table/card. The old overloads and their IDs remain unchanged.
+
+`MaterialSwitch.Row` uses that same native-ID contract for a wrapped label with
+a trailing shared switch track and fixed ON/OFF text reservation. Measure complete
+rows with `MaterialSwitch.MeasureRow(display, onText, offText, widthPixels, help)`
+at the same font/control scope used for drawing; paired cards can then reserve
+the taller group's actual wrapped height. Optional help appears as an inline
+`(?)` marker and on whole-row hover through a native tooltip; pressing that marker
+leaves the setting unchanged. The library owns no translated labels or state.
+For paired cards, opt into `MaterialSettings.Columns(..., divider: false)`.
+It removes the separator and outer cell inset, uses the current theme gap between
+the columns, retains caller row spacing, and restores both caller IDs and styles. The four-argument Columns
+overload retains its existing separator, padding and reflow threshold.
+
+For the approved thin linear slider, use `MaterialInput.SliderTrack` beside the
+retained numeric editor. Its width is logical; native slider input, focus,
+disabled state and its existing component ID scope remain intact. Idle saved
+values outside the range stay unchanged. Keep logarithmic ranges on their native
+editor and route completed changes through the consumer's original handler.
+
+`MaterialSettings.Field` reserves a wrapped label on the left and the caller's
+native editor on the right, stacking when the row cannot fit both. Widths are
+pixels already measured at the active font/host scale;
+never scale them again. Its callback receives an empty label under
+`PushOverrideID(originalNativeId)`. Submit exactly one editor with that supplied
+label and no extra ID scope; its `GetID("")` and native scalar step-button IDs
+then match the original widget. The callback retains native editing, flags,
+bounds, enum choices and value ownership; the consumer runs the original save
+or compound handler on the returned change. This contract does not relocate
+an arbitrary callback's hard-coded caption or extra controls. Split/rebind that
+selected consumer row explicitly. Native last-item data remains the editor's
+afterward, so existing hover/help checks still target it.
+
+The Sizing lab's appearance-titlebar preview includes a retained-settings example
+demonstrating wrapped captions, a trailing switch,
+radio row and left-label/right-editor bindings. Focused native checks cover
+all six materials, both densities and 100%/150% scale, including exact native
+identities, lower-caption/switch clicks, keyboard activation, disabled state, scalar
+step buttons, narrow stacking and restoration after a consumer callback throws.
+These checks establish control behavior; the adopting consumer still needs
+actual board-layout and host-font verification.
+
 Keep related toggle/value/unit controls on one row, use native tooltips for longer
 help, and retain subordinate indentation. Do not recreate a generic
 Label/Value/Help/Sync grid or reserve empty help/sync columns. Preserve every existing

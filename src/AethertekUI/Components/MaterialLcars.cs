@@ -83,9 +83,15 @@ public static class MaterialLcars
     }
 
     public static void PanelHeading(string title, int accent = 0)
+        => PanelHeading(title, accent, Math.Max(1, ImGui.GetContentRegionAvail().X));
+
+    /// <summary>Draw a panel heading within an already-scaled pixel width.</summary>
+    public static void PanelHeading(string title, int accent, float widthPixels)
     {
+        ArgumentNullException.ThrowIfNull(title);
+        if (!float.IsFinite(widthPixels) || widthPixels <= 0) throw new ArgumentOutOfRangeException(nameof(widthPixels));
         var scale = MaterialTheme.Metrics.Scale;
-        var width = Math.Max(1, ImGui.GetContentRegionAvail().X);
+        var width = widthPixels;
         var wrap = Math.Max(1, width - 28 * scale);
         var text = MaterialText.Measure(title, wrapWidth: wrap);
         var height = Math.Max((MaterialTheme.Current.Density == MaterialDensity.Compact ? 26 : 32) * scale, text.Y + 8 * scale);

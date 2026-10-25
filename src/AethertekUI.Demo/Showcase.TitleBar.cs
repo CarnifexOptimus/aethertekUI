@@ -21,7 +21,7 @@ internal sealed partial class Showcase
         internal AppearanceTitleBarWindow(Showcase showcase) : base("Appearance titlebar preview###aethertek-appearance-preview")
         {
             this.showcase = showcase;
-            Size = new Vector2(440, 220);
+            Size = new Vector2(760, 520);
             SizeCondition = ImGuiCond.FirstUseEver;
             appearance = MaterialAppearanceTitleBar.Register(this,
                 () => new("Language", "Compact", "Transparency", "Colour"),
@@ -53,6 +53,7 @@ internal sealed partial class Showcase
             MaterialText.Text($"Compact: {showcase.appearanceCompact}");
             MaterialText.Text($"Opacity: {showcase.appearanceOpacity}%");
             MaterialText.Text($"Character (mock): {(krangle ? "A*** V***" : "Aster Vale")}");
+            showcase.RetainedSettingsExamples();
         }
 
         private void ToggleKrangle() => krangle = !krangle;

@@ -24,6 +24,10 @@ See [Adaptive sizing and host compatibility](ADAPTIVE_SIZING.md) for units, owne
 | MaterialTheme.Feedback / MaterialLcars.Feedback | Host-owned activation feedback; disabled controls remain silent |
 | MaterialUiSoundPlayer.TryPlay / Stop / Dispose | Optional original Click/Toggle/Preview PCM on one owned Windows waveOut handle; consumer owns mute and lifetime |
 | MaterialSettings.Columns / Section | Compact semantic groups; measured pixel minimum controls wide-to-narrow reflow while retaining caller IDs |
+| MaterialSettings.Field / Section(label,widthPixels) / Columns(...,divider) | Wrapped label/editor rows, bounded headings and opt-in paired columns; pixel widths and consumer-owned native callbacks |
+| MaterialSelection.Checkbox / Radio explicit-width overloads | Wrapped display captions with the original native label-derived ID |
+| MaterialSwitch.Row / MeasureRow | Wrapped label, optional help and trailing switch/state; exact native ID and shared pixel measurement |
+| MaterialInput.SliderTrack | Thin linear track and circular thumb over native slider input; logical width, unchanged idle values and retained native navigation |
 | MaterialAppearanceTab.Draw | Standard four-group Appearance layout with translated headings and consumer-owned controls/configuration |
 | MaterialAppearanceSelector.DrawPalette | Inline preset swatches and existing custom-colour popup; returns whether the consumer draft changed |
 | MaterialControls.Push(context) | Match native and custom control heights using current font, density and scale |
@@ -38,6 +42,61 @@ See [Adaptive sizing and host compatibility](ADAPTIVE_SIZING.md) for units, owne
 | MaterialActionTile.Measure / MaterialTileSizing | Content-aware wrapping and grid measurement; explicit fixed-height option |
 
 All controls are immediate-mode; booleans return activation or value change. Consumers own state and lifecycle.
+
+### Retained settings layouts
+
+The explicit-width selection overloads are
+`Checkbox(nativeLabel, display, ref bool value, float widthPixels, bool disabled = false)`
+and `Radio<T>(nativeLabel, display, T option, ref T value, float widthPixels, bool disabled = false)`.
+They wrap the caption inside a native full-row hit target whose identity is exactly
+`ImGui.GetID(nativeLabel)`. Keep the original label, including its `##`/`###`
+suffix, and its parent ID root when moving the control into a presentation card.
+They return changes and retain keyboard navigation, inherited disabled state,
+alpha and edited status. The older overloads retain their component ID scopes.
+
+`MaterialSettings.Field(nativeLabel, display, float editorWidthPixels,
+Func<string,bool> drawEditor, float widthPixels = -1)` places a wrapped label to
+the left of one native editor, stacking when both cannot fit. Its callback receives
+an empty label under the original native ID: submit the editor using that label,
+without adding another ID scope. Native scalar step-button identities and the
+editor's last-item data remain available. A nonpositive row width uses available
+content width; the editor width must be positive.
+
+```csharp
+var width = ImGui.GetContentRegionAvail().X;
+if (MaterialSelection.Checkbox("Enabled##existing", enabledCaption, ref enabled, width))
+    ExistingEnabledHandler(enabled);
+if (MaterialSettings.Field("Delay##existing", delayCaption, 140 * MaterialTheme.Metrics.Scale,
+    label => ImGui.SliderInt(label, ref delay, 0, 1000), width))
+    ExistingDelayHandler(delay);
+```
+
+`MaterialSwitch.Row(nativeLabel, display, ref bool value, onLabel, offLabel,
+float widthPixels, string? help = null, bool disabled = false)` uses the same
+native-ID contract, with the shared track and stable ON/OFF text reservation on
+the right. Optional help adds `(?)` and a whole-row hover tooltip; clicking the
+marker leaves the value unchanged. `MeasureRow(display, onLabel, offLabel,
+widthPixels, help)` returns the exact row size under the current font/control
+scope, allowing paired cards to reserve their taller group's wrapped height.
+
+All these widths and returned sizes are already-scaled pixels. The consumer
+retains values, enum options, bounds, localization, compound handlers and saving.
+For a thin linear range beside a retained numeric editor, use
+`MaterialInput.SliderTrack(id, ref value, minimum, maximum, width, disabled)`.
+Its explicit width is logical, like the other `MaterialInput` methods. It retains
+the normal `id`/`##value` native slider scope and leaves out-of-range saved values
+unchanged until edited. Keep the original numeric editor and its handlers for
+precise entry; logarithmic ranges retain their existing native editor.
+An arbitrary callback with a hard-coded caption must be rebound explicitly; a
+theme scope does not rearrange its layout.
+
+`MaterialSettings.Section(label, widthPixels)` and
+`MaterialLcars.PanelHeading(title, accent, widthPixels)` constrain wrapped headings.
+`MaterialSettings.Columns(id, minimumColumnPixels, left, right, divider: false)`
+uses the theme gap between paired columns, omits the divider/outer cell inset and
+retains caller row spacing. The four-argument Columns overload preserves its
+original divider, padding, spacing and reflow threshold; the original Section
+and PanelHeading overloads retain their geometry.
 
 ### Shared colour modes and material rendering
 
@@ -357,7 +416,9 @@ Tables remain native BeginTable/EndTable with a MaterialTable.PushStyle scope an
 | MaterialSegmented | Draw<T>(id, segments, ref value, width, disabled) | Value changed bool; options include Disabled and Icon |
 | MaterialSegmented | Draw<T>(id, segments, ref value, width, disabled, showSelectionCheck, cornerRadius) | Opt-in icon-preserving view switch and logical corner radius; original overload/IDs remain unchanged |
 | MaterialSwitch | Draw(id,label,ref value,disabled) | Changed bool; thumb interpolation |
+| MaterialSwitch | Row(nativeLabel,display,ref value,onLabel,offLabel,widthPixels,help,disabled); MeasureRow | Changed bool / measured pixel size; original native ID, trailing track and optional help |
 | MaterialSelection | Checkbox; Radio<T> | Changed bool; caller owns setting |
+| MaterialSettings | Field; Section; Columns | Native editor change / semantic heading / paired groups; no data or configuration ownership |
 | MaterialSurface | Begin; Card; ClickableCard; Color(elevation) | Ref-struct child scope / activation bool |
 | MaterialChip | FilterChip; ActionChip | Ref bool selection / activation |
 | MaterialChip | FilterChip(id, label, ref selected, appearance, disabled, icon, showSelectionCheck) | Explicit fill/foreground/border/radius; consumer can keep the filter caption without a selected check |

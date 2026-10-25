@@ -9,6 +9,7 @@ internal sealed partial class Showcase
         [new("a",0,"A short choice"),new("b",1,"A longer translated option label"),new("c",2,"Third choice")]);
     private int sizingChoice;
     private int sizingNumber=12;
+    private float sizingRange=50;
     private bool sizingEnabled=true;
     private string sizingText="";
     private Vector3 sizingAccent=new(28/255f,201/255f,230/255f);
@@ -107,6 +108,38 @@ internal sealed partial class Showcase
         MaterialStatus.SectionHeader("WINDOW MOTION");
         if(MaterialButton.FilledTonalButton("show-window-motion","Preview minimize and restore"))windowMotionOpen=true;
         if(MaterialButton.FilledTonalButton("show-appearance-titlebar","Preview appearance titlebar"))appearanceWindow.IsOpen=true;
+    }
+
+    private void RetainedSettingsExamples()
+    {
+        var scale = MaterialTheme.Metrics.Scale;
+        MaterialStatus.SectionHeader("REBUILT SETTINGS / RETAINED NATIVE IDS");
+        ImGui.TextWrapped("Rows bind directly to caller values. Wrapping captions and moving an editor do not change its original native identity.");
+        MaterialSettings.Columns("retained-settings-layout", 280 * scale, () =>
+        {
+            var width = ImGui.GetContentRegionAvail().X;
+            MaterialSettings.Section("NOTIFICATIONS & AVAILABILITY", width);
+            MaterialSelection.Checkbox("Existing notification setting", "Notify when a longer background activity completes, including while this window is closed",
+                ref notifications, width);
+            MaterialSelection.Checkbox("Existing enabled setting", "Enable the selected configuration without changing another profile's saved values",
+                ref sizingEnabled, width);
+            MaterialSwitch.Row("Existing completion switch", "Show the completion notification for a longer running activity", ref notifications,
+                "ON", "OFF", width, "The consumer owns this value and its change handler.");
+        }, () =>
+        {
+            var width = ImGui.GetContentRegionAvail().X;
+            MaterialSettings.Section("NATIVE CHOICES & VALUES", width);
+            var radioWidth = (width - 2 * ImGui.GetStyle().ItemSpacing.X) / 3;
+            MaterialSelection.Radio("Existing automatic choice", "Auto", 0, ref sizingChoice, radioWidth); ImGui.SameLine();
+            MaterialSelection.Radio("Existing manual choice", "Manual", 1, ref sizingChoice, radioWidth); ImGui.SameLine();
+            MaterialSelection.Radio("Existing disabled choice", "Off", 2, ref sizingChoice, radioWidth);
+            MaterialSettings.Field("Existing quantity", "Quantity", 112 * scale,
+                label => ImGui.InputInt(label, ref sizingNumber, 1), width);
+            MaterialSettings.Field("Existing delay", "Delay before starting (ms)", 140 * scale,
+                label => ImGui.SliderInt(label, ref delay, 0, 1000), width);
+            MaterialText.Text("Native linear track");
+            MaterialInput.SliderTrack("retained-linear-track", ref sizingRange, 0, 100, width / scale);
+        }, divider: false);
     }
 
     internal void AppearanceExamples()
