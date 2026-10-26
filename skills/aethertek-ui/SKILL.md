@@ -1511,9 +1511,16 @@ Botology's first adoption establishes these practices:
   by DalamudPackager. Serialize builds with overlapping project-reference
   graphs while those targets are active; ADS and FrenRider checks reproduced
   an exclusive-lock failure on their shared FrenRider manifest.
-  For a strictly compilation-only check, also use
-  `-p:ImportNuGetBuildTargets=false`; this skips all NuGet build targets, so
-  reserve it for that check and retain normal imports for release packaging.
+  For compilation checks with SDK 10.0.201, use
+  `-p:ImportProjectExtensionTargets=false` to exclude restored NuGet build
+  targets. This SDK does not reference `ImportNuGetBuildTargets`; that older
+  flag alone does not suppress its restored packager. Consumer-owned post-build
+  targets still need inspection. Retain normal imports for release packaging.
+  Test projects also need their normal test SDK targets: compile the plugin
+  with suppression first, then build/run the test project with normal imports
+  and `-p:BuildProjectReferences=false`, using the freshly built plugin.
+  VERMAXION verified this route with its live aliased assembly and matching
+  dependency bytes; no test harness or new dependency was needed.
 - When wrapping a native toolbar, compare the last item's right edge with the
   content region's right edge before `SameLine`. After a widget advances to the
   next line, `GetContentRegionAvail()` alone describes that next line and can
