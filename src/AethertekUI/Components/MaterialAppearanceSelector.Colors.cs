@@ -261,7 +261,8 @@ public static partial class MaterialAppearanceSelector
     private static bool CaptionButton(string id, string label, float width, bool small = false)
     {
         var padding = ImGui.GetStyle().FramePadding;
-        if (small) padding.Y = 0;
+        // Native glyph bounds can extend slightly beyond the nominal line height (for example Cyrillic descenders).
+        if (small) padding.Y = MaterialTheme.Metrics.Scale;
         var available = Math.Max(1, width);
         var wrap = Math.Max(1, available - 2 * padding.X);
         var text = MaterialText.Measure(label, wrapWidth: wrap);
