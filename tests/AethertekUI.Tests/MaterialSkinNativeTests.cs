@@ -222,6 +222,133 @@ public sealed class MaterialSkinNativeTests
     }
 
     [Theory]
+    [InlineData(MaterialDensity.Compact, 1f)]
+    [InlineData(MaterialDensity.Compact, 1.5f)]
+    [InlineData(MaterialDensity.Standard, 1f)]
+    [InlineData(MaterialDensity.Standard, 1.5f)]
+    public void RetainedButtonPixelRadiiKeepGeometryAlphaAndNativeState(MaterialDensity density, float scale)
+    {
+        using var host = new NativeTestContext((int)(600 * scale), (int)(420 * scale), scale);
+        ImGui.GetIO().ConfigFlags |= ImGuiConfigFlags.NavEnableKeyboard;
+        var mode = MaterialColorMode.Lcars;
+        var size = new Vector2(160, 40) * scale;
+        float? radius = null;
+        var disabled = false; var requestFocus = false; var focused = false; var validateInvalid = true;
+        var actions = 0;
+        uint id = 0;
+        float capturedAlpha = 0;
+        Vector2 min = default, max = default;
+        var mesh = new List<(Vector2 Position, uint Color)>();
+        var face = new List<(Vector2 Position, uint Alpha)>();
+        var fill = new Vector4(.91f, .12f, .08f, 1);
+        var fillRgb = ImGui.ColorConvertFloat4ToU32(fill) & 0xFFFFFF;
+        void Draw()
+        {
+            var theme = new MaterialTheme(Vector3.UnitY, new MaterialColorSettings { Mode = mode }, density);
+            using var palette = MaterialTheme.Push(theme, scale);
+            ImGui.SetNextWindowPos(Vector2.Zero); ImGui.SetNextWindowSize(new Vector2(500, 350) * scale);
+            ImGui.Begin("Retained pixel radius", ImGuiWindowFlags.NoSavedSettings | ImGuiWindowFlags.NoTitleBar);
+            var list = ImGui.GetWindowDrawList(); var style = ImGui.GetStyle();
+            var original = (style.FrameRounding, style.FrameBorderSize, style.Alpha, style.Colors[(int)ImGuiCol.Button]);
+            using (MaterialSkin.NativeButtonStyle())
+            using (var ink = new MaterialStyleScope())
+            {
+                ink.Style(ImGuiStyleVar.FrameRounding, radius ?? 0);
+                ink.Style(ImGuiStyleVar.Alpha, .5f);
+                ink.Color(ImGuiCol.Button, fill); ink.Color(ImGuiCol.ButtonHovered, fill); ink.Color(ImGuiCol.ButtonActive, fill);
+                list.ChannelsSplit(2);
+                try
+                {
+                    list.ChannelsSetCurrent(1);
+                    ImGui.BeginDisabled(disabled);
+                    try
+                    {
+                        if (requestFocus) ImGui.SetKeyboardFocusHere();
+                        using (MaterialSkin.TransparentButtonFace())
+                            if (ImGui.Button("Original action###retained-radius", size)) actions++;
+                        capturedAlpha = style.Alpha;
+                    }
+                    finally { ImGui.EndDisabled(); }
+                    id = ImGuiP.GetItemID(); min = ImGui.GetItemRectMin(); max = ImGui.GetItemRectMax();
+                    focused = ImGui.IsItemFocused();
+                    var context = ImGui.GetCurrentContext();
+                    var state = (id, context.ActiveId, context.NavId, min, max, ImGui.IsItemHovered(), ImGui.IsItemActive(), focused);
+                    list.ChannelsSetCurrent(0);
+                    var first = list.VtxBuffer.Size;
+                    if (validateInvalid)
+                    {
+                        var indices = list.IdxBuffer.Size;
+                        foreach (var invalid in new[] { -1f, float.NaN, float.PositiveInfinity, float.NegativeInfinity })
+                            Assert.Throws<ArgumentOutOfRangeException>(() => MaterialSkin.PaintButton(min, max, capturedAlpha, invalid));
+                        Assert.Equal(first, list.VtxBuffer.Size); Assert.Equal(indices, list.IdxBuffer.Size);
+                        Assert.Equal(2, list.Splitter.Count); Assert.Equal(0, list.Splitter.Current);
+                        validateInvalid = false;
+                    }
+                    if (radius is { } pixels) MaterialSkin.PaintButton(min, max, capturedAlpha, pixels);
+                    else MaterialSkin.PaintButton(min, max, capturedAlpha);
+                    Assert.Equal(state, (ImGuiP.GetItemID(), context.ActiveId, context.NavId, ImGui.GetItemRectMin(),
+                        ImGui.GetItemRectMax(), ImGui.IsItemHovered(), ImGui.IsItemActive(), ImGui.IsItemFocused()));
+                    Assert.Equal(.5f, style.Alpha); Assert.Equal(radius ?? 0, style.FrameRounding);
+                    mesh.Clear(); face.Clear();
+                    for (var i = first; i < list.VtxBuffer.Size; i++)
+                    {
+                        var vertex = list.VtxBuffer[i];
+                        mesh.Add((vertex.Pos - min, vertex.Col));
+                        if ((vertex.Col & 0xFFFFFF) == fillRgb && vertex.Col >> 24 > 0)
+                            face.Add((vertex.Pos - min, vertex.Col >> 24));
+                    }
+                }
+                finally { list.ChannelsMerge(); }
+            }
+            Assert.Equal(original, (style.FrameRounding, style.FrameBorderSize, style.Alpha, style.Colors[(int)ImGuiCol.Button]));
+            ImGui.End();
+        }
+        void AssertRadius(float expected)
+        {
+            Assert.NotEmpty(face);
+            var top = face.Min(vertex => vertex.Position.Y);
+            var tangent = face.Where(vertex => vertex.Position.Y <= top + .01f).Min(vertex => vertex.Position.X);
+            // Native antialiasing and its one-pixel extent clamp can move the opaque tangent inward.
+            Assert.InRange(tangent, expected - 1.25f, expected + 1.25f);
+            var expectedAlpha = 255 * capturedAlpha * (mode == MaterialColorMode.Glassmorphism ? .68f : 1);
+            Assert.InRange(face.Max(vertex => vertex.Alpha), (uint)expectedAlpha, (uint)expectedAlpha + 1);
+        }
+        foreach (var selected in new[] { MaterialColorMode.Lcars, MaterialColorMode.Glassmorphism,
+                     MaterialColorMode.Spatial, MaterialColorMode.Cyberpunk })
+            foreach (var logicalSize in new[] { new Vector2(48, 24), new Vector2(24, 48), new Vector2(160, 40) })
+            {
+                mode = selected; size = logicalSize * scale; radius = null;
+                ImGui.GetIO().AddMousePosEvent(-100, -100);
+                host.Frame(Draw); host.Frame(Draw);
+                var original = (id, min, max);
+                var legacyMesh = mesh.ToArray();
+                var defaultRadius = (mode == MaterialColorMode.Lcars ? 7 : mode == MaterialColorMode.Cyberpunk ? 3 : 6) * scale;
+                AssertRadius(defaultRadius);
+                radius = defaultRadius; host.Frame(Draw);
+                Assert.Equal(legacyMesh, mesh.ToArray());
+                foreach (var pixels in new[] { 0f, 10f, 1000f })
+                {
+                    radius = pixels; host.Frame(Draw);
+                    AssertRadius(Math.Min(pixels, Math.Min(size.X, size.Y) * .5f));
+                    Assert.Equal(original, (id, min, max));
+                }
+                radius = 10;
+                var before = actions;
+                host.Click((min + max) * .5f, Draw);
+                Assert.Equal(before + 1, actions);
+                disabled = true; host.Click((min + max) * .5f, Draw);
+                Assert.Equal(before + 1, actions); AssertRadius(10);
+                disabled = false; requestFocus = true;
+                host.Frame(Draw); host.Frame(Draw); requestFocus = false;
+                Assert.True(focused);
+                ImGui.GetIO().AddKeyEvent(ImGuiKey.Space, true); host.Frame(Draw);
+                ImGui.GetIO().AddKeyEvent(ImGuiKey.Space, false); host.Frame(Draw);
+                Assert.Equal(before + 2, actions);
+                AssertMeshIndices();
+            }
+    }
+
+    [Theory]
     [InlineData(MaterialColorMode.Glassmorphism)]
     [InlineData(MaterialColorMode.Spatial)]
     [InlineData(MaterialColorMode.Cyberpunk)]

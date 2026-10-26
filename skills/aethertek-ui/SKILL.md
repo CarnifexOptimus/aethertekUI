@@ -325,7 +325,14 @@ Retain explicit appearances, radii, semantic fills and original native IDs.
 For native wrappers, `NativeButtonStyle` sets material metrics; draw the native
 button under `TransparentButtonFace`, end that face scope and paint
 `PaintButton` behind the caption in the caller's background channel. Capture
-disabled alpha before ending its scope and pass it to the painter. Enter
+disabled alpha before ending its scope and pass it to the painter. Use
+`PaintButton(min, max, alpha, cornerRadiusPixels)` for a retained explicit
+radius in already-scaled pixels; the required fourth argument is never scaled
+again and must be finite and nonnegative. Both painters clamp to half the
+smaller button extent. The original three-argument overload keeps alpha third
+and its scaled 7/3/6 logical-unit LCARS/Cyberpunk/other-material defaults.
+Push the same pixel `FrameRounding` after `NativeButtonStyle` when retaining
+native face/navigation geometry. The sizing lab demonstrates that pattern. Enter
 `NativeFieldStyle` immediately before one single-row native input, after its
 width/height scopes. Keep scopes lexical and complete-window opacity applied
 once after End. Glass uses bounded procedural ribbons and outlines, not a blur

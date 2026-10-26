@@ -74,7 +74,22 @@ internal sealed partial class Showcase
             "This status wraps and the tile grows to fit.",new Vector2(240,72));
         ImGui.TextWrapped("Popup width is independent of field width. No plugin-specific geometry is needed.");
         MaterialStatus.SectionHeader("READABLE NATIVE ROWS");
-        ImGui.Button("A longer translated action");
+        var nativeButtonList = ImGui.GetWindowDrawList();
+        var nativeButtonRadiusPixels = 10 * MaterialTheme.Metrics.Scale;
+        using (MaterialSkin.NativeButtonStyle())
+        using (var nativeButtonStyle = new MaterialStyleScope())
+        {
+            nativeButtonStyle.Style(ImGuiStyleVar.FrameRounding, nativeButtonRadiusPixels);
+            nativeButtonList.ChannelsSplit(2);
+            try
+            {
+                nativeButtonList.ChannelsSetCurrent(1);
+                using (MaterialSkin.TransparentButtonFace()) ImGui.Button("A longer translated action");
+                nativeButtonList.ChannelsSetCurrent(0);
+                MaterialSkin.PaintButton(ImGui.GetItemRectMin(), ImGui.GetItemRectMax(), null, nativeButtonRadiusPixels);
+            }
+            finally { nativeButtonList.ChannelsMerge(); }
+        }
         ImGui.SameLine();
         var editorMinimum=ImGui.CalcTextSize("00000").X+2*ImGui.GetStyle().FramePadding.X;
         ImGui.SetNextItemWidth(MaterialLayout.FitNextItemWidth(0,editorMinimum));

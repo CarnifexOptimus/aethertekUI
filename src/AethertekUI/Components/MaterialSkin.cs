@@ -275,6 +275,15 @@ public static class MaterialSkin
     public static void PaintButton(Vector2 min, Vector2 max, float? alpha = null)
     {
         var theme = MaterialTheme.Current;
+        PaintButton(min, max, alpha, (theme.IsLcars ? 7 : theme.IsCyberpunk ? 3 : 6) * MaterialTheme.Metrics.Scale);
+    }
+
+    /// <summary>Paint the last native button with an already-scaled pixel radius, clamped to its bounds. Alpha remains the third argument.</summary>
+    public static void PaintButton(Vector2 min, Vector2 max, float? alpha, float cornerRadiusPixels)
+    {
+        if (!float.IsFinite(cornerRadiusPixels) || cornerRadiusPixels < 0)
+            throw new ArgumentOutOfRangeException(nameof(cornerRadiusPixels));
+        var theme = MaterialTheme.Current;
         if (!HasMaterial && !theme.IsLcars) return;
         var style = ImGui.GetStyle();
         var hovered = ImGui.IsItemHovered();
@@ -282,7 +291,7 @@ public static class MaterialSkin
         var state = new MaterialState(min, max, 0, alpha ?? style.Alpha, hovered, active,
             ImGui.IsItemFocused() && ImGui.GetIO().NavVisible, ImGui.IsItemVisible());
         var fill = style.Colors[(int)(active ? ImGuiCol.ButtonActive : hovered ? ImGuiCol.ButtonHovered : ImGuiCol.Button)];
-        var radius = Math.Min((theme.IsLcars ? 7 : theme.IsCyberpunk ? 3 : 6) * MaterialTheme.Metrics.Scale, Math.Min(max.X - min.X, max.Y - min.Y) * .5f);
+        var radius = Math.Min(cornerRadiusPixels, Math.Min(max.X - min.X, max.Y - min.Y) * .5f);
         PaintControl(state, fill, radius, ImDrawFlags.RoundCornersAll, false);
         if (theme.IsLcars)
             ImGui.GetWindowDrawList().AddRect(min, max, Ink(style.Colors[(int)ImGuiCol.Border], state.Alpha, hovered || active ? 1 : .7f), radius,

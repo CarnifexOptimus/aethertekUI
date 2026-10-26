@@ -144,8 +144,16 @@ For retained native buttons, enter `NativeButtonStyle`, capture disabled alpha,
 draw the original button under `TransparentButtonFace`, then dispose that face
 scope before calling `PaintButton` in the background channel. Pass captured
 alpha when the disabled scope has ended. This retains native hit testing,
-caption, focus and original IDs. `NativeFieldStyle` paints one single-row field
-immediately before its native input, after width/height scopes. Keep styles
+caption, focus and original IDs. `PaintButton(min, max, alpha = null)` retains
+the scaled material radius: 7 logical units for LCARS, 3 for Cyberpunk and 6
+for other materials, clamped to half the smaller button extent. Use
+`PaintButton(min, max, alpha, cornerRadiusPixels)` for an explicit already-scaled
+pixel radius; it is not scaled again and must be finite and nonnegative.
+The fourth argument is required; the third argument remains captured alpha.
+After `NativeButtonStyle`, push the same pixel radius as `FrameRounding` when
+the native face/navigation geometry must match. The sizing lab reuses its
+retained native action with this explicit radius. `NativeFieldStyle` paints one
+single-row field immediately before its native input, after width/height scopes. Keep styles
 lexical and apply complete-window opacity once after End. Glass ribbons and
 glow are bounded draw-list geometry; they do not blur the game framebuffer.
 Theme reduced motion also freezes the Glass backdrop.
