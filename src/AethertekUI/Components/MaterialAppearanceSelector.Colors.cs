@@ -284,6 +284,7 @@ public static partial class MaterialAppearanceSelector
         var start = ImGui.GetCursorPosX();
         var gap = ImGui.GetStyle().ItemSpacing.X;
         var resetWidth = Has(resetLabel) ? MaterialText.Measure(resetLabel!).X + 2 * ImGui.GetStyle().FramePadding.X : 0;
+        ImGui.SetCursorPosX(start + MaterialTheme.Metrics.Scale);
         ImGui.PushTextWrapPos(start + width);
         try { MaterialText.Text(label); }
         finally { ImGui.PopTextWrapPos(); }
