@@ -635,6 +635,8 @@ public sealed class MaterialSkinNativeTests
         var settings = new MaterialColorSettings { Mode = MaterialColorMode.Lcars, LcarsBackgroundRgb = 0xE0E9ED,
             LcarsBar1Rgb = 0x13272E, LcarsBar2Rgb = 0xF0D720, LcarsBar3Rgb = 0x8E15C0 };
         var theme = new MaterialTheme(Vector3.One, settings);
+        Assert.Equal(Vector4.One, MaterialSkin.ReadableInk(theme.Colors.Primary));
+        Assert.Equal(new Vector4(0, 0, 0, 1), MaterialSkin.ReadableInk(theme.Colors.Secondary));
         var colors = new HashSet<uint>();
         void Draw()
         {

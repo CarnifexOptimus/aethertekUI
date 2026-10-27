@@ -401,7 +401,8 @@ public static class MaterialSkin
     }
 
     private static Vector4 Rgb(uint rgb) => new(MaterialColorSettings.Rgb(rgb), 1);
-    internal static Vector4 ReadableInk(Vector4 surface) => MaterialColor.Contrast(surface, Vector4.One) >= MaterialColor.Contrast(surface, new(0, 0, 0, 1))
+    /// <summary>Chooses the higher-contrast black or white caption for an opaque control fill.</summary>
+    public static Vector4 ReadableInk(Vector4 surface) => MaterialColor.Contrast(surface, Vector4.One) >= MaterialColor.Contrast(surface, new(0, 0, 0, 1))
         ? Vector4.One : new(0, 0, 0, 1);
     private static uint Ink(Vector4 color, float alpha, float opacity = 1)
         => MaterialDraw.Color(new(color.X, color.Y, color.Z, color.W * opacity), alpha);

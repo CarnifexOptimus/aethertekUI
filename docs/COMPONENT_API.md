@@ -19,6 +19,7 @@ See [Adaptive sizing and host compatibility](ADAPTIVE_SIZING.md) for units, owne
 | MaterialAppearanceSelector.DrawColors | Native colour/hex editor; optional translated labels expose styles, LCARS bars, resets and Glass motion/waves |
 | MaterialSkin.BackdropStyle / Backdrop / PanelFrame / Heading | Shared material geometry; suppress the adopted native background before Begin, then paint the backdrop first and frames behind controls |
 | MaterialSkin.NativeButtonStyle / NativeFieldStyle / PaintButton / TransparentButtonFace | Retained native wrappers keep original actions/IDs while adopting selected materials |
+| MaterialSkin.ReadableInk | Higher-contrast black/white caption for an opaque native control fill, including hover/active selection |
 | MaterialLcars.Header / PanelHeading / PanelFrame / Footer / NativeButtonStyle | Shared elbow/rail/panel geometry and retained native-button styling; caller retains IDs and scopes |
 | MaterialAppearanceTitleBar.SetLcarsIcons / MaterialLcars.ControlBlue / MaterialIcon.Chocobo | Opt-in titlebar glyphs, blue control accent and a bird silhouette; original icon ordinals and actions retained |
 | MaterialTheme.Feedback / MaterialLcars.Feedback | Host-owned activation feedback; disabled controls remain silent |

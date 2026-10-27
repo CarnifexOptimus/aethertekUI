@@ -285,6 +285,8 @@ Call `SetLcarsIcons(theme.IsLcars)` on the retained adapter to select globe,
 monitor and droplet glyphs without changing priorities, IDs or callbacks.
 Verify the complete Settings owner including selected navigation: LCARS uses
 readable black/white text on the chosen second bar colour (lilac by default).
+Retained selection wrappers can reuse `MaterialSkin.ReadableInk(actualFill)`
+after native submission to select caption ink for the actual hovered/active fill.
 
 ## Shared Glassmorphism, Spatial and Cyberpunk materials
 
