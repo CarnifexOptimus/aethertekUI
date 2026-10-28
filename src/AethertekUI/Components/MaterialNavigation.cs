@@ -66,16 +66,30 @@ public static class MaterialTabs
             if(!owner.IsNull && owner.FramePadding!=ImGui.GetStyle().FramePadding)
                 height.Style(ImGuiStyleVar.FramePadding,owner.FramePadding);
             var caption=MaterialNativeCaption.Visible(label);
-            if(!MaterialNativeCaption.IsShaped(caption)) { active=Visible=ImGui.BeginTabItem(label,flags);return; }
-            var measured=MaterialText.Measure(caption);
+            var shaped=MaterialNativeCaption.IsShaped(caption);
+            var cyber=MaterialTheme.CurrentOrNull is { IsCyberpunk: true };
+            if(!shaped && !cyber) { active=Visible=ImGui.BeginTabItem(label,flags);return; }
+            var measured=shaped?MaterialText.Measure(caption):default;
             // Keep an explicit caller width and the original native label/ID.
-            if(((int)ImGui.GetCurrentContext().NextItemData.Flags&1)==0)
+            if(shaped && ((int)ImGui.GetCurrentContext().NextItemData.Flags&1)==0)
                 ImGui.SetNextItemWidth(Math.Max(ImGui.CalcTextSize(caption).X,measured.X)+2*ImGui.GetStyle().FramePadding.X);
             var list=ImGui.GetWindowDrawList();var first=list.VtxBuffer.Size;var font=ImGui.GetFont();
-            active=Visible=ImGui.BeginTabItem(label,flags|ImGuiTabItemFlags.NoTooltip);
+            var alpha=ImGui.GetStyle().Alpha;
+            var splitter=cyber?ImGui.ImDrawListSplitter():default;
+            active=Visible=false;
             try
             {
+                if(cyber) { splitter.Split(list,2);splitter.SetCurrentChannel(list,1); }
+                using(MaterialSkin.TransparentTabFace())
+                    active=Visible=ImGui.BeginTabItem(label,shaped?flags|ImGuiTabItemFlags.NoTooltip:flags);
                 var min=ImGui.GetItemRectMin();var max=ImGui.GetItemRectMax();
+                if(cyber)
+                {
+                    splitter.SetCurrentChannel(list,0);
+                    MaterialSkin.PaintTab(min,max,Visible,alpha);
+                    splitter.SetCurrentChannel(list,1);
+                }
+                if(!shaped) return;
                 MaterialNativeCaption.HideGlyphs(list,first,font,caption,min,max);
                 var bar=ImGui.GetCurrentContext().CurrentTabBar;
                 var clipMin=new Vector2(Math.Max(min.X,bar.ScrollingRectMinX),min.Y);
@@ -95,6 +109,7 @@ public static class MaterialTabs
                 active=false;
                 throw;
             }
+            finally { if(cyber) { splitter.Merge(list);splitter.Destroy(); } }
         }
         public void Dispose() { if(active) ImGui.EndTabItem(); active=false; }
     }

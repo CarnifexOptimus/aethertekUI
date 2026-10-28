@@ -198,11 +198,55 @@ public static class MaterialSkin
         }
         else if (theme.IsCyberpunk)
         {
-            if (!inset)
-                dl.AddRectFilled(min + new Vector2(0, 3 * s), max + new Vector2(0, 3 * s), Ink(new(0, 0, 0, .22f), alpha), radius);
-            dl.AddRectFilled(min, max, Ink(fill, alpha, theme.SurfaceOpacity), radius);
-            TopLight(dl, min, max, radius, c.OnSurface, alpha, .06f);
+            if (inset || radius == 0)
+            {
+                if (!inset)
+                    dl.AddRectFilled(min + new Vector2(0, 3 * s), max + new Vector2(0, 3 * s), Ink(new(0, 0, 0, .22f), alpha), radius);
+                dl.AddRectFilled(min, max, Ink(fill, alpha, theme.SurfaceOpacity), radius);
+                TopLight(dl, min, max, radius, c.OnSurface, alpha, .06f);
+            }
+            else PaintCyberPlate(dl, min, max, fill with { W = fill.W * theme.SurfaceOpacity }, radius * 2, alpha, .48f);
         }
+    }
+
+    private static void PaintCyberPlate(ImDrawListPtr dl, Vector2 min, Vector2 max, Vector4 fill, float cut, float alpha, float emphasis)
+    {
+        var extent = max - min;
+        if (extent.X <= 0 || extent.Y <= 0 || fill.W <= 0) return;
+        var c = MaterialTheme.Current.Colors;
+        var s = MaterialTheme.Metrics.Scale;
+        cut = Math.Clamp(cut, 0, Math.Min(extent.X, extent.Y) * .25f);
+        dl.PushClipRect(min, max, true);
+        try
+        {
+            CyberPlatePath(dl, min, max, cut);
+            dl.PathFillConvex(Ink(fill, alpha));
+            var inset = Math.Min(s, Math.Min(extent.X, extent.Y) * .125f);
+            var innerMin = min + new Vector2(inset);
+            var innerMax = max - new Vector2(inset);
+            var innerCut = Math.Max(0, cut - inset * .5f);
+            CyberPlatePath(dl, innerMin, innerMax, innerCut);
+            dl.PathStroke(Ink(Vector4.Lerp(c.OnSurface, c.Primary, .35f), alpha, emphasis), ImDrawFlags.Closed, s);
+            var length = Math.Min(32 * s, Math.Max(0, extent.X - 2 * cut) * .3f);
+            dl.AddLine(new(min.X + cut, min.Y + inset), new(min.X + cut + length, min.Y + inset),
+                Ink(c.Primary, alpha, Math.Min(1, emphasis + .25f)), 2 * s);
+            dl.AddLine(new(max.X - cut - length * .6f, max.Y - inset), new(max.X - cut, max.Y - inset),
+                Ink(c.Secondary, alpha, emphasis), s);
+        }
+        finally { dl.PopClipRect(); }
+    }
+
+    private static void CyberPlatePath(ImDrawListPtr dl, Vector2 min, Vector2 max, float cut)
+    {
+        dl.PathClear();
+        dl.PathLineTo(new(min.X + cut, min.Y));
+        dl.PathLineTo(new(max.X - cut, min.Y));
+        dl.PathLineTo(new(max.X, min.Y + cut));
+        dl.PathLineTo(new(max.X, max.Y - cut));
+        dl.PathLineTo(new(max.X - cut, max.Y));
+        dl.PathLineTo(new(min.X + cut, max.Y));
+        dl.PathLineTo(new(min.X, max.Y - cut));
+        dl.PathLineTo(new(min.X, min.Y + cut));
     }
 
     public static void Heading(string title, int accent = 0)
@@ -245,6 +289,43 @@ public static class MaterialSkin
         }
         finally { dl.PopClipRect(); }
         ImGui.Dummy(new(width, height));
+    }
+
+    /// <summary>Suppress only the five native Cyberpunk tab faces during submission. End this scope before PaintTab.</summary>
+    public static MaterialStyleScope TransparentTabFace()
+    {
+        var scope = new MaterialStyleScope();
+        if (MaterialTheme.CurrentOrNull is not { IsCyberpunk: true }) return scope;
+        scope.Color(ImGuiCol.Tab, Vector4.Zero);
+        scope.Color(ImGuiCol.TabHovered, Vector4.Zero);
+        scope.Color(ImGuiCol.TabActive, Vector4.Zero);
+        scope.Color(ImGuiCol.TabUnfocused, Vector4.Zero);
+        scope.Color(ImGuiCol.TabUnfocusedActive, Vector4.Zero);
+        return scope;
+    }
+
+    /// <summary>Paint the last retained native Cyberpunk tab in its caller's background channel while its bar is active, after restoring transparent tab colours. Other modes are unchanged.</summary>
+    public static void PaintTab(Vector2 min, Vector2 max, bool selected, float? alpha = null)
+    {
+        if (MaterialTheme.CurrentOrNull is not { IsCyberpunk: true } || max.X <= min.X || max.Y <= min.Y) return;
+        var style = ImGui.GetStyle();
+        var hovered = ImGui.IsItemHovered();
+        var bar = ImGui.GetCurrentContext().CurrentTabBar;
+        if (bar.IsNull) return;
+        var focused = (bar.Flags & (ImGuiTabBarFlags)ImGuiTabBarFlagsPrivate.IsFocused) != 0;
+        var fill = style.Colors[(int)(hovered ? ImGuiCol.TabHovered : selected
+            ? focused ? ImGuiCol.TabActive : ImGuiCol.TabUnfocusedActive
+            : focused ? ImGuiCol.Tab : ImGuiCol.TabUnfocused)];
+        var emphasis = selected ? .85f : hovered || ImGui.IsItemActive() || ImGui.IsItemFocused() ? .7f : .38f;
+        var clipMin = min;
+        var clipMax = max;
+        clipMin.X = Math.Max(clipMin.X, bar.ScrollingRectMinX);
+        clipMax.X = Math.Min(clipMax.X, bar.ScrollingRectMaxX);
+        if (clipMax.X <= clipMin.X) return;
+        var dl = ImGui.GetWindowDrawList();
+        dl.PushClipRect(clipMin, clipMax, true);
+        try { PaintCyberPlate(dl, min, max, fill, 8 * MaterialTheme.Metrics.Scale, alpha ?? style.Alpha, emphasis); }
+        finally { dl.PopClipRect(); }
     }
 
     /// <summary>Use with PaintButton in a background draw channel; semantic native Button colours remain intact.</summary>

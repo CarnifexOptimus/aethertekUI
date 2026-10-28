@@ -287,6 +287,11 @@ Verify the complete Settings owner including selected navigation: LCARS uses
 readable black/white text on the chosen second bar colour (lilac by default).
 Retained selection wrappers can reuse `MaterialSkin.ReadableInk(actualFill)`
 after native submission to select caption ink for the actual hovered/active fill.
+For retained selectable captions, keep the native vertical item bounds when
+clipping; a nominal line-height clip can trim the original font's descenders.
+Consumer-owned pastel status text can lose contrast on Spatial's light surfaces.
+Use the existing selected Text role for such text; retain saved palettes and
+semantic fill colours.
 
 ## Shared Glassmorphism, Spatial and Cyberpunk materials
 
@@ -323,6 +328,13 @@ relative magenta details. `Heading` and `PanelFrame` support retained layouts;
 paint frames in the existing background channel, reserving LCARS rail space.
 Retain explicit appearances, radii, semantic fills and original native IDs.
 `Heading` retains supplied casing; localize capitalization in the consumer.
+For retained Cyberpunk tabs, submit native `BeginTabItem` under
+`MaterialSkin.TransparentTabFace()`, dispose that scope, then call
+`MaterialSkin.PaintTab(min, max, selected, capturedAlpha)` in the caller's
+background channel while the native tab bar remains active. Preserve native
+IDs, bar metrics, captions and EndTabItem ownership; intersect caption clips
+with the bar's scrolling region too. `MaterialTabs` and the existing gallery
+demonstrate the same chamfered tab geometry.
 
 For native wrappers, `NativeButtonStyle` sets material metrics; draw the native
 button under `TransparentButtonFace`, end that face scope and paint

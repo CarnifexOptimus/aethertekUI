@@ -226,6 +226,178 @@ public sealed class MaterialSkinNativeTests
     [InlineData(MaterialDensity.Compact, 1.5f)]
     [InlineData(MaterialDensity.Standard, 1f)]
     [InlineData(MaterialDensity.Standard, 1.5f)]
+    public unsafe void CyberPanelsAndNativeTabsKeepChamferedMeshesFillsClipsAndCallerState(MaterialDensity density, float scale)
+    {
+        using var host = new NativeTestContext((int)(750 * scale), (int)(500 * scale), scale);
+        var theme = new MaterialTheme(Vector3.UnitY, new MaterialColorSettings { Mode = MaterialColorMode.Cyberpunk }, density)
+            { SurfaceOpacity = .7f };
+        var selectedFill = new Vector4(.57f, .12f, .08f, .8f);
+        var hoverFill = new Vector4(.13f, .48f, .19f, .65f);
+        var idleFill = new Vector4(.17f, .21f, .29f, .75f);
+        var unfocusedSelectedFill = new Vector4(.08f, .17f, .57f, .55f);
+        var unfocusedIdleFill = new Vector4(.31f, .16f, .27f, .45f);
+        var labels = new[] { "First retained Cyberpunk###cyber-first", "Second retained Cyberpunk###cyber-second", "Third retained Cyberpunk###cyber-third" };
+        var points = new Vector2[3];
+        var selected = new bool[3];
+        var disabled = false; var narrow = false; var request = 0; var firstHovered = false; var firstActive = false;
+        var unfocusOwner = false; var rawBaseline = false; var verifiedUnfocusedRaw = false;
+        var panels = 0; var tabs = 0;
+        void Draw()
+        {
+            using var palette = MaterialTheme.Push(theme, scale);
+            using var ink = new MaterialStyleScope();
+            ink.Style(ImGuiStyleVar.Alpha, .6f);
+            ink.Color(ImGuiCol.Tab, idleFill); ink.Color(ImGuiCol.TabUnfocused, unfocusedIdleFill);
+            ink.Color(ImGuiCol.TabActive, selectedFill); ink.Color(ImGuiCol.TabUnfocusedActive, unfocusedSelectedFill);
+            ink.Color(ImGuiCol.TabHovered, hoverFill);
+            ImGui.SetNextWindowPos(Vector2.Zero); ImGui.SetNextWindowSize(new Vector2(narrow ? 240 : 700, 450) * scale);
+            ImGui.Begin("Cyber plate contracts", ImGuiWindowFlags.NoSavedSettings | ImGuiWindowFlags.NoTitleBar);
+            var list = ImGui.GetWindowDrawList(); var context = ImGui.GetCurrentContext(); var style = ImGui.GetStyle();
+            var caller = (ImGui.GetID("after-plates"), context.ColorStack.Size, context.StyleVarStack.Size, list.ClipRectStack.Size, style.FramePadding, style.Alpha);
+            ImGui.BeginDisabled(disabled);
+            using (var bar = MaterialTabs.Begin("retained-cyber-tabs", ImGuiTabBarFlags.FittingPolicyScroll))
+            {
+                Assert.True(bar.Visible);
+                for (var index = 0; index < labels.Length; index++)
+                {
+                    var id = ImGui.GetID(labels[index]); var first = list.VtxBuffer.Size;
+                    var padding = style.FramePadding; var clips = list.ClipRectStack.Size;
+                    var flags = request == index ? ImGuiTabItemFlags.SetSelected : ImGuiTabItemFlags.None;
+                    using var item = rawBaseline ? default(MaterialTabs.TabItemScope) : MaterialTabs.Item(labels[index], flags);
+                    var visible = rawBaseline ? ImGui.BeginTabItem(labels[index], flags) : item.Visible;
+                    try
+                    {
+                    selected[index] = visible;
+                    Assert.Equal(id, ImGuiP.GetItemID());
+                    Assert.Equal(padding, style.FramePadding); Assert.Equal(clips, list.ClipRectStack.Size);
+                    Assert.Equal(idleFill, style.Colors[(int)ImGuiCol.Tab]);
+                    Assert.Equal(selectedFill, style.Colors[(int)ImGuiCol.TabActive]);
+                    Assert.Equal(hoverFill, style.Colors[(int)ImGuiCol.TabHovered]);
+                    Assert.Equal(unfocusedIdleFill, style.Colors[(int)ImGuiCol.TabUnfocused]);
+                    Assert.Equal(unfocusedSelectedFill, style.Colors[(int)ImGuiCol.TabUnfocusedActive]);
+                    var min = ImGui.GetItemRectMin(); var max = ImGui.GetItemRectMax();
+                    points[index] = (min + max) * .5f;
+                    if (index == 0) { firstHovered = ImGui.IsItemHovered(); firstActive = ImGui.IsItemActive(); }
+                    var barState = context.CurrentTabBar;
+                    var focused = (barState.Flags & (ImGuiTabBarFlags)ImGuiTabBarFlagsPrivate.IsFocused) != 0;
+                    var fill = ImGui.IsItemHovered() ? hoverFill : visible
+                        ? focused ? selectedFill : unfocusedSelectedFill : focused ? idleFill : unfocusedIdleFill;
+                    var windowClip = ImGuiP.GetCurrentWindow().ClipRect;
+                    var tabClipMin = new Vector2(Math.Max(Math.Max(min.X, barState.ScrollingRectMinX), windowClip.Min.X), Math.Max(min.Y, windowClip.Min.Y));
+                    var tabClipMax = new Vector2(Math.Min(Math.Min(max.X, barState.ScrollingRectMaxX), windowClip.Max.X), Math.Min(max.Y, windowClip.Max.Y));
+                    if (rawBaseline)
+                    {
+                        if (visible && tabClipMax.X > tabClipMin.X && tabClipMax.Y > tabClipMin.Y)
+                        {
+                            Assert.False(ImGui.IsWindowFocused(ImGuiFocusedFlags.RootAndChildWindows));
+                            Assert.True(focused); // A regular native bar retains its focused fill roles when its owner loses focus.
+                            var expected = ImGui.ColorConvertFloat4ToU32(fill with { W = fill.W * style.Alpha });
+                            var found = false;
+                            for (var vertex = first; vertex < list.VtxBuffer.Size; vertex++)
+                                if (list.VtxBuffer[vertex].Col == expected) { found = true; break; }
+                            Assert.True(found, "Raw native unfocused-owner tab uses its bar-focused fill role");
+                            verifiedUnfocusedRaw = true;
+                        }
+                        continue;
+                    }
+                    var mesh = CheckMesh(first, min, max, fill, style.Alpha, Math.Min(8 * scale, Math.Min(max.X - min.X, max.Y - min.Y) * .25f));
+                    if (tabClipMax.X > tabClipMin.X && tabClipMax.Y > tabClipMin.Y)
+                        Assert.True(mesh, $"Visible Cyber tab {index} must emit a plate: selected={visible}, hovered={ImGui.IsItemHovered()}, disabled={disabled}");
+                    if (mesh)
+                    {
+                        tabs++;
+                        AssertPlateClips(first, fill, tabClipMin, tabClipMax);
+                    }
+                    }
+                    finally { if (rawBaseline && visible) ImGui.EndTabItem(); }
+                }
+            }
+            ImGui.EndDisabled();
+            var panelMin = new Vector2(35, 170) * scale; var panelMax = new Vector2(220, 310) * scale;
+            var panelFirst = list.VtxBuffer.Size; var panelId = ImGuiP.GetItemID();
+            var clipMin = panelMin + new Vector2(0, 8 * scale); var clipMax = panelMax - new Vector2(0, 8 * scale);
+            list.PushClipRect(clipMin, clipMax, true);
+            MaterialSkin.PanelFrame(panelMin, panelMax);
+            Assert.Equal(panelId, ImGuiP.GetItemID());
+            Assert.True(CheckMesh(panelFirst, panelMin, panelMax, theme.Colors.SurfaceContainerLow, .6f * theme.SurfaceOpacity, 6 * scale));
+            AssertPlateClips(panelFirst, theme.Colors.SurfaceContainerLow, clipMin, clipMax);
+            list.PopClipRect(); panels++;
+            Assert.Equal(caller, (ImGui.GetID("after-plates"), context.ColorStack.Size, context.StyleVarStack.Size, list.ClipRectStack.Size, style.FramePadding, style.Alpha));
+            ImGui.End();
+            if (unfocusOwner)
+            {
+                ImGui.SetNextWindowPos(new Vector2(400, 350) * scale); ImGui.SetNextWindowSize(new Vector2(200, 70) * scale);
+                ImGui.SetNextWindowFocus();
+                ImGui.Begin("Cyber baseline focus owner", ImGuiWindowFlags.NoSavedSettings);
+                ImGui.End();
+            }
+
+            bool CheckMesh(int first, Vector2 min, Vector2 max, Vector4 fill, float alpha, float cut)
+            {
+                var rgb = ImGui.ColorConvertFloat4ToU32(fill) & 0xFFFFFF;
+                var face = new List<(Vector2 Position, uint Alpha)>();
+                var colors = new HashSet<uint>();
+                for (var i = first; i < list.VtxBuffer.Size; i++)
+                {
+                    var vertex = list.VtxBuffer[i];
+                    if (vertex.Col >> 24 > 0) colors.Add(vertex.Col & 0xFFFFFF);
+                    if ((vertex.Col & 0xFFFFFF) == rgb && vertex.Col >> 24 > 0) face.Add((vertex.Pos, vertex.Col >> 24));
+                }
+                if (face.Count == 0) return false; // The caller separately requires a mesh for every tab intersecting its native clips.
+                Assert.InRange(face.Count, 8, 16);
+                foreach (var color in new[] { theme.Colors.Primary, theme.Colors.Secondary, Vector4.Lerp(theme.Colors.OnSurface, theme.Colors.Primary, .35f) })
+                    Assert.Contains(ImGui.ColorConvertFloat4ToU32(color) & 0xFFFFFF, colors);
+                foreach (var vertex in face)
+                {
+                    Assert.InRange(vertex.Position.X, min.X - 1, max.X + 1);
+                    Assert.InRange(vertex.Position.Y, min.Y - 1, max.Y + 1);
+                }
+                var top = face.Min(vertex => vertex.Position.Y);
+                var tangent = face.Where(vertex => vertex.Position.Y <= top + .01f).Min(vertex => vertex.Position.X - min.X);
+                Assert.InRange(tangent, cut - 1.25f, cut + 1.25f);
+                Assert.DoesNotContain(face, vertex => vertex.Position.X < min.X + cut * .4f && vertex.Position.Y < min.Y + cut * .4f);
+                var expected = 255 * fill.W * alpha;
+                Assert.InRange(face.Max(vertex => vertex.Alpha), (uint)expected, (uint)expected + 1);
+                return true;
+            }
+
+            void AssertPlateClips(int first, Vector4 fill, Vector2 min, Vector2 max)
+            {
+                var rgb = ImGui.ColorConvertFloat4ToU32(fill) & 0xFFFFFF;
+                for (var commandIndex = 0; commandIndex < list.CmdBuffer.Size; commandIndex++)
+                {
+                    var command = list.CmdBuffer[commandIndex]; var plate = false;
+                    for (var i = command.IdxOffset; i < command.IdxOffset + command.ElemCount; i++)
+                    {
+                        var vertex = (int)(list.IdxBuffer[(int)i] + command.VtxOffset);
+                        if (vertex >= first && (list.VtxBuffer[vertex].Col & 0xFFFFFF) == rgb && list.VtxBuffer[vertex].Col >> 24 > 0) { plate = true; break; }
+                    }
+                    if (!plate) continue;
+                    Assert.True(command.ClipRect.X >= min.X && command.ClipRect.Y >= min.Y);
+                    Assert.True(command.ClipRect.Z <= max.X && command.ClipRect.W <= max.Y);
+                }
+            }
+        }
+        ImGui.GetIO().AddMousePosEvent(-100, -100); host.Frame(Draw); host.Frame(Draw); request = -1;
+        Assert.True(selected[0]);
+        ImGui.GetIO().AddMousePosEvent(points[0].X, points[0].Y); host.Frame(Draw); Assert.True(firstHovered);
+        ImGui.GetIO().AddMouseButtonEvent(0, true); host.Frame(Draw); Assert.True(firstActive);
+        ImGui.GetIO().AddMouseButtonEvent(0, false); host.Frame(Draw);
+        disabled = true; host.Click(points[1], Draw); Assert.True(selected[0]); Assert.False(selected[1]); Assert.False(firstHovered);
+        disabled = false; host.Click(points[1], Draw); host.Frame(Draw); Assert.True(selected[1]);
+        narrow = true; request = 2; host.Frame(Draw); host.Frame(Draw); host.Frame(Draw);
+        Assert.True(selected[2]); Assert.True(panels > 0 && tabs > 0);
+        ImGui.GetIO().AddMousePosEvent(-100, -100); narrow = false; unfocusOwner = true; host.Frame(Draw); host.Frame(Draw);
+        rawBaseline = true; host.Frame(Draw); host.Frame(Draw); Assert.True(verifiedUnfocusedRaw);
+        rawBaseline = false; host.Frame(Draw); host.Frame(Draw);
+        AssertMeshIndices();
+    }
+
+    [Theory]
+    [InlineData(MaterialDensity.Compact, 1f)]
+    [InlineData(MaterialDensity.Compact, 1.5f)]
+    [InlineData(MaterialDensity.Standard, 1f)]
+    [InlineData(MaterialDensity.Standard, 1.5f)]
     public void RetainedButtonPixelRadiiKeepGeometryAlphaAndNativeState(MaterialDensity density, float scale)
     {
         using var host = new NativeTestContext((int)(600 * scale), (int)(420 * scale), scale);
