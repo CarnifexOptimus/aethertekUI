@@ -9,12 +9,14 @@ internal sealed partial class Showcase
 {
     private readonly WindowSystem appearanceWindows = new("AethertekUI appearance preview");
     private readonly AppearanceTitleBarWindow appearanceWindow;
+    private bool appearanceStyling = true, appearanceLocked;
 
     private sealed class AppearanceTitleBarWindow : Window
     {
         private readonly Showcase showcase;
         private readonly MaterialWindowMotion motion = new();
         private readonly MaterialWindowOpacity opacity = new();
+        private readonly MaterialWindowLock movementLock = new();
         private readonly MaterialAppearanceTitleBar appearance;
         private bool krangle;
 
@@ -27,16 +29,26 @@ internal sealed partial class Showcase
                 () => new("Language", "Compact", "Transparency", "Colour"),
                 DrawLanguage, ToggleCompact, DrawTransparency, DrawColour,
                 ToggleKrangle, () => $"Krangle: {(krangle ? "On" : "Off")}");
+            appearance.RegisterWindowControls(
+                () => showcase.appearanceStyling = !showcase.appearanceStyling,
+                () => showcase.appearanceStyling ? "Use native UI" : "Use styled UI",
+                () => showcase.appearanceLocked = !showcase.appearanceLocked,
+                () => showcase.appearanceLocked ? "Unlock windows" : "Lock windows");
         }
 
-        public override void PreDraw() => motion.Prepare(this, showcase.reduceMotion, roundedCorners: true);
+        public override void PreDraw()
+        {
+            motion.Prepare(this, showcase.reduceMotion || !showcase.appearanceStyling, roundedCorners: showcase.appearanceStyling);
+            movementLock.Apply(this, showcase.appearanceLocked);
+        }
         public override void PostDraw()
         {
+            movementLock.Restore(this);
             motion.Restore(this);
             var native = ImGuiP.FindWindowByName(WindowName);
             if (!native.IsNull)
                 MaterialWindowHeader.PaintTitleWithStatus(native, "Appearance preview v0.3.0", default, Vector2.Zero,
-                    new("Ready - five manual titlebar actions", "Ready",
+                    new("Ready - seven manual titlebar actions", "Ready",
                         "Ready\nThe appearance editors reuse the Settings showcase values."),
                     TitleBarButtons.Count * (ImGui.GetFontSize() + ImGui.GetStyle().ItemInnerSpacing.X));
             appearance.DrawPopups();
@@ -45,9 +57,13 @@ internal sealed partial class Showcase
         }
         public override void Draw()
         {
+            if (showcase.BackgroundRenderer != null)
+                showcase.BackgroundRenderer.Opacity = showcase.appearanceTransparency
+                    ? ImGui.IsWindowAppearing() ? Math.Clamp(showcase.appearanceOpacity, 10, 100) / 100f : opacity.CurrentOpacity
+                    : 1;
             MaterialSkin.Backdrop();
             motion.DrawChrome();
-            MaterialText.Text("Five separate manual titlebar actions");
+            MaterialText.Text("Seven separate manual titlebar actions");
             ImGui.TextWrapped("Use the titlebar icons while expanded or collapsed. These editors share the Settings showcase values.");
             MaterialText.Text($"Language: {showcase.appearanceLanguage}");
             MaterialText.Text($"Compact: {showcase.appearanceCompact}");
@@ -80,6 +96,7 @@ internal sealed partial class Showcase
             ImGui.SliderInt("Unfocused opacity", ref showcase.appearanceFadedOpacity, 10, 100, "%d%%");
             ImGui.SetNextItemWidth(120 * MaterialTheme.Metrics.Scale);
             ImGui.InputFloat("Unfocused delay", ref showcase.appearanceFadeDelay);
+            showcase.DrawScreenshotPause();
         }
 
         private void DrawColour()

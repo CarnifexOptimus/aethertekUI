@@ -1,4 +1,5 @@
 using System.Numerics;
+using AethertekUI.Dalamud;
 using Dalamud.Bindings.ImGui;
 
 namespace AethertekUI.Demo;
@@ -11,6 +12,11 @@ internal sealed partial class Showcase
     internal Vector2 BorrowedImageSize;
     internal MaterialDensity DemoDensity { set { density=(int)value; theme.Density=value; } }
     internal MaterialColorSettings DemoColors { set => colorChoices = value; }
+    internal MaterialGlassRenderer? BackgroundRenderer { get; set; }
+    internal Action? BrowseBackgroundImage { get; set; }
+    internal MaterialColorSettings BackgroundSettings => colorChoices;
+    internal bool HasOpenWindows => IsOpen || overlayOpen || windowMotionOpen || HindiPreviewOpen || appearanceWindow.IsOpen;
+    internal void SelectBackgroundImage(string path) => colorChoices = colorChoices with { GlassImagePath = path };
     private static readonly Vector3 DefaultSeed = new(.36f,.72f,.46f);
     private static readonly MaterialColorSettings DefaultColorChoices = new();
     private Vector3 seed = DefaultSeed;
@@ -53,8 +59,11 @@ internal sealed partial class Showcase
 
     public void Draw(float globalScale = 1)
     {
-        if(!IsOpen&&!overlayOpen&&!windowMotionOpen&&!HindiPreviewOpen&&!appearanceWindow.IsOpen) return;
+        if(!HasOpenWindows) return;
         if (colorChoices != appliedColorChoices) RebuildTheme();
+        using var glass = MaterialSkin.PushBackgroundRenderer(BackgroundRenderer,
+            colorChoices.HasBackgroundBlur(colorChoices.Mode), colorChoices.BackgroundBlurPercent / 100f);
+        {
         // The theme scope wraps Begin/End, so it also styles the outer window.
         using var scope=MaterialTheme.Push(theme,globalScale,MaterialStyleMode.Material);
         using var chrome=MaterialWindowChrome.Push();
@@ -121,8 +130,14 @@ internal sealed partial class Showcase
         if(overlayOpen) DrawOverlay();
         if(windowMotionOpen) DrawWindowMotion();
         if(HindiPreviewOpen) DrawHindiPreview();
+        }
         if (appearanceWindow.IsOpen)
         {
+            using var previewTheme = MaterialTheme.Push(theme, globalScale,
+                appearanceStyling ? MaterialStyleMode.Material : MaterialStyleMode.Native);
+            using var previewChrome = MaterialWindowChrome.Push();
+            using var previewGlass = MaterialSkin.PushBackgroundRenderer(appearanceStyling ? BackgroundRenderer : null,
+                appearanceStyling && colorChoices.HasBackgroundBlur(colorChoices.Mode), colorChoices.BackgroundBlurPercent / 100f);
             using var backdrop = MaterialSkin.BackdropStyle();
             appearanceWindows.Draw();
         }
@@ -138,6 +153,10 @@ internal sealed partial class Showcase
         using (MaterialSkin.BackdropStyle()) visible = ImGui.Begin(name,ref windowMotionOpen);
         if(visible)
         {
+            if (BackgroundRenderer != null)
+                BackgroundRenderer.Opacity = windowOpacityEnabled
+                    ? ImGui.IsWindowAppearing() ? Math.Clamp(windowOpacityPercent, 10, 100) / 100f : windowOpacity.CurrentOpacity
+                    : 1;
             MaterialSkin.Backdrop();
             windowDecorations.Paint();
             var imageOrigin = ImGui.GetCursorScreenPos();

@@ -26,6 +26,27 @@ public readonly record struct MaterialColorLabels(string Auto, string Picker, st
     public string? GlassWave2 { get; init; }
     public string? GlassWave3 { get; init; }
     public string? ResetWaveColors { get; init; }
+    /// <summary>Supply the heading and all three mode labels to opt in to background selection.</summary>
+    public string? BackgroundMode { get; init; }
+    public string? Waves { get; init; }
+    public string? Lights { get; init; }
+    public string? Image { get; init; }
+    public string? LightEffect { get; init; }
+    public string? AmbientGlows { get; init; }
+    public string? SweepingBeams { get; init; }
+    public string? PointerGlow { get; init; }
+    public string? ImageFile { get; init; }
+    public string? BrowseImage { get; init; }
+    public string? LoadImage { get; init; }
+    public string? ImageHelp { get; init; }
+    public string? LightColors { get; init; }
+    public string? GlassLight1 { get; init; }
+    public string? GlassLight2 { get; init; }
+    public string? GlassLight3 { get; init; }
+    public string? ResetLightColors { get; init; }
+    /// <summary>Supply both labels to expose the chosen style's saved blur toggle and shared Frost percentage.</summary>
+    public string? BackgroundBlur { get; init; }
+    public string? BlurPercent { get; init; }
 }
 
 public static partial class MaterialAppearanceSelector
@@ -46,19 +67,30 @@ public static partial class MaterialAppearanceSelector
         Vector3 defaultAccent, float minimumWidth = 300)
         => DrawColorsCore(id, ref choices, ref accent, palette, labels, defaults, defaultAccent, minimumWidth);
 
+    /// <summary>Invokes the consumer's image picker; Browse alone does not request persistence or load a file.</summary>
+    public static bool DrawColors(string id, ref MaterialColorSettings choices, ref Vector3 accent,
+        MaterialAppearanceLabels palette, MaterialColorLabels labels, MaterialColorSettings defaults,
+        Vector3 defaultAccent, Action browseImage, float minimumWidth = 300)
+    {
+        ArgumentNullException.ThrowIfNull(browseImage);
+        return DrawColorsCore(id, ref choices, ref accent, palette, labels, defaults, defaultAccent, minimumWidth, browseImage);
+    }
+
     private static bool DrawColorsCore(string id, ref MaterialColorSettings choices, ref Vector3 accent,
         MaterialAppearanceLabels palette, MaterialColorLabels labels, MaterialColorSettings defaults,
-        Vector3? defaultAccent, float minimumWidth)
+        Vector3? defaultAccent, float minimumWidth, Action? browseImage = null)
     {
         ArgumentNullException.ThrowIfNull(choices);
         ArgumentNullException.ThrowIfNull(defaults);
         var styles = Has(labels.Glassmorphism) && Has(labels.Spatial) && Has(labels.Cyberpunk);
         var lcarsFields = Has(labels.LcarsBar1) && Has(labels.LcarsBar2) && Has(labels.LcarsBar3);
-        var modern = styles || lcarsFields || Has(labels.Reset) || Has(labels.ResetColors);
+        var backgroundFields = Has(labels.BackgroundMode) && Has(labels.Waves) && Has(labels.Lights) && Has(labels.Image);
+        var blurFields = Has(labels.BackgroundBlur) && Has(labels.BlurPercent);
+        var modern = styles || lcarsFields || Has(labels.Reset) || Has(labels.ResetColors) || backgroundFields || blurFields;
         var scale = MaterialTheme.Metrics.Scale;
         var fieldLabels = modern
             ? new[] { labels.Background, labels.Controls, labels.Text, labels.LcarsBar1, labels.LcarsBar2, labels.LcarsBar3,
-                labels.GlassWave1, labels.GlassWave2, labels.GlassWave3 }
+                labels.GlassWave1, labels.GlassWave2, labels.GlassWave3, labels.GlassLight1, labels.GlassLight2, labels.GlassLight3 }
             : [labels.Background, labels.Controls, labels.Text];
         var labelWidth = fieldLabels.Where(Has).Max(label => MaterialText.Measure(label!).X);
         var editorWidth = MathF.Ceiling(Math.Max(100 * scale, ImGui.CalcTextSize("#FFFFFF").X + 2 * ImGui.GetStyle().FramePadding.X)
@@ -67,8 +99,12 @@ public static partial class MaterialAppearanceSelector
         var width = Math.Max(minimumWidth * scale, labelWidth + editorWidth + resetWidth + (resetWidth > 0 ? 3 : 2) * ImGui.GetStyle().ItemSpacing.X);
         if (modern)
         {
-            foreach (var caption in new[] { labels.ResetColors, labels.ResetWaveColors, labels.Animation, labels.AnimationSpeed, labels.WaveColors })
+            foreach (var caption in new[] { labels.ResetColors, labels.ResetWaveColors, labels.Animation, labels.AnimationSpeed, labels.WaveColors,
+                labels.BackgroundMode, labels.LightEffect, labels.ImageFile, labels.BrowseImage, labels.LoadImage,
+                labels.LightColors, labels.ResetLightColors, labels.BackgroundBlur, labels.BlurPercent })
                 if (Has(caption)) width = Math.Max(width, MaterialText.Measure(caption!).X + 2 * ImGui.GetStyle().FramePadding.X);
+            foreach (var caption in new[] { labels.Waves, labels.Lights, labels.Image, labels.AmbientGlows, labels.SweepingBeams, labels.PointerGlow })
+                if (Has(caption)) width = Math.Max(width, MaterialText.Measure(caption!).X + ImGui.GetFrameHeight() + 4 * ImGui.GetStyle().FramePadding.X);
             width = Math.Min(width, Math.Max(editorWidth, ImGui.GetIO().DisplaySize.X - 2 * ImGui.GetStyle().WindowPadding.X - 40 * scale));
             if ((ImGuiP.GetCurrentWindow().Flags & ImGuiWindowFlags.AlwaysAutoResize) == 0)
                 width = Math.Min(width, Math.Max(editorWidth, ImGui.GetContentRegionAvail().X));
@@ -158,7 +194,7 @@ public static partial class MaterialAppearanceSelector
                 Preview(background, controls, text, labels, width);
                 Wrapped(labels.PickerHint);
                 if (mode == MaterialColorMode.Glassmorphism)
-                    committed |= DrawGlass(ref choices, defaults, labels, width, labelWidth, editorWidth);
+                    committed |= DrawGlass(ref choices, defaults, labels, width, labelWidth, editorWidth, browseImage);
             }
             else if (mode == MaterialColorMode.Lcars)
             {
@@ -205,6 +241,12 @@ public static partial class MaterialAppearanceSelector
                 finally { ImGui.PopID(); }
             }
             Wrapped(labels.AutoHint);
+        }
+        if (blurFields)
+        {
+            ImGui.PushID(id);
+            try { committed |= DrawBackgroundBlur(ref choices, labels, width); }
+            finally { ImGui.PopID(); }
         }
         return committed;
 
@@ -321,9 +363,39 @@ public static partial class MaterialAppearanceSelector
     }
 
     private static bool DrawGlass(ref MaterialColorSettings choices, MaterialColorSettings defaults,
-        MaterialColorLabels labels, float width, float labelWidth, float editorWidth)
+        MaterialColorLabels labels, float width, float labelWidth, float editorWidth, Action? browseImage)
     {
         var committed = false;
+        var backgrounds = Has(labels.BackgroundMode) && Has(labels.Waves) && Has(labels.Lights) && Has(labels.Image);
+        var background = backgrounds ? choices.GlassBackground : MaterialGlassBackground.Waves;
+        if (backgrounds)
+        {
+            WrappedCaption(labels.BackgroundMode!, width);
+            var options = new MaterialOptions<MaterialGlassBackground>([
+                new("waves", MaterialGlassBackground.Waves, labels.Waves!),
+                new("lights", MaterialGlassBackground.Lights, labels.Lights!),
+                new("image", MaterialGlassBackground.Image, labels.Image!),
+            ]);
+            if (MaterialCombo.Draw("glass-background", options, ref background, new MaterialComboLayout(0, 3),
+                width / MaterialTheme.Metrics.Scale, searchable: false, emptyLabel: labels.Waves!))
+            { choices = choices with { GlassBackground = background }; committed = true; }
+        }
+        if (background == MaterialGlassBackground.Image)
+            return DrawGlassImage(ref choices, labels, width, browseImage) || committed;
+        if (background == MaterialGlassBackground.Lights && Has(labels.LightEffect) &&
+            Has(labels.AmbientGlows) && Has(labels.SweepingBeams) && Has(labels.PointerGlow))
+        {
+            WrappedCaption(labels.LightEffect!, width);
+            var effect = choices.GlassLights;
+            var options = new MaterialOptions<MaterialGlassLights>([
+                new("ambient", MaterialGlassLights.AmbientGlows, labels.AmbientGlows!),
+                new("sweeping", MaterialGlassLights.SweepingBeams, labels.SweepingBeams!),
+                new("pointer", MaterialGlassLights.PointerGlow, labels.PointerGlow!),
+            ]);
+            if (MaterialCombo.Draw("glass-lights", options, ref effect, new MaterialComboLayout(0, 3),
+                width / MaterialTheme.Metrics.Scale, searchable: false, emptyLabel: labels.AmbientGlows!))
+            { choices = choices with { GlassLights = effect }; committed = true; }
+        }
         if (Has(labels.Animation))
         {
             var animation = choices.GlassAnimation;
@@ -363,7 +435,23 @@ public static partial class MaterialAppearanceSelector
             }
             finally { ImGui.EndDisabled(); }
         }
-        if (Has(labels.GlassWave1) && Has(labels.GlassWave2) && Has(labels.GlassWave3))
+        if (background == MaterialGlassBackground.Lights && Has(labels.GlassLight1) && Has(labels.GlassLight2) && Has(labels.GlassLight3))
+        {
+            ImGui.Spacing();
+            if (Has(labels.LightColors)) WrappedCaption(labels.LightColors!, width);
+            var light1 = choices.GlassLight1Rgb;
+            var light2 = choices.GlassLight2Rgb;
+            var light3 = choices.GlassLight3Rgb;
+            committed |= DrawRgbField("glass-light1", labels.GlassLight1!, ref light1, defaults.GlassLight1Rgb, labels.Reset, width, labelWidth, editorWidth);
+            committed |= DrawRgbField("glass-light2", labels.GlassLight2!, ref light2, defaults.GlassLight2Rgb, labels.Reset, width, labelWidth, editorWidth);
+            committed |= DrawRgbField("glass-light3", labels.GlassLight3!, ref light3, defaults.GlassLight3Rgb, labels.Reset, width, labelWidth, editorWidth);
+            if (ResetButton("reset-light-colours", labels.ResetLightColors,
+                    (light1, light2, light3) == (defaults.GlassLight1Rgb, defaults.GlassLight2Rgb, defaults.GlassLight3Rgb), width))
+            { (light1, light2, light3) = (defaults.GlassLight1Rgb, defaults.GlassLight2Rgb, defaults.GlassLight3Rgb); committed = true; }
+            if ((light1, light2, light3) != (choices.GlassLight1Rgb, choices.GlassLight2Rgb, choices.GlassLight3Rgb))
+                choices = choices with { GlassLight1Rgb = light1, GlassLight2Rgb = light2, GlassLight3Rgb = light3 };
+        }
+        if (background == MaterialGlassBackground.Waves && Has(labels.GlassWave1) && Has(labels.GlassWave2) && Has(labels.GlassWave3))
         {
             ImGui.Spacing();
             if (Has(labels.WaveColors)) MaterialText.Text(labels.WaveColors!);
@@ -380,6 +468,61 @@ public static partial class MaterialAppearanceSelector
                 choices = choices with { GlassWave1Rgb = wave1, GlassWave2Rgb = wave2, GlassWave3Rgb = wave3 };
         }
         return committed;
+    }
+
+    private static bool DrawGlassImage(ref MaterialColorSettings choices, MaterialColorLabels labels, float width, Action? browseImage)
+    {
+        var committed = false;
+        if (Has(labels.ImageFile))
+        {
+            WrappedCaption(labels.ImageFile!, width);
+            var path = choices.GlassImagePath ?? string.Empty;
+            ImGui.SetNextItemWidth(width);
+            if (MaterialShapedInput.SingleLine("##glass-image-path", string.Empty, ref path, 4096))
+                choices = choices with { GlassImagePath = path };
+            committed |= ImGui.IsItemDeactivatedAfterEdit();
+        }
+        var browse = browseImage != null && Has(labels.BrowseImage);
+        var gap = ImGui.GetStyle().ItemSpacing.X;
+        var padding = 2 * ImGui.GetStyle().FramePadding.X;
+        var browseWidth = browse ? MaterialText.Measure(labels.BrowseImage!).X + padding : 0;
+        var loadWidth = Has(labels.LoadImage) ? MaterialText.Measure(labels.LoadImage!).X + padding : 0;
+        var inline = browse && loadWidth > 0 && browseWidth + gap + loadWidth <= width;
+        if (browse && CaptionButton("browse-glass-image", labels.BrowseImage!, inline ? browseWidth : width)) browseImage!();
+        if (Has(labels.LoadImage))
+        {
+            if (inline) ImGui.SameLine();
+            if (CaptionButton("load-glass-image", labels.LoadImage!, inline ? loadWidth : width)) committed = true;
+        }
+        if (Has(labels.ImageHelp)) WrappedCaption(labels.ImageHelp!, width);
+        return committed;
+    }
+
+    private static bool DrawBackgroundBlur(ref MaterialColorSettings choices, MaterialColorLabels labels, float width)
+    {
+        ImGui.Separator();
+        var enabled = choices.HasBackgroundBlur(choices.Mode);
+        var committed = MaterialSelection.Checkbox("##background-blur", labels.BackgroundBlur!, ref enabled, width);
+        if (committed) choices = choices.WithBackgroundBlur(choices.Mode, enabled);
+        ImGui.BeginDisabled(!enabled);
+        try
+        {
+            WrappedCaption(labels.BlurPercent!, width);
+            var percent = choices.BackgroundBlurPercent;
+            ImGui.SetNextItemWidth(width);
+            if (ImGui.SliderInt("##background-blur-percent", ref percent, 0, 100, "%d%%", ImGuiSliderFlags.AlwaysClamp))
+                choices = choices with { BackgroundBlurPercent = percent };
+            committed |= ImGui.IsItemDeactivatedAfterEdit();
+        }
+        finally { ImGui.EndDisabled(); }
+        return committed;
+    }
+
+    private static void WrappedCaption(string caption, float width)
+    {
+        ImGui.PushTextWrapPos(ImGui.GetCursorPosX() + width);
+        try { MaterialText.Text(caption); }
+        finally { ImGui.PopTextWrapPos(); }
     }
 
     private static void Preview(uint backgroundRgb, uint controlsRgb, uint textRgb, MaterialColorLabels labels, float width)

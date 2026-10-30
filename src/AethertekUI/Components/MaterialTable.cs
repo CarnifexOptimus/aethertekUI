@@ -44,9 +44,9 @@ public static class MaterialTable
         var c=MaterialTheme.Current.Colors;
         var style=new MaterialStyleScope();
         style.Style(ImGuiStyleVar.CellPadding,MaterialTheme.Metrics.CellPadding);
-        style.Color(ImGuiCol.TableHeaderBg,c.SurfaceContainerHigh);
+        style.Color(ImGuiCol.TableHeaderBg,MaterialSkin.BackgroundFill(c.SurfaceContainerHigh));
         style.Color(ImGuiCol.TableRowBg,Vector4.Zero);
-        style.Color(ImGuiCol.TableRowBgAlt,alternateRows?MaterialColor.Alpha(c.OnSurface,.025f):Vector4.Zero);
+        style.Color(ImGuiCol.TableRowBgAlt,alternateRows?MaterialSkin.BackgroundFill(MaterialColor.Alpha(c.OnSurface,.025f)):Vector4.Zero);
         style.Color(ImGuiCol.TableBorderLight,MaterialColor.Alpha(c.OutlineVariant,.5f));
         style.Color(ImGuiCol.TableBorderStrong,c.OutlineVariant);
         return style;

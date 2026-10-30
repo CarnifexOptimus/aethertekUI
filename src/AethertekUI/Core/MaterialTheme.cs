@@ -3,17 +3,21 @@ using Dalamud.Bindings.ImGui;
 
 namespace AethertekUI;
 
-/// <summary>Compatible preserves host layout; Material owns layout metrics; ColorsOnly preserves every style variable.</summary>
-public enum MaterialStyleMode { Compatible, Material, ColorsOnly }
+/// <summary>Native retains host styling; the other modes apply themed colors with progressively stronger layout ownership.</summary>
+public enum MaterialStyleMode { Compatible, Material, ColorsOnly, Native }
 
 public sealed class MaterialTheme
 {
     [ThreadStatic] private static MaterialTheme? current;
     [ThreadStatic] private static MaterialMetrics metrics;
+    [ThreadStatic] private static MaterialColorScheme? nativeColors;
     public static MaterialTheme Current => current ?? throw new InvalidOperationException("Enter MaterialTheme.Push before drawing components.");
     internal static MaterialTheme? CurrentOrNull => current;
     public static MaterialMetrics Metrics => current is null ? throw new InvalidOperationException("No theme scope.") : metrics;
-    public MaterialColorScheme Colors { get; }
+    private readonly MaterialColorScheme colors;
+    public MaterialColorScheme Colors => IsNative ? nativeColors! : colors;
+    /// <summary>The active scope retains host colors and native global styles.</summary>
+    public bool IsNative => ReferenceEquals(current, this) && nativeColors != null;
     internal MaterialColorSettings? AppearanceSettings => Colors.AppearanceSettings;
     public MaterialColorMode ColorMode => AppearanceSettings?.Mode ?? (Colors.IsLcars ? MaterialColorMode.Lcars : MaterialColorMode.Auto);
     public bool IsLcars => Colors.IsLcars;
@@ -32,28 +36,56 @@ public sealed class MaterialTheme
     }
     public MaterialTheme(Vector3 seed, MaterialDensity density = MaterialDensity.Compact, IPaletteGenerator? generator = null)
     {
-        Colors = new((generator ?? new OklchPaletteGenerator()).Generate(seed));
+        colors = new((generator ?? new OklchPaletteGenerator()).Generate(seed));
         Density = density;
     }
     public MaterialTheme(MaterialColorScheme colors, MaterialDensity density = MaterialDensity.Compact)
     {
-        Colors = colors ?? throw new ArgumentNullException(nameof(colors));
+        this.colors = colors ?? throw new ArgumentNullException(nameof(colors));
         Density = density;
     }
     public MaterialTheme(Vector3 seed, MaterialColorSettings colorSettings, MaterialDensity density = MaterialDensity.Compact,
         IPaletteGenerator? generator = null)
         : this((colorSettings ?? throw new ArgumentNullException(nameof(colorSettings)))
             .Apply(new MaterialColorScheme((generator ?? new OklchPaletteGenerator()).Generate(seed))), density) { }
-    public Vector4 SurfaceColor(Vector4 role) => MaterialColor.Alpha(role,SurfaceOpacity);
+    public Vector4 SurfaceColor(Vector4 role) => IsNative ? role : MaterialColor.Alpha(role,SurfaceOpacity);
     public static ThemeScope Push(MaterialTheme theme, float globalScale = 1, bool applyMetrics = true)
         => new(theme,globalScale,applyMetrics ? MaterialStyleMode.Compatible : MaterialStyleMode.ColorsOnly);
     public static ThemeScope Push(MaterialTheme theme, float globalScale, MaterialStyleMode mode) => new(theme,globalScale,mode);
+
+    private static MaterialColorScheme HostColors(MaterialColorScheme semantic)
+    {
+        var style = ImGui.GetStyle();
+        Vector4 Color(ImGuiCol role) => style.Colors[(int)role];
+        var text = Color(ImGuiCol.Text);
+        var background = Color(ImGuiCol.WindowBg);
+        var button = Color(ImGuiCol.Button);
+        var accent = Color(ImGuiCol.CheckMark);
+        return new()
+        {
+            Primary = accent, Secondary = accent, Tertiary = accent,
+            OnPrimary = text, OnSecondary = text, OnTertiary = text,
+            PrimaryContainer = button, SecondaryContainer = button, TertiaryContainer = button,
+            OnPrimaryContainer = text, OnSecondaryContainer = text, OnTertiaryContainer = text,
+            Background = background, OnBackground = text, Surface = background, OnSurface = text,
+            SurfaceVariant = Color(ImGuiCol.FrameBgActive), OnSurfaceVariant = Color(ImGuiCol.TextDisabled),
+            SurfaceContainerLowest = background, SurfaceContainerLow = Color(ImGuiCol.TitleBg),
+            SurfaceContainer = Color(ImGuiCol.ChildBg), SurfaceContainerHigh = Color(ImGuiCol.PopupBg),
+            SurfaceContainerHighest = Color(ImGuiCol.FrameBg), Outline = Color(ImGuiCol.Border),
+            OutlineVariant = Color(ImGuiCol.Separator), InverseSurface = text,
+            InverseOnSurface = background, InversePrimary = accent,
+            Error = semantic.Error, OnError = semantic.OnError,
+            ErrorContainer = semantic.ErrorContainer, OnErrorContainer = semantic.OnErrorContainer,
+            Scrim = Color(ImGuiCol.ModalWindowDimBg),
+        };
+    }
 
     public ref struct ThemeScope
     {
         private MaterialStyleScope style;
         private readonly MaterialTheme? previous;
         private readonly MaterialMetrics previousMetrics;
+        private readonly MaterialColorScheme? previousNativeColors;
         private readonly MaterialControlContext previousContext;
         private readonly MaterialControlMetrics? previousControls;
         private bool active;
@@ -64,12 +96,16 @@ public sealed class MaterialTheme
             if (!Enum.IsDefined(mode)) throw new ArgumentOutOfRangeException(nameof(mode));
             previous = current;
             previousMetrics = metrics;
+            previousNativeColors = nativeColors;
+            var hostColors = mode == MaterialStyleMode.Native ? HostColors(theme.colors) : null;
             current = theme;
+            nativeColors = hostColors;
             metrics = new(theme.Density,scale);
             previousContext = MaterialControls.SetContext(MaterialControlContext.Regular);
             previousControls = MaterialControls.SetMetrics(null);
             style = new();
             active = true;
+            if (mode == MaterialStyleMode.Native) return;
             var c = theme.Colors;
             var m = metrics;
             style.Color(ImGuiCol.Text,c.OnSurface);
@@ -145,6 +181,7 @@ public sealed class MaterialTheme
             style.Dispose();
             current = previous;
             metrics = previousMetrics;
+            nativeColors = previousNativeColors;
             MaterialControls.SetContext(previousContext);
             MaterialControls.SetMetrics(previousControls);
             active = false;

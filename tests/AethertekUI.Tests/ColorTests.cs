@@ -5,6 +5,51 @@ namespace AethertekUI.Tests;
 
 public class ColorTests
 {
+    [Fact]
+    public void GlassBackgroundChoicesRoundTripWithoutChangingWaveColoursOrBlurDefaults()
+    {
+        var legacy = System.Text.Json.JsonSerializer.Deserialize<MaterialColorSettings>("{}")!;
+        Assert.Equal(MaterialGlassBackground.Waves, legacy.GlassBackground);
+        Assert.Equal(MaterialGlassLights.AmbientGlows, legacy.GlassLights);
+        Assert.Equal("", legacy.GlassImagePath);
+        var selected = legacy with
+        {
+            GlassBackground = MaterialGlassBackground.Image,
+            GlassLights = MaterialGlassLights.SweepingBeams,
+            GlassImagePath = @"C:\fixture\glass.png",
+            GlassLight1Rgb = 0x123456,
+        };
+        var restored = System.Text.Json.JsonSerializer.Deserialize<MaterialColorSettings>(
+            System.Text.Json.JsonSerializer.Serialize(selected))!;
+        Assert.Equal(selected, restored);
+        Assert.Equal(legacy.GlassWave1Rgb, restored.GlassWave1Rgb);
+        Assert.NotEqual(restored.GlassWave1Rgb, restored.GlassLight1Rgb);
+        Assert.True(restored.GlassBackgroundBlur);
+        Assert.Equal(75, restored.BackgroundBlurPercent);
+        var invalid = restored with { GlassBackground = (MaterialGlassBackground)99, GlassLights = (MaterialGlassLights)(-1) };
+        Assert.Equal(MaterialGlassBackground.Waves, invalid.GlassBackground);
+        Assert.Equal(MaterialGlassLights.AmbientGlows, invalid.GlassLights);
+    }
+
+    [Fact]
+    public void BlurDefaultsAndManualChoicesSurviveStyleChangesAndSerialization()
+    {
+        var legacy = System.Text.Json.JsonSerializer.Deserialize<MaterialColorSettings>("{}")!;
+        Assert.Equal(75, legacy.BackgroundBlurPercent);
+        foreach (var mode in Enum.GetValues<MaterialColorMode>())
+            Assert.Equal(mode == MaterialColorMode.Glassmorphism, legacy.HasBackgroundBlur(mode));
+        var saved = legacy.WithBackgroundBlur(MaterialColorMode.Glassmorphism, false)
+            .WithBackgroundBlur(MaterialColorMode.Spatial, true) with { BackgroundBlurPercent = 42 };
+        var restored = System.Text.Json.JsonSerializer.Deserialize<MaterialColorSettings>(
+            System.Text.Json.JsonSerializer.Serialize(saved))!;
+        Assert.Equal(saved, restored);
+        Assert.False(restored.HasBackgroundBlur(MaterialColorMode.Glassmorphism));
+        Assert.True(restored.HasBackgroundBlur(MaterialColorMode.Spatial));
+        Assert.False(restored.HasBackgroundBlur(MaterialColorMode.Cyberpunk));
+        Assert.Equal(0, (saved with { BackgroundBlurPercent = -1 }).BackgroundBlurPercent);
+        Assert.Equal(100, (saved with { BackgroundBlurPercent = 101 }).BackgroundBlurPercent);
+    }
+
     [Theory]
     [InlineData(0f)] [InlineData(.003f)] [InlineData(.04f)] [InlineData(.5f)] [InlineData(1f)]
     public void SrgbRoundTrip(float value) => Assert.InRange(Math.Abs(MaterialColor.LinearToSrgb(MaterialColor.SrgbToLinear(value))-value),0,1e-6f);

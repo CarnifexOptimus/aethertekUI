@@ -192,6 +192,172 @@ public sealed unsafe class AppearanceStylesNativeTests
         }
     }
 
+    [Theory]
+    [InlineData(MaterialDensity.Compact, 1f)]
+    [InlineData(MaterialDensity.Compact, 1.5f)]
+    [InlineData(MaterialDensity.Standard, 1f)]
+    [InlineData(MaterialDensity.Standard, 1.5f)]
+    public void NativeBackgroundControlsPreserveDraftsAndKeepBrowseConsumerOwned(MaterialDensity density, float scale)
+    {
+        using var host = new NativeTestContext((int)(1100 * scale), (int)(1800 * scale), scale);
+        var settings = new MaterialColorSettings
+        {
+            Mode = MaterialColorMode.Glassmorphism, GlassImagePath = "sample-background.png",
+            GlassLight1Rgb = 0xD03142, GlassLight2Rgb = 0xD05263, GlassLight3Rgb = 0xD07485,
+        };
+        var defaults = new MaterialColorSettings { GlassLight1Rgb = 0x213243, GlassLight2Rgb = 0x435465, GlassLight3Rgb = 0x657687 };
+        var labels = Labels with
+        {
+            BackgroundMode = "Backdrop kind", Waves = "Wave background", Lights = "Light background", Image = "Image background",
+            LightEffect = "Light effect", AmbientGlows = "Ambient glows", SweepingBeams = "Sweeping beams", PointerGlow = "Pointer glow",
+            ImageFile = "Image file", BrowseImage = "Browse...", LoadImage = "Load image", ImageHelp = "The selected image fills the pane.",
+            LightColors = "Light colours", GlassLight1 = "Light one", GlassLight2 = "Light two", GlassLight3 = "Light three",
+            ResetLightColors = "Light defaults", BackgroundBlur = "Use background blur", BlurPercent = "Blur amount",
+        };
+        var accent = new Vector3(.2f, .4f, .6f);
+        var saved = settings;
+        var saves = 0;
+        var browses = 0;
+        var extended = true;
+        ImGuiWindowPtr window = default;
+        uint backgroundComboId = 0, lightsComboId = 0;
+        void Draw()
+        {
+            using var theme = MaterialTheme.Push(new MaterialTheme(accent, settings, density), scale);
+            ImGui.SetNextWindowPos(new Vector2(20, 20) * scale);
+            ImGui.SetNextWindowSize(new Vector2(340, 1600) * scale);
+            ImGui.Begin("Shared background controls", ImGuiWindowFlags.NoSavedSettings);
+            window = ImGuiP.GetCurrentWindow();
+            ImGui.PushID("colours");
+            ImGui.PushID("glass-background"); backgroundComboId = ImGui.GetID("##combo"); ImGui.PopID();
+            ImGui.PushID("glass-lights"); lightsComboId = ImGui.GetID("##combo"); ImGui.PopID();
+            ImGui.PopID();
+            var committed = extended
+                ? MaterialAppearanceSelector.DrawColors("colours", ref settings, ref accent, Palette, labels, defaults, accent, () => browses++)
+                : MaterialAppearanceSelector.DrawColors("colours", ref settings, ref accent, Palette, Labels, defaults, accent);
+            if (committed) { saved = settings; saves++; }
+            ImGui.End();
+        }
+        host.Frame(Draw); host.Frame(Draw);
+        var waves = (settings.GlassWave1Rgb, settings.GlassWave2Rgb, settings.GlassWave3Rgb);
+        SelectCombo("Wave background", "Light background");
+        Assert.Equal(MaterialGlassBackground.Lights, saved.GlassBackground);
+        SelectCombo("Ambient glows", "Sweeping beams");
+        Assert.Equal(MaterialGlassLights.SweepingBeams, saved.GlassLights);
+        SelectCombo("Sweeping beams", "Pointer glow");
+        Assert.Equal(MaterialGlassLights.PointerGlow, saved.GlassLights);
+        SelectCombo("Pointer glow", "Ambient glows");
+        Assert.Equal(MaterialGlassLights.AmbientGlows, saved.GlassLights);
+        host.Click(Center(window, "Animate"), Draw);
+        Assert.False(saved.GlassAnimation);
+        Assert.Empty(TextBounds(window, "Wave one"));
+        var beforeLight = settings;
+        Edit(Hex(settings.GlassLight1Rgb), "#A1B2C3");
+        Assert.Equal(beforeLight with { GlassLight1Rgb = 0xA1B2C3 }, saved);
+        var beforeReset = settings;
+        host.Click(Center(window, "Light defaults"), Draw);
+        Assert.Equal(beforeReset with { GlassLight1Rgb = defaults.GlassLight1Rgb,
+            GlassLight2Rgb = defaults.GlassLight2Rgb, GlassLight3Rgb = defaults.GlassLight3Rgb }, saved);
+        Assert.Equal(waves, (saved.GlassWave1Rgb, saved.GlassWave2Rgb, saved.GlassWave3Rgb));
+
+        SelectCombo("Light background", "Image background");
+        Assert.Equal(MaterialGlassBackground.Image, saved.GlassBackground);
+        Assert.Empty(TextBounds(window, "Animate"));
+        Assert.Empty(TextBounds(window, "Light one"));
+        var beforeBrowse = settings;
+        var beforeBrowseSaves = saves;
+        host.Click(Center(window, "Browse..."), Draw);
+        Assert.Equal(1, browses);
+        Assert.Equal(beforeBrowse, settings);
+        Assert.Equal(beforeBrowseSaves, saves);
+        Edit("sample-background.png", "picked-background.png");
+        Assert.Equal("picked-background.png", saved.GlassImagePath);
+        var beforeLoad = saves;
+        host.Click(Center(window, "Load image"), Draw);
+        Assert.Equal(beforeLoad + 1, saves);
+
+        var slider = Center(window, "75%");
+        var beforeDrag = saves;
+        var io = ImGui.GetIO();
+        io.AddMousePosEvent(slider.X, slider.Y); host.Frame(Draw);
+        io.AddMouseButtonEvent(0, true); host.Frame(Draw);
+        io.AddMousePosEvent(slider.X + 15 * scale, slider.Y); host.Frame(Draw);
+        Assert.Equal(beforeDrag, saves);
+        Assert.NotEqual(75, settings.BackgroundBlurPercent);
+        io.AddMouseButtonEvent(0, false); host.Frame(Draw);
+        Assert.Equal(beforeDrag + 1, saves);
+        Assert.Equal(settings.BackgroundBlurPercent, saved.BackgroundBlurPercent);
+        host.Click(Center(window, "Use background blur"), Draw);
+        Assert.False(saved.GlassBackgroundBlur);
+        host.Click(Center(window, "Cyberpunk"), Draw); host.Frame(Draw);
+        Assert.False(settings.CyberpunkBackgroundBlur);
+        host.Click(Center(window, "Use background blur"), Draw);
+        Assert.True(saved.CyberpunkBackgroundBlur);
+        Assert.False(saved.GlassBackgroundBlur);
+        host.Click(Center(window, "Glassmorphism"), Draw); host.Frame(Draw);
+        Assert.Equal(MaterialGlassBackground.Image, settings.GlassBackground);
+        Assert.Equal("picked-background.png", settings.GlassImagePath);
+
+        labels = labels with { ImageFile = "A long translated background image file label",
+            BrowseImage = "Browse for an image on this computer", LoadImage = "Load the chosen background image" };
+        host.Frame(Draw); host.Frame(Draw);
+        Assert.NotEmpty(TextBounds(window, labels.ImageFile!));
+        Assert.NotEmpty(TextBounds(window, labels.BrowseImage!));
+        Assert.NotEmpty(TextBounds(window, labels.LoadImage!));
+        Assert.Equal(0, window.ScrollMax.X);
+        var beforeLegacy = settings;
+        var beforeLegacySaves = saves;
+        extended = false;
+        host.Frame(Draw); host.Frame(Draw);
+        Assert.NotEmpty(TextBounds(window, "Animate"));
+        Assert.NotEmpty(TextBounds(window, "Wave one"));
+        Assert.Empty(TextBounds(window, "Backdrop kind"));
+        Assert.Empty(TextBounds(window, labels.ImageFile!));
+        Assert.Empty(TextBounds(window, "Use background blur"));
+        Assert.Equal(beforeLegacy, settings);
+        Assert.Equal(beforeLegacySaves, saves);
+
+        void SelectCombo(string current, string caption)
+        {
+            var count = saves;
+            var point = Center(window, current);
+            ImGui.GetIO().AddMousePosEvent(point.X, point.Y); host.Frame(Draw);
+            var context = ImGui.GetCurrentContext();
+            var expected = current is "Wave background" or "Light background" ? backgroundComboId : lightsComboId;
+            Assert.True(context.HoveredId == expected,
+                $"{current} at {point}: hovered {context.HoveredId:X8}, expected native combo {expected:X8}; window {window.Pos}/{window.Size}, scroll {window.Scroll}.");
+            host.Click(point, Draw);
+            Assert.Equal(1, context.OpenPopupStack.Size);
+            host.Frame(Draw); // A newly opened native combo measures its popup before emitting the visible option meshes.
+            var popup = new ImGuiWindowPtr(context.OpenPopupStack.Data[0].Window);
+            Assert.False(popup.IsNull,
+                $"{current} to {caption}: native combo {expected:X8}, popup stack {context.OpenPopupStack.Size}, hovered {context.HoveredId:X8}.");
+            Assert.True(popup.Active);
+            Assert.NotEmpty(TextBounds(popup, caption));
+            host.Click(Center(popup, caption), Draw);
+            Assert.Equal(count + 1, saves);
+            host.Frame(Draw);
+        }
+        void Edit(string current, string replacement)
+        {
+            var count = saves;
+            host.Click(Center(window, current), Draw);
+            Assert.NotEqual(0u, ImGui.GetCurrentContext().ActiveId);
+            var io = ImGui.GetIO();
+            io.AddKeyEvent(ImGuiKey.ModCtrl, true);
+            io.AddKeyEvent(ImGuiKey.A, true); host.Frame(Draw);
+            io.AddKeyEvent(ImGuiKey.A, false);
+            io.AddKeyEvent(ImGuiKey.ModCtrl, false); host.Frame(Draw);
+            foreach (var character in replacement) io.AddInputCharacter(character);
+            host.Frame(Draw);
+            Assert.Equal(count, saves);
+            io.AddKeyEvent(ImGuiKey.Enter, true); host.Frame(Draw);
+            io.AddKeyEvent(ImGuiKey.Enter, false); host.Frame(Draw);
+            Assert.Equal(count + 1, saves);
+            Assert.Equal(settings, saved);
+        }
+    }
+
     [Fact]
     public void LegacyAndOptedInPickerKeepTheOriginalNativeFieldAndAutoPaletteIds()
     {

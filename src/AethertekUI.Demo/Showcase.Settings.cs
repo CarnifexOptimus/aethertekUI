@@ -34,7 +34,32 @@ internal sealed partial class Showcase
                     Reset = "Reset", ResetColors = "Reset colours", Animation = "Animation", AnimationSpeed = "Movement speed (x)",
                     WaveColors = "Wave colours", GlassWave1 = "Wave colour 1", GlassWave2 = "Wave colour 2", GlassWave3 = "Wave colour 3",
                     ResetWaveColors = "Reset wave colours",
-                }, DefaultColorChoices, DefaultSeed)) RebuildTheme();
+                    BackgroundMode = "Background mode", Waves = "Waves", Lights = "Lights", Image = "Image",
+                    LightEffect = "Light effect", AmbientGlows = "Ambient glows", SweepingBeams = "Sweeping beams", PointerGlow = "Mouse-following glow",
+                    ImageFile = "Image file", BrowseImage = "Browse...", LoadImage = "Load image",
+                    ImageHelp = "The image fills the window. Blur (%) applies to the image.",
+                    LightColors = "Light colours", GlassLight1 = "Light colour 1", GlassLight2 = "Light colour 2", GlassLight3 = "Light colour 3",
+                    ResetLightColors = "Reset light colours", BackgroundBlur = "Background blur", BlurPercent = "Blur (%)",
+                }, DefaultColorChoices, DefaultSeed, () => BrowseBackgroundImage?.Invoke())) RebuildTheme();
+        DrawScreenshotPause();
+        if (BackgroundRenderer?.ImageProblem is { } problem) MaterialText.Text(problem);
+    }
+
+    private void DrawScreenshotPause()
+    {
+        if (colorChoices.Mode == MaterialColorMode.Glassmorphism && colorChoices.GlassBackground == MaterialGlassBackground.Image)
+        {
+            MaterialText.Text("Image backgrounds remain visible to screenshots.");
+            return;
+        }
+        var paused = BackgroundRenderer?.ScreenshotsPaused == true;
+        ImGui.BeginDisabled(!paused && BackgroundRenderer?.CanPauseForScreenshots != true);
+        try
+        {
+            if (ImGui.Checkbox("Pause backdrop for screenshots", ref paused))
+                BackgroundRenderer?.TrySetScreenshotsPaused(paused);
+        }
+        finally { ImGui.EndDisabled(); }
     }
 
     private void Settings()

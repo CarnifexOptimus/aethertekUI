@@ -2,7 +2,7 @@ using System.Numerics;
 
 namespace AethertekUI;
 
-/// <summary>Immutable opaque RGB roles. Apply surface opacity at rendering time.</summary>
+/// <summary>Immutable color roles. Themed palettes are opaque; native scopes retain host alpha.</summary>
 public sealed class MaterialColorScheme
 {
     internal bool IsLcars { get; init; }
@@ -40,6 +40,8 @@ public sealed class MaterialColorScheme
     public Vector4 InverseOnSurface { get; init; }
     public Vector4 InversePrimary { get; init; }
     public Vector4 Scrim { get; init; }
+
+    internal MaterialColorScheme() { }
 
     /// <summary>Three explicit colour families; semantic error colours retain their original meaning.</summary>
     internal MaterialColorScheme(MaterialColorScheme automatic, Vector3 background, Vector3 controls, Vector3 text)

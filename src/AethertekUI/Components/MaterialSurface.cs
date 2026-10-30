@@ -56,7 +56,7 @@ public static class MaterialSurface
             style=new();
             var material = MaterialSkin.HasMaterial;
             var rounding = radius.HasValue?radius.Value*m.Scale:m.OuterRadius;
-            style.Color(ImGuiCol.ChildBg,material?Vector4.Zero:MaterialTheme.Current.SurfaceColor(Color(elevation)));
+            style.Color(ImGuiCol.ChildBg,material?Vector4.Zero:MaterialSkin.BackgroundFill(MaterialTheme.Current.SurfaceColor(Color(elevation))));
             style.Style(ImGuiStyleVar.WindowPadding,new Vector2(padding.HasValue?padding.Value*m.Scale:m.Padding));
             style.Style(ImGuiStyleVar.ChildRounding,rounding);
             style.Style(ImGuiStyleVar.ChildBorderSize,outline?m.Border:0);
@@ -66,7 +66,7 @@ public static class MaterialSurface
             if (Visible && material)
             {
                 MaterialSkin.PaintPanel(ImGui.GetWindowPos(),ImGui.GetWindowPos()+ImGui.GetWindowSize(),
-                    elevation==MaterialElevation.Lowest,Color(elevation),rounding,ImGui.GetStyle().Alpha,ownerDrawList);
+                    elevation==MaterialElevation.Lowest,Color(elevation),rounding,ImGui.GetStyle().Alpha,ownerDrawList,structuralBackground:true);
                 if (outline)
                     ownerDrawList.AddRect(ImGui.GetWindowPos()+new Vector2(m.Border*.5f),
                         ImGui.GetWindowPos()+ImGui.GetWindowSize()-new Vector2(m.Border*.5f),

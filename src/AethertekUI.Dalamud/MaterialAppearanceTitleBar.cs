@@ -9,6 +9,10 @@ public readonly record struct MaterialAppearanceTitleBarVisibility(bool Language
 {
     /// <summary>Show the bound Krangle action by default; the consumer owns the actual privacy setting.</summary>
     public bool Krangle { get; init; } = true;
+    /// <summary>Applies only when the consumer registers its styling toggle.</summary>
+    public bool Styling { get; init; } = true;
+    /// <summary>Applies only when the consumer registers its movement and resize lock.</summary>
+    public bool MovementLock { get; init; } = true;
 }
 
 /// <summary>Manual appearance shortcuts; the consumer retains editors, saved settings and window lifecycle.</summary>
@@ -23,6 +27,8 @@ public sealed class MaterialAppearanceTitleBar
     private MaterialAppearanceTitleBarVisibility visible;
     private string? requestedPopup;
     private bool popupOpen;
+    private int priority;
+    private bool windowControlsRegistered;
 
     private MaterialAppearanceTitleBar(Window owner, Func<MaterialAppearanceTitleBarLabels> labels,
         Action drawLanguage, Action toggleCompact, Action drawTransparency, Action drawColour,
@@ -33,7 +39,7 @@ public sealed class MaterialAppearanceTitleBar
         this.drawTransparency = drawTransparency;
         this.drawColour = drawColour;
         this.visibility = visibility;
-        var priority = owner.TitleBarButtons.Count == 0 ? 0 : owner.TitleBarButtons.Min(button => button.Priority);
+        priority = owner.TitleBarButtons.Count == 0 ? 0 : owner.TitleBarButtons.Min(button => button.Priority);
         Add(FontAwesomeIcon.Language, () => labels().Language, () => requestedPopup = "language", value => value.Language);
         Add(FontAwesomeIcon.CompressAlt, () => labels().Compact, toggleCompact, value => value.Compact);
         Add(FontAwesomeIcon.Adjust, () => labels().Transparency, () => requestedPopup = "transparency", value => value.Transparency);
@@ -41,21 +47,40 @@ public sealed class MaterialAppearanceTitleBar
         if (toggleKrangle != null && krangleTooltip != null)
             Add(FontAwesomeIcon.UserSecret, krangleTooltip, toggleKrangle, value => value.Krangle);
         RefreshVisibility();
+    }
 
-        void Add(FontAwesomeIcon icon, Func<string> tooltip, Action click, Func<MaterialAppearanceTitleBarVisibility, bool> shown)
+    private void Add(FontAwesomeIcon icon, Func<string> tooltip, Action click, Func<MaterialAppearanceTitleBarVisibility, bool> shown)
+    {
+        // The current host sorts descending, then assigns IDs by index.
+        // Append below existing custom priorities to retain their IDs.
+        priority = (int)Math.Max((long)priority - 1, int.MinValue + 1L);
+        buttons.Add((new()
         {
-            // The current host sorts descending, then assigns IDs by index.
-            // Append below existing custom priorities to retain their IDs.
-            priority = (int)Math.Max((long)priority - 1, int.MinValue + 1L);
-            buttons.Add((new()
-            {
-                Icon = icon,
-                Priority = priority,
-                IconOffset = new(2, 1),
-                Click = button => { if (button == ImGuiMouseButton.Left && shown(GetVisibility())) click(); },
-                ShowTooltip = () => MaterialText.SetTooltip(tooltip()),
-            }, shown));
-        }
+            Icon = icon,
+            Priority = priority,
+            IconOffset = new(2, 1),
+            Click = button => { if (button == ImGuiMouseButton.Left && shown(GetVisibility())) click(); },
+            ShowTooltip = () => MaterialText.SetTooltip(tooltip()),
+        }, shown));
+    }
+
+    /// <summary>
+    /// Opt in once to consumer-owned styling and movement/resize toggles. Styling off means
+    /// usable plain/native UI; the consumer retains windows, settings and recovery commands.
+    /// Tooltip callbacks supply localized text reflecting the current saved state.
+    /// </summary>
+    public void RegisterWindowControls(Action toggleStyling, Func<string> stylingTooltip,
+        Action toggleMovementLock, Func<string> movementLockTooltip)
+    {
+        ArgumentNullException.ThrowIfNull(toggleStyling);
+        ArgumentNullException.ThrowIfNull(stylingTooltip);
+        ArgumentNullException.ThrowIfNull(toggleMovementLock);
+        ArgumentNullException.ThrowIfNull(movementLockTooltip);
+        if (windowControlsRegistered) throw new InvalidOperationException("Window controls are already registered.");
+        windowControlsRegistered = true;
+        Add(FontAwesomeIcon.Moon, stylingTooltip, toggleStyling, value => value.Styling);
+        Add(FontAwesomeIcon.Lock, movementLockTooltip, toggleMovementLock, value => value.MovementLock);
+        RefreshVisibility();
     }
 
     /// <summary>Register once after the owner's existing titlebar buttons. Labels are read when hovered.</summary>

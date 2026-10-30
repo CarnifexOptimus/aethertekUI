@@ -7,6 +7,253 @@ namespace AethertekUI.Tests;
 public sealed class MaterialSkinNativeTests
 {
     [Fact]
+    public unsafe void RendererScopesRestoreOptionsAndRevealOnlySuccessfulCurrentRootsWithoutChangingForegrounds()
+    {
+        using var host = new NativeTestContext();
+        var theme = new MaterialTheme(Vector3.UnitY, new MaterialColorSettings
+            { Mode = MaterialColorMode.Glassmorphism, GlassAnimation = false }) { SurfaceOpacity = 1 };
+        var renderer = new BackgroundRecorder { Ready = true, Opacity = .83f };
+        var drawBackdrop = true;
+        var rootAvailable = false;
+        uint[] foreground = [];
+        uint[] ReadColors(ImDrawListPtr list, int start)
+        {
+            var colors = new uint[list.VtxBuffer.Size - start];
+            for (var i = 0; i < colors.Length; i++) colors[i] = list.VtxBuffer[start + i].Col;
+            return colors;
+        }
+        void Draw()
+        {
+            using var palette = MaterialTheme.Push(theme);
+            ImGui.SetNextWindowPos(Vector2.Zero); ImGui.SetNextWindowSize(new(500, 350));
+            using (MaterialSkin.BackdropStyle()) ImGui.Begin("Renderer owner", ImGuiWindowFlags.NoSavedSettings | ImGuiWindowFlags.AlwaysVerticalScrollbar);
+            var list = ImGui.GetWindowDrawList();
+            var native = ReadColors(list, 0);
+            var nativeIndices = list.IdxBuffer.Size;
+            if (drawBackdrop)
+            {
+                MaterialSkin.Backdrop();
+                Assert.Equal(ImGui.GetWindowPos(), renderer.Min);
+                Assert.Equal(ImGui.GetWindowPos() + ImGui.GetWindowSize(), renderer.Max);
+                Assert.True(renderer.WindowBackground);
+                Assert.Equal(.75f, renderer.Frost);
+                Assert.Equal(.42f, renderer.Tint.W);
+                for (var i = 0; i < native.Length; i++) Assert.Equal(native[i], list.VtxBuffer[i].Col);
+                Assert.All(ReadColors(list, native.Length), color =>
+                    Assert.InRange(color >> 24, 0u, renderer.Ready ? 90u : 153u));
+                if (renderer.Ready)
+                    for (var i = 0; i < list.CmdBuffer.Size; i++)
+                    {
+                        var command = list.CmdBuffer[i];
+                        if (command.ElemCount == 0 || command.IdxOffset < nativeIndices) continue;
+                        Assert.True(command.ClipRect.Y >= ImGuiP.GetCurrentWindow().InnerRect.Min.Y);
+                        Assert.True(command.ClipRect.Z <= ImGuiP.GetCurrentWindow().InnerRect.Max.X);
+                    }
+            }
+            rootAvailable = MaterialSkin.BackgroundFill(Vector4.One) == Vector4.Zero;
+            Assert.Equal(drawBackdrop && renderer.Ready, rootAvailable);
+            var style = ImGui.GetStyle();
+            var field = style.Colors[(int)ImGuiCol.FrameBg];
+            var button = style.Colors[(int)ImGuiCol.Button];
+            var child = style.Colors[(int)ImGuiCol.ChildBg];
+            using (MaterialSkin.StructuralBackgroundStyle())
+            {
+                Assert.Equal(rootAvailable ? Vector4.Zero : child, style.Colors[(int)ImGuiCol.ChildBg]);
+                Assert.Equal(field, style.Colors[(int)ImGuiCol.FrameBg]);
+                Assert.Equal(button, style.Colors[(int)ImGuiCol.Button]);
+            }
+            Assert.Equal(child, style.Colors[(int)ImGuiCol.ChildBg]);
+            using (MaterialTable.PushStyle())
+                Assert.Equal(rootAvailable ? Vector4.Zero : theme.Colors.SurfaceContainerHigh, style.Colors[(int)ImGuiCol.TableHeaderBg]);
+            using (var card = MaterialSurface.Card("structural child", new(260, 65)))
+                if (card.Visible) Assert.Equal(rootAvailable, MaterialSkin.BackgroundFill(Vector4.One) == Vector4.Zero);
+            var first = list.VtxBuffer.Size;
+            MaterialButton.FilledButton("foreground", "Foreground", size: new(160, 32));
+            ImGui.SetNextItemWidth(180);
+            var value = 3;
+            using (MaterialSkin.NativeFieldStyle()) ImGui.InputInt("##foreground-field", ref value);
+            foreground = ReadColors(list, first);
+            using (MaterialSkin.PushBackgroundRenderer(renderer, false, .1f, .25f))
+            {
+                Assert.Equal(.25f, renderer.Opacity);
+                Assert.Equal(Vector4.One, MaterialSkin.BackgroundFill(Vector4.One));
+            }
+            Assert.Equal(.6f, renderer.Opacity);
+            Assert.Equal(rootAvailable, MaterialSkin.BackgroundFill(Vector4.One) == Vector4.Zero);
+            using (MaterialSkin.PushBackgroundRenderer(null, false, 0))
+            {
+                Assert.Equal(.6f, renderer.Opacity);
+                Assert.Equal(Vector4.One, MaterialSkin.BackgroundFill(Vector4.One));
+            }
+            Assert.Equal(rootAvailable, MaterialSkin.BackgroundFill(Vector4.One) == Vector4.Zero);
+            ImGui.End();
+
+            ImGui.SetNextWindowPos(new(550, 0)); ImGui.SetNextWindowSize(new(350, 250));
+            using (MaterialSkin.BackdropStyle()) ImGui.Begin("Unrelated renderer root", ImGuiWindowFlags.NoSavedSettings);
+            Assert.Equal(Vector4.One, MaterialSkin.BackgroundFill(Vector4.One));
+            if (drawBackdrop) MaterialSkin.Backdrop();
+            ImGui.End();
+            ImGui.Begin("Renderer owner", ImGuiWindowFlags.NoSavedSettings | ImGuiWindowFlags.AlwaysVerticalScrollbar);
+            Assert.Equal(rootAvailable, MaterialSkin.BackgroundFill(Vector4.One) == Vector4.Zero);
+            ImGui.End();
+        }
+        using (MaterialSkin.PushBackgroundRenderer(renderer, true, .75f, .6f))
+        {
+            host.Frame(Draw); host.Frame(Draw);
+            var filledForeground = foreground;
+            renderer.Ready = false;
+            host.Frame(Draw);
+            Assert.Equal(filledForeground, foreground);
+            renderer.Ready = true;
+            drawBackdrop = false;
+            host.Frame(Draw);
+            Assert.False(rootAvailable); // A prior frame never authorizes transparent children.
+        }
+        Assert.Equal(.83f, renderer.Opacity);
+        Assert.Equal(Vector4.One, MaterialSkin.BackgroundFill(Vector4.One));
+        AssertMeshIndices();
+    }
+
+    [Theory]
+    [InlineData(MaterialGlassLights.AmbientGlows)]
+    [InlineData(MaterialGlassLights.SweepingBeams)]
+    [InlineData(MaterialGlassLights.PointerGlow)]
+    public void LightsKeepIndependentColorsStillMotionAndTranslucentSuccessfulGlass(MaterialGlassLights effect)
+    {
+        using var host = new NativeTestContext();
+        var settings = new MaterialColorSettings { Mode = MaterialColorMode.Glassmorphism,
+            GlassBackground = MaterialGlassBackground.Lights, GlassLights = effect, GlassAnimation = false };
+        var renderer = new BackgroundRecorder();
+        var reducedMotion = false;
+        var size = new Vector2(900, 650);
+        uint[] colors = [];
+        void Draw()
+        {
+            var theme = new MaterialTheme(Vector3.UnitY, settings) { SurfaceOpacity = 1 };
+            theme.Motion.Enabled = !reducedMotion;
+            using var palette = MaterialTheme.Push(theme);
+            using var background = MaterialSkin.PushBackgroundRenderer(renderer, true, .75f);
+            ImGui.SetNextWindowPos(Vector2.Zero); ImGui.SetNextWindowSize(size);
+            using (MaterialSkin.BackdropStyle()) ImGui.Begin("Shared lights", ImGuiWindowFlags.NoSavedSettings | ImGuiWindowFlags.NoTitleBar);
+            var list = ImGui.GetWindowDrawList(); var first = list.VtxBuffer.Size;
+            MaterialSkin.Backdrop();
+            colors = new uint[list.VtxBuffer.Size - first];
+            for (var i = 0; i < colors.Length; i++) colors[i] = list.VtxBuffer[first + i].Col;
+            ImGui.End();
+        }
+        host.Frame(Draw); host.Frame(Draw);
+        var still = colors;
+        ImGui.GetIO().AddMousePosEvent(100, 140); host.Frame(Draw);
+        Assert.Equal(still, colors);
+        Assert.InRange(colors.Length, 3072, 12288);
+        Assert.All(colors, color => Assert.Equal(255u, color >> 24));
+        for (var light = 1; light <= 3; light++)
+        {
+            settings = light switch
+            {
+                1 => settings with { GlassLight1Rgb = 0xFF1828 },
+                2 => settings with { GlassLight2Rgb = 0x31F020 },
+                _ => settings with { GlassLight3Rgb = 0x3220FF },
+            };
+            host.Frame(Draw); Assert.False(still.SequenceEqual(colors)); still = colors;
+        }
+        settings = settings with { GlassWave1Rgb = 0x010203, GlassWave2Rgb = 0x040506, GlassWave3Rgb = 0x070809 };
+        host.Frame(Draw); Assert.Equal(still, colors);
+        settings = settings with { GlassAnimation = true }; reducedMotion = true;
+        host.Frame(Draw); Assert.Equal(still, colors);
+        reducedMotion = false;
+        ImGui.GetIO().AddMousePosEvent(720, 500); host.Frame(Draw);
+        Assert.False(still.SequenceEqual(colors));
+        renderer.Ready = true;
+        host.Frame(Draw);
+        Assert.All(colors, color => Assert.InRange(color >> 24, 0u, 141u));
+        renderer.Ready = false;
+        size = new(8000, 5000); host.Frame(Draw);
+        Assert.Equal(12288, colors.Length);
+        Assert.All(colors, color => Assert.Equal(255u, color >> 24));
+        AssertMeshIndices();
+        renderer.Ready = true;
+        host.Frame(Draw);
+        Assert.InRange(colors.Length, 1, 12288); // Fully transparent glass cells emit no geometry.
+        Assert.All(colors, color => Assert.InRange(color >> 24, 0u, 141u));
+        AssertMeshIndices();
+    }
+
+    [Fact]
+    public unsafe void ImageBackdropUsesTheSuppliedImageWithoutProceduralOverlayAndKeepsUnavailableFallback()
+    {
+        using var host = new NativeTestContext();
+        using var image = host.RegisterTexture([255, 0, 0, 255, 0, 255, 0, 255, 0, 0, 255, 255, 255, 255, 0, 255], 2, 2);
+        var theme = new MaterialTheme(Vector3.UnitY, new MaterialColorSettings
+            { Mode = MaterialColorMode.Glassmorphism, GlassBackground = MaterialGlassBackground.Image }) { SurfaceOpacity = 1 };
+        var renderer = new BackgroundRecorder { ImageMode = true, Texture = image.Id };
+        var blur = false;
+        var covered = false;
+        var vertices = 0;
+        void Draw()
+        {
+            using var palette = MaterialTheme.Push(theme);
+            using var background = MaterialSkin.PushBackgroundRenderer(renderer, blur, .75f);
+            ImGui.SetNextWindowPos(Vector2.Zero); ImGui.SetNextWindowSize(new(500, 350));
+            using (MaterialSkin.BackdropStyle()) ImGui.Begin("Image owner", ImGuiWindowFlags.NoSavedSettings | ImGuiWindowFlags.NoTitleBar | ImGuiWindowFlags.NoBackground);
+            var list = ImGui.GetWindowDrawList(); var first = list.VtxBuffer.Size;
+            MaterialSkin.Backdrop();
+            vertices = list.VtxBuffer.Size - first;
+            covered = MaterialSkin.BackgroundFill(Vector4.One) == Vector4.Zero;
+            ImGui.End();
+        }
+        host.Frame(Draw); host.Frame(Draw);
+        Assert.False(covered); Assert.Equal(0, renderer.BackgroundCalls);
+        Assert.InRange(vertices, 4, 100); // Ordinary fallback, with no Waves or Lights mesh.
+        renderer.ImageAvailable = true;
+        host.Frame(Draw);
+        Assert.True(covered); Assert.InRange(vertices, 8, 104);
+        var plainCalls = renderer.PlainCalls;
+        renderer.Ready = true; blur = true;
+        host.Frame(Draw);
+        Assert.True(covered); Assert.Equal(plainCalls, renderer.PlainCalls);
+        Assert.True(renderer.BackgroundCalls > 0); Assert.Equal(4, vertices);
+        var data = ImGui.GetDrawData();
+        var imageCommands = 0;
+        for (var li = 0; li < data.CmdListsCount; li++)
+        {
+            var list = new ImDrawListPtr(data.CmdLists[li]);
+            for (var ci = 0; ci < list.CmdBuffer.Size; ci++)
+                if (list.CmdBuffer[ci].TextureId.Handle == image.Id.Handle && list.CmdBuffer[ci].ElemCount > 0) imageCommands++;
+        }
+        Assert.True(imageCommands > 0);
+        AssertMeshIndices();
+    }
+
+    private sealed class BackgroundRecorder : IMaterialBackgroundRenderer
+    {
+        public bool ImageMode { get; set; }
+        public bool ImageAvailable { get; set; }
+        public float Opacity { get; set; } = 1;
+        internal bool Ready;
+        internal int BackgroundCalls, PlainCalls;
+        internal Vector2 Min, Max;
+        internal Vector4 Tint;
+        internal float Frost;
+        internal bool WindowBackground;
+        internal ImTextureID Texture;
+        public bool DrawBackground(ImDrawListPtr drawList, Vector2 min, Vector2 max, float rounding,
+            Vector4 tint, float frost, bool windowBackground = false)
+        {
+            BackgroundCalls++; Min = min; Max = max; Tint = tint; Frost = frost; WindowBackground = windowBackground;
+            if (Ready && ImageMode && ImageAvailable) drawList.AddImage(Texture, min, max);
+            return Ready;
+        }
+        public bool DrawPlainImage(ImDrawListPtr drawList, Vector2 min, Vector2 max)
+        {
+            PlainCalls++;
+            if (!ImageMode || !ImageAvailable) return false;
+            drawList.AddImage(Texture, min, max);
+            return true;
+        }
+    }
+
+    [Fact]
     public void GlassRibbonsRespectStillMotionSpeedAndIndependentSavedWaves()
     {
         using var host = new NativeTestContext();

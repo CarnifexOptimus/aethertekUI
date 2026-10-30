@@ -33,5 +33,6 @@ public sealed class MaterialWindowHost
 
     /// <summary>Use around a host's normal draw path. Dispose before leaving the UI thread/frame.</summary>
     public MaterialTheme.ThemeScope BeginFrame(bool applyMetrics = true)
-        => MaterialTheme.Push(Controller.Theme, ImGuiHelpers.GlobalScale, applyMetrics ? StyleMode : MaterialStyleMode.ColorsOnly);
+        => MaterialTheme.Push(Controller.Theme, ImGuiHelpers.GlobalScale,
+            applyMetrics || StyleMode == MaterialStyleMode.Native ? StyleMode : MaterialStyleMode.ColorsOnly);
 }

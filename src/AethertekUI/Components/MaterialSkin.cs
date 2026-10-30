@@ -4,38 +4,71 @@ using Dalamud.Bindings.ImGui;
 namespace AethertekUI;
 
 /// <summary>Selected materials painted inside the caller's current native window.</summary>
-public static class MaterialSkin
+public static partial class MaterialSkin
 {
     internal static bool HasMaterial => MaterialTheme.CurrentOrNull is { } theme
         && (theme.IsGlassmorphism || theme.IsSpatial || theme.IsCyberpunk);
 
     /// <summary>Wrap the adopting owner's Begin with this scope, then dispose before its content. Theme the whole Begin/End lifetime.</summary>
     public static MaterialStyleScope BackdropStyle(bool popup = false)
+        => BackdropStyle(popup, 1);
+
+    /// <summary>Explicit translucent backdrop for a consumer that has selected native background blur.</summary>
+    public static MaterialStyleScope BackdropStyle(bool popup, float backgroundOpacity)
     {
         var scope = new MaterialStyleScope();
-        if (HasMaterial) scope.Color(popup ? ImGuiCol.PopupBg : ImGuiCol.WindowBg, Vector4.Zero);
+        var target = popup ? ImGuiCol.PopupBg : ImGuiCol.WindowBg;
+        if (HasMaterial || HasBackgroundRequest) scope.Color(target, Vector4.Zero);
+        else if (backgroundOpacity < 1)
+        {
+            var background = ImGui.GetStyle().Colors[(int)target];
+            background.W *= float.IsFinite(backgroundOpacity) ? Math.Clamp(backgroundOpacity, 0, 1) : 1;
+            scope.Color(target, background);
+        }
         return scope;
     }
 
-    /// <summary>Call first after native Begin and BackdropStyle, before tables or draw-channel splits. This paints colour ribbons, not a game blur.</summary>
+    /// <summary>Call first after native Begin and BackdropStyle, before tables or draw-channel splits.</summary>
     public static unsafe void Backdrop()
+        => Backdrop(1);
+
+    /// <summary>Paints the selected background, using the scoped renderer when ready and retaining ordinary paint otherwise.</summary>
+    public static unsafe void Backdrop(float backgroundOpacity)
     {
-        if (MaterialTheme.CurrentOrNull is not { } theme || !HasMaterial) return;
+        if (MaterialTheme.CurrentOrNull is not { } theme || (!HasMaterial && !HasBackgroundRequest)) return;
         var window = ImGuiP.GetCurrentWindow();
-        if ((window.Flags & ImGuiWindowFlags.NoBackground) != 0) return;
-        var min = ImGui.GetWindowPos() + new Vector2(0, ImGuiP.TitleBarHeight(window));
-        var max = min + ImGui.GetWindowSize();
-        max.Y -= ImGuiP.TitleBarHeight(window);
+        if ((window.Flags & ImGuiWindowFlags.NoBackground) != 0 && backgroundRenderer == null) return;
+        var windowMin = ImGui.GetWindowPos();
+        var min = windowMin + new Vector2(0, ImGuiP.TitleBarHeight(window));
+        var max = windowMin + ImGui.GetWindowSize();
         var dl = ImGui.GetWindowDrawList();
         if (dl.Splitter.Count > 1)
             throw new InvalidOperationException("Call MaterialSkin.Backdrop first after Begin, before tables or draw-channel splits.");
         var c = theme.Colors;
-        var alpha = ImGui.GetStyle().Alpha * theme.SurfaceOpacity;
+        var alpha = ImGui.GetStyle().Alpha * theme.SurfaceOpacity *
+            (float.IsFinite(backgroundOpacity) ? Math.Clamp(backgroundOpacity, 0, 1) : 1) *
+            (backgroundRenderer?.Opacity ?? 1);
         var selectedRadius = window.DockIsActive ? 0 : window.ViewportOwned ? ImGui.GetStyle().WindowRounding : window.WindowRounding;
         var radius = Math.Clamp(selectedRadius,
             0, Math.Min(max.X - min.X, max.Y - min.Y) * .5f);
         var roundTop = (window.Flags & ImGuiWindowFlags.NoTitleBar) != 0;
         var corners = roundTop ? ImDrawFlags.RoundCornersAll : ImDrawFlags.RoundCornersBottom;
+        var state = backgroundRenderer;
+        var glass = state?.BlurEnabled == true && state.Renderer.DrawBackground(dl, windowMin, max, radius,
+            (theme.IsLcars ? MaterialLcars.Background : c.Background) with { W = .42f * ImGui.GetStyle().Alpha },
+            state.Frost, windowBackground: true);
+        if (glass)
+        {
+            state!.SetCurrentRoot(true);
+            if (theme.IsGlassmorphism)
+            {
+                dl.PushClipRect(Vector2.Max(min, window.InnerRect.Min), Vector2.Min(max, window.InnerRect.Max), false);
+                try { GlassBackdrop(dl, min, max, theme, alpha, radius, roundTop, true); }
+                finally { dl.PopClipRect(); }
+            }
+            return;
+        }
+        state?.SetCurrentRoot(false);
         // Native chrome is already emitted by Begin. Merge this bounded background before it,
         // retaining the owner's outer clip and all native border/title/scrollbar/resize ink.
         dl.ChannelsSplit(2);
@@ -43,7 +76,13 @@ public static class MaterialSkin
         dl.PushClipRect(window.OuterRectClipped.Min, window.OuterRectClipped.Max, false);
         try
         {
-            if (theme.IsGlassmorphism) GlassBackdrop(dl, min, max, theme, alpha, radius, roundTop);
+            if (theme.IsGlassmorphism && theme.AppearanceSettings?.GlassBackground == MaterialGlassBackground.Image)
+            {
+                dl.AddRectFilled(min, max, Ink(c.Background, alpha), radius, corners);
+                if (state?.Renderer is { ImageMode: true } renderer && renderer.DrawPlainImage(dl, min, max))
+                    state.SetCurrentRoot(true);
+            }
+            else if (theme.IsGlassmorphism) GlassBackdrop(dl, min, max, theme, alpha, radius, roundTop, false);
             else if (theme.IsSpatial)
             {
                 var first = dl.VtxBuffer.Size;
@@ -60,7 +99,7 @@ public static class MaterialSkin
                     dl.VtxBuffer[i] = vertex;
                 }
             }
-            else dl.AddRectFilled(min, max, Ink(c.Background, alpha), radius, corners);
+            else dl.AddRectFilled(min, max, Ink(theme.IsLcars ? MaterialLcars.Background : c.Background, alpha), radius, corners);
         }
         finally
         {
@@ -75,12 +114,18 @@ public static class MaterialSkin
     }
 
     private static void GlassBackdrop(ImDrawListPtr dl, Vector2 min, Vector2 max, MaterialTheme theme, float alpha,
-        float radius, bool roundTop)
+        float radius, bool roundTop, bool glass)
     {
         var size = max - min;
         if (size.X <= 0 || size.Y <= 0) return;
         var c = theme.Colors;
         var settings = theme.AppearanceSettings;
+        if (settings?.GlassBackground == MaterialGlassBackground.Image) return;
+        if (settings?.GlassBackground == MaterialGlassBackground.Lights)
+        {
+            GlassLights(dl, min, max, theme, alpha, radius, roundTop, glass);
+            return;
+        }
         var wave1 = Rgb(settings?.GlassWave1Rgb ?? MaterialColorSettings.DefaultGlassWave1Rgb);
         var wave2 = Rgb(settings?.GlassWave2Rgb ?? MaterialColorSettings.DefaultGlassWave2Rgb);
         var wave3 = Rgb(settings?.GlassWave3Rgb ?? MaterialColorSettings.DefaultGlassWave3Rgb);
@@ -124,9 +169,10 @@ public static class MaterialSkin
                 color = Vector4.Lerp(color, wave2, band2 * .50f);
                 color = Vector4.Lerp(color, wave3, band3 * .50f);
                 var crest = MathF.Max(band1, MathF.Max(band2, band3));
+                var opacity = glass ? crest * .58f : 1;
                 crest *= crest; crest *= crest; crest *= crest;
                 color = Vector4.Lerp(color, c.OnSurface, crest * .10f);
-                color.W = 1;
+                color.W = opacity;
                 current[column] = Ink(color, alpha);
             }
             if (row > 0)
@@ -147,20 +193,116 @@ public static class MaterialSkin
         }
     }
 
+    private static void GlassLights(ImDrawListPtr dl, Vector2 min, Vector2 max, MaterialTheme theme, float alpha,
+        float radius, bool roundTop, bool glass)
+    {
+        var size = max - min;
+        if (size.X <= 0 || size.Y <= 0) return;
+        var settings = theme.AppearanceSettings;
+        var first = Rgb(settings?.GlassLight1Rgb ?? MaterialColorSettings.DefaultGlassWave1Rgb);
+        var second = Rgb(settings?.GlassLight2Rgb ?? MaterialColorSettings.DefaultGlassWave2Rgb);
+        var third = Rgb(settings?.GlassLight3Rgb ?? MaterialColorSettings.DefaultGlassWave3Rgb);
+        var animated = theme.Motion.Enabled && settings?.GlassAnimation != false;
+        var time = animated ? (float)ImGui.GetTime() * .35f * (settings?.GlassAnimationSpeed ?? 1) : 0;
+        var pointer = animated ? (ImGui.GetMousePos() - min) / size : new Vector2(.5f);
+        if (!float.IsFinite(pointer.X) || !float.IsFinite(pointer.Y)) pointer = new(.5f);
+        pointer = Vector2.Clamp(pointer, Vector2.Zero, Vector2.One);
+        var effect = settings?.GlassLights ?? MaterialGlassLights.AmbientGlows;
+        var scale = MaterialTheme.Metrics.Scale;
+        var columns = Math.Clamp((int)MathF.Ceiling(size.X / (16 * scale)), 32, 64);
+        var rows = Math.Clamp((int)MathF.Ceiling(size.Y / (16 * scale)), 24, 48);
+        Span<uint> previous = stackalloc uint[65];
+        Span<uint> current = stackalloc uint[65];
+        Span<float> previousX = stackalloc float[65];
+        Span<float> currentX = stackalloc float[65];
+        var center1 = new Vector2(.28f + .17f * MathF.Sin(time * .61f), .33f + .20f * MathF.Cos(time * .47f));
+        var center2 = new Vector2(.73f + .14f * MathF.Cos(time * .53f), .62f + .19f * MathF.Sin(time * .43f));
+        var center3 = new Vector2(.50f + .22f * MathF.Sin(time * .37f + 1), .72f + .14f * MathF.Cos(time * .57f));
+        var topRows = radius > 0 && roundTop ? 4 : 0;
+        var bottomRows = radius > 0 ? 4 : 0;
+        var previousY = min.Y;
+        for (var row = 0; row <= rows; row++)
+        {
+            var y = topRows > 0 && row <= topRows ? radius * row / topRows
+                : bottomRows > 0 && row >= rows - bottomRows ? size.Y - radius + radius * (row - rows + bottomRows) / bottomRows
+                : (topRows > 0 ? radius : 0) + (size.Y - (topRows > 0 ? radius : 0) - (bottomRows > 0 ? radius : 0))
+                    * (row - topRows) / (rows - topRows - bottomRows);
+            var v = y / size.Y;
+            var cornerY = topRows > 0 && y < radius ? radius - y : y > size.Y - radius ? y - size.Y + radius : 0;
+            var inset = radius - MathF.Sqrt(Math.Max(0, radius * radius - cornerY * cornerY));
+            for (var column = 0; column <= columns; column++)
+            {
+                currentX[column] = min.X + inset + (size.X - 2 * inset) * column / columns;
+                var point = new Vector2((currentX[column] - min.X) / size.X, v);
+                float a, b, c;
+                if (effect == MaterialGlassLights.SweepingBeams)
+                {
+                    a = Band(point.X - .32f * point.Y - .23f - .25f * MathF.Sin(time * .6f), 100);
+                    b = Band(point.X + .41f * point.Y - .88f - .22f * MathF.Cos(time * .51f), 85);
+                    c = Band(point.Y - .21f * point.X - .55f - .25f * MathF.Sin(time * .43f + 1), 110);
+                }
+                else if (effect == MaterialGlassLights.PointerGlow)
+                {
+                    a = Glow(point, pointer, 13);
+                    b = Glow(point, pointer + new Vector2(.15f, -.10f), 18) * .65f;
+                    c = Glow(point, pointer + new Vector2(-.12f, .13f), 18) * .55f;
+                }
+                else
+                {
+                    a = Glow(point, center1, 9);
+                    b = Glow(point, center2, 8);
+                    c = Glow(point, center3, 11);
+                }
+                var strength = MathF.Max(a, MathF.Max(b, c));
+                var color = theme.Colors.Background;
+                color = Vector4.Lerp(color, first, a * .68f);
+                color = Vector4.Lerp(color, second, b * .60f);
+                color = Vector4.Lerp(color, third, c * .56f);
+                color.W = glass ? strength * .55f : 1;
+                current[column] = Ink(color, alpha);
+            }
+            if (row > 0)
+                for (var column = 0; column < columns; column++)
+                {
+                    var firstVertex = dl.VtxBuffer.Size;
+                    dl.AddRectFilledMultiColor(new(previousX[column], previousY), new(currentX[column + 1], min.Y + y),
+                        previous[column], previous[column + 1], current[column + 1], current[column]);
+                    if (dl.VtxBuffer.Size - firstVertex != 4) continue;
+                    var topRight = dl.VtxBuffer[firstVertex + 1]; topRight.Pos.X = previousX[column + 1]; dl.VtxBuffer[firstVertex + 1] = topRight;
+                    var bottomLeft = dl.VtxBuffer[firstVertex + 3]; bottomLeft.Pos.X = currentX[column]; dl.VtxBuffer[firstVertex + 3] = bottomLeft;
+                }
+            var swap = previous; previous = current; current = swap;
+            var swapX = previousX; previousX = currentX; currentX = swapX;
+            previousY = min.Y + y;
+        }
+    }
+
+    private static float Band(float distance, float falloff) => MathF.Exp(-distance * distance * falloff);
+    private static float Glow(Vector2 point, Vector2 center, float falloff) => MathF.Exp(-Vector2.DistanceSquared(point, center) * falloff);
+
     /// <summary>Paint behind existing content. LCARS owners reserve the rail band outside their controls.</summary>
     public static void PanelFrame(Vector2 min, Vector2 max, int accent = 0, bool inset = false)
     {
         if (MaterialTheme.CurrentOrNull is not { } theme || max.X <= min.X || max.Y <= min.Y) return;
         if (theme.IsLcars)
         {
-            if (!inset) MaterialLcars.PanelFrame(min, max, accent);
+            if (!inset && !RootBackgroundAvailable) MaterialLcars.PanelFrame(min, max, accent);
             else
             {
                 var dl = ImGui.GetWindowDrawList();
                 var alpha = ImGui.GetStyle().Alpha;
-                var rounding = 9 * MaterialTheme.Metrics.Scale;
-                dl.AddRectFilled(min, max, Ink(MaterialLcars.Background, alpha, theme.SurfaceOpacity), rounding);
-                dl.AddRect(min, max, Ink(MaterialLcars.Accent(accent), alpha, .35f), rounding);
+                var lcarsScale = MaterialTheme.Metrics.Scale;
+                var rounding = Math.Min((inset ? 9 : 18) * lcarsScale, Math.Min(max.X - min.X, max.Y - min.Y) * .5f);
+                if (!RootBackgroundAvailable)
+                    dl.AddRectFilled(min, max, Ink(MaterialLcars.Background, alpha, theme.SurfaceOpacity), rounding);
+                dl.AddRect(min, max, Ink(MaterialLcars.Accent(accent), alpha, inset ? .35f : 1), rounding,
+                    ImDrawFlags.None, inset ? 1 : 2 * lcarsScale);
+                if (!inset)
+                {
+                    dl.AddRectFilled(min, new(min.X + 12 * lcarsScale, max.Y), Ink(MaterialLcars.Accent(accent), alpha), rounding, ImDrawFlags.RoundCornersLeft);
+                    dl.AddRectFilled(min + new Vector2(9 * lcarsScale, 0), new(Math.Min(max.X, min.X + 44 * lcarsScale), min.Y + 8 * lcarsScale),
+                        Ink(MaterialLcars.Accent(accent), alpha));
+                }
             }
             return;
         }
@@ -168,29 +310,30 @@ public static class MaterialSkin
         var scale = MaterialTheme.Metrics.Scale;
         var radius = (theme.IsCyberpunk ? 3 : theme.IsSpatial && inset ? 6 : theme.IsSpatial ? 11 : 10) * scale;
         PaintPanel(min, max, inset, inset ? theme.Colors.SurfaceContainerLowest : theme.Colors.SurfaceContainerLow,
-            radius, ImGui.GetStyle().Alpha);
+            radius, ImGui.GetStyle().Alpha, structuralBackground: true);
     }
 
     internal static void PaintPanel(Vector2 min, Vector2 max, bool inset, Vector4 fill, float radius, float alpha,
-        ImDrawListPtr? drawList = null)
+        ImDrawListPtr? drawList = null, bool structuralBackground = false)
     {
         var theme = MaterialTheme.Current;
         var c = theme.Colors;
         var dl = drawList ?? ImGui.GetWindowDrawList();
         var s = MaterialTheme.Metrics.Scale;
+        var reveal = structuralBackground && RootBackgroundAvailable;
         radius = Math.Clamp(radius, 0, Math.Min(max.X - min.X, max.Y - min.Y) * .5f);
         if (theme.IsGlassmorphism)
         {
-            dl.AddRectFilled(min + new Vector2(0, 3 * s), max + new Vector2(0, 3 * s), Ink(new(0, 0, 0, .15f), alpha), radius);
+            if (!reveal) dl.AddRectFilled(min + new Vector2(0, 3 * s), max + new Vector2(0, 3 * s), Ink(new(0, 0, 0, .15f), alpha), radius);
             GlassGlow(dl, min, max, radius, alpha, inset ? .55f : 1);
-            dl.AddRectFilled(min, max, Ink(fill, alpha, (inset ? .68f : .42f) * theme.SurfaceOpacity), radius);
+            if (!reveal) dl.AddRectFilled(min, max, Ink(fill, alpha, (inset ? .68f : .42f) * theme.SurfaceOpacity), radius);
             dl.AddRect(min, max, Ink(Vector4.Lerp(c.Primary, c.OnSurface, .35f), alpha, inset ? .5f : .8f), radius);
             TopLight(dl, min, max, radius, c.OnSurface, alpha, .36f);
         }
         else if (theme.IsSpatial)
         {
-            if (!inset) ContactShadow(dl, min, max, radius, alpha);
-            dl.AddRectFilled(min, max, Ink(fill, alpha, theme.SurfaceOpacity), radius);
+            if (!inset && !reveal) ContactShadow(dl, min, max, radius, alpha);
+            if (!reveal) dl.AddRectFilled(min, max, Ink(fill, alpha, theme.SurfaceOpacity), radius);
             dl.AddRect(min, max, Ink(c.Outline, alpha, inset ? .25f : .22f), radius);
             TopLight(dl, min, max, radius, inset ? c.Outline : Vector4.One, alpha, inset ? .3f : .95f, inset ? 2 : 1);
             if (inset && max.X - min.X > 2 * radius)
@@ -200,27 +343,31 @@ public static class MaterialSkin
         {
             if (inset || radius == 0)
             {
-                if (!inset)
+                if (!inset && !reveal)
                     dl.AddRectFilled(min + new Vector2(0, 3 * s), max + new Vector2(0, 3 * s), Ink(new(0, 0, 0, .22f), alpha), radius);
-                dl.AddRectFilled(min, max, Ink(fill, alpha, theme.SurfaceOpacity), radius);
+                if (!reveal) dl.AddRectFilled(min, max, Ink(fill, alpha, theme.SurfaceOpacity), radius);
                 TopLight(dl, min, max, radius, c.OnSurface, alpha, .06f);
             }
-            else PaintCyberPlate(dl, min, max, fill with { W = fill.W * theme.SurfaceOpacity }, radius * 2, alpha, .48f);
+            else PaintCyberPlate(dl, min, max, fill with { W = fill.W * theme.SurfaceOpacity }, radius * 2, alpha, .48f, !reveal);
         }
     }
 
-    private static void PaintCyberPlate(ImDrawListPtr dl, Vector2 min, Vector2 max, Vector4 fill, float cut, float alpha, float emphasis)
+    private static void PaintCyberPlate(ImDrawListPtr dl, Vector2 min, Vector2 max, Vector4 fill, float cut, float alpha, float emphasis,
+        bool paintFill = true)
     {
         var extent = max - min;
-        if (extent.X <= 0 || extent.Y <= 0 || fill.W <= 0) return;
+        if (extent.X <= 0 || extent.Y <= 0 || paintFill && fill.W <= 0) return;
         var c = MaterialTheme.Current.Colors;
         var s = MaterialTheme.Metrics.Scale;
         cut = Math.Clamp(cut, 0, Math.Min(extent.X, extent.Y) * .25f);
         dl.PushClipRect(min, max, true);
         try
         {
-            CyberPlatePath(dl, min, max, cut);
-            dl.PathFillConvex(Ink(fill, alpha));
+            if (paintFill)
+            {
+                CyberPlatePath(dl, min, max, cut);
+                dl.PathFillConvex(Ink(fill, alpha));
+            }
             var inset = Math.Min(s, Math.Min(extent.X, extent.Y) * .125f);
             var innerMin = min + new Vector2(inset);
             var innerMax = max - new Vector2(inset);

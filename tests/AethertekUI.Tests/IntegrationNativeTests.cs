@@ -537,6 +537,145 @@ public unsafe class IntegrationNativeTests
         Assert.Equal(priorIcons, legacy.TitleBarButtons.Select(button => button.Icon));
     }
 
+    [Fact]
+    public void OptionalWindowControlsPreserveExistingActionsAndUseLiveConsumerState()
+    {
+        using var host = new NativeTestContext();
+        var window = new AppearanceProbeWindow("Optional controls###window-controls") { IsOpen = true };
+        var original = new TitleBarButton { Icon = FontAwesomeIcon.PowerOff, Priority = 7 };
+        window.TitleBarButtons.Add(original);
+        var visibility = new MaterialAppearanceTitleBarVisibility(true, true, true, true);
+        var styling = true;
+        var locked = false;
+        var styleSaves = 0;
+        var lockSaves = 0;
+        var styleTooltip = "";
+        var lockTooltip = "";
+        var actions = MaterialAppearanceTitleBar.Register(window, () => new("Language", "Compact", "Transparency", "Colour"),
+            () => { }, () => { }, () => { }, () => { }, () => { }, () => "Privacy", () => visibility);
+        var existing = window.TitleBarButtons.OrderByDescending(button => button.Priority).ToArray();
+        Assert.Equal(6, existing.Length);
+        actions.RegisterWindowControls(() => { styling = !styling; styleSaves++; },
+            () => styleTooltip = styling ? "Use plain native styling" : "Enable styling",
+            () => { locked = !locked; lockSaves++; },
+            () => lockTooltip = locked ? "Unlock movement and resizing" : "Lock movement and resizing");
+        var descriptors = window.TitleBarButtons.OrderByDescending(button => button.Priority).ToArray();
+        Assert.Equal(existing, descriptors.Take(existing.Length));
+        Assert.Equal(8, descriptors.Length);
+        Assert.Equal(FontAwesomeIcon.Moon, descriptors[6].Icon);
+        Assert.Equal(FontAwesomeIcon.Lock, descriptors[7].Icon);
+        Assert.True(descriptors[6].Priority < existing[^1].Priority);
+        Assert.True(descriptors[7].Priority < descriptors[6].Priority);
+        descriptors[6].Click!(ImGuiMouseButton.Right);
+        descriptors[7].Click!(ImGuiMouseButton.Right);
+        Assert.True(styling); Assert.False(locked);
+        Assert.Equal(0, styleSaves + lockSaves);
+        descriptors[6].Click!(ImGuiMouseButton.Left);
+        descriptors[7].Click!(ImGuiMouseButton.Left);
+        Assert.False(styling); Assert.True(locked);
+        Assert.True(window.IsOpen);
+        Assert.Equal(1, styleSaves); Assert.Equal(1, lockSaves);
+        var theme = new MaterialTheme(new Vector3(.3f, .7f, .4f));
+        host.Frame(() =>
+        {
+            using var scope = MaterialTheme.Push(theme);
+            descriptors[6].ShowTooltip!();
+        });
+        host.Frame(() =>
+        {
+            using var scope = MaterialTheme.Push(theme);
+            descriptors[7].ShowTooltip!();
+        });
+        Assert.Equal("Enable styling", styleTooltip);
+        Assert.Equal("Unlock movement and resizing", lockTooltip);
+        visibility = visibility with { Styling = false, MovementLock = false };
+        descriptors[6].Click!(ImGuiMouseButton.Left);
+        descriptors[7].Click!(ImGuiMouseButton.Left);
+        Assert.Equal(1, styleSaves); Assert.Equal(1, lockSaves);
+        actions.RefreshVisibility();
+        Assert.Equal(existing, window.TitleBarButtons.OrderByDescending(button => button.Priority));
+        visibility = visibility with { Styling = true, MovementLock = true };
+        actions.RefreshVisibility(); actions.RefreshVisibility();
+        Assert.Equal(descriptors, window.TitleBarButtons.OrderByDescending(button => button.Priority));
+        Assert.Throws<InvalidOperationException>(() => actions.RegisterWindowControls(() => { }, () => "Style", () => { }, () => "Lock"));
+        Assert.Equal(descriptors, window.TitleBarButtons.OrderByDescending(button => button.Priority));
+    }
+
+    [Theory]
+    [InlineData(ImGuiWindowFlags.None)]
+    [InlineData(ImGuiWindowFlags.NoResize)]
+    [InlineData(ImGuiWindowFlags.NoMove | ImGuiWindowFlags.AlwaysAutoResize)]
+    public void TemporaryWindowLockRestoresExactFlagsWithoutChangingPinState(ImGuiWindowFlags originalFlags)
+    {
+        var window = new AppearanceProbeWindow("Locked###temporary-window-lock") { Flags = originalFlags };
+        var other = new AppearanceProbeWindow("Other###temporary-window-lock-other");
+        var pinned = window.IsPinned;
+        var windowLock = new MaterialWindowLock();
+        windowLock.Apply(window, true);
+        Assert.Equal(originalFlags | ImGuiWindowFlags.NoMove | ImGuiWindowFlags.NoResize, window.Flags);
+        Assert.Equal(pinned, window.IsPinned);
+        Assert.Throws<InvalidOperationException>(() => windowLock.Apply(other, true));
+        Assert.Throws<InvalidOperationException>(() => windowLock.Restore(other));
+        windowLock.Restore(window);
+        Assert.Equal(originalFlags, window.Flags);
+        Assert.Equal(pinned, window.IsPinned);
+        windowLock.Apply(window, false);
+        window.Flags |= ImGuiWindowFlags.NoScrollbar;
+        windowLock.Restore(window);
+        Assert.Equal(originalFlags | ImGuiWindowFlags.NoScrollbar, window.Flags);
+    }
+
+    [Fact]
+    public void NativeThemeKeepsHostStyleAndRetainedControlsAndRestoresNestedPalettes()
+    {
+        using var host = new NativeTestContext();
+        var theme = new MaterialTheme(new Vector3(.3f, .7f, .4f), new MaterialColorSettings { Mode = MaterialColorMode.Lcars });
+        theme.SurfaceOpacity = .2f;
+        var savedPalette = theme.Colors;
+        var alternate = new MaterialTheme(new Vector3(.7f, .3f, .4f));
+        host.Frame(() =>
+        {
+            var style = ImGui.GetStyle();
+            var colors = Enumerable.Range(0, Enum.GetValues<ImGuiCol>().Max(role => (int)role))
+                .Select(index => style.Colors[index]).ToArray();
+            var padding = style.WindowPadding;
+            var rounding = style.WindowRounding;
+            using (var scope = MaterialTheme.Push(theme, 1.5f, MaterialStyleMode.Native))
+            {
+                Assert.Same(theme, MaterialTheme.Current);
+                Assert.True(theme.IsNative);
+                Assert.False(theme.IsLcars);
+                Assert.False(theme.IsGlassmorphism);
+                Assert.Equal(1.5f, MaterialTheme.Metrics.Scale);
+                Assert.Equal(colors[(int)ImGuiCol.WindowBg], theme.Colors.Background);
+                Assert.Equal(colors[(int)ImGuiCol.Button], theme.Colors.SecondaryContainer);
+                Assert.Equal(colors[(int)ImGuiCol.Text], theme.Colors.OnSurface);
+                Assert.Equal(savedPalette.Error, theme.Colors.Error);
+                Assert.Equal(theme.Colors.Background, theme.SurfaceColor(theme.Colors.Background));
+                for (var index = 0; index < colors.Length; index++) Assert.Equal(colors[index], style.Colors[index]);
+                Assert.Equal(padding, style.WindowPadding);
+                Assert.Equal(rounding, style.WindowRounding);
+                var nativePalette = theme.Colors;
+                using (var nested = MaterialTheme.Push(alternate)) Assert.False(MaterialTheme.Current.IsNative);
+                Assert.Same(nativePalette, theme.Colors);
+                Assert.True(MaterialTheme.Current.IsNative);
+                ImGui.Begin("Native retained controls###native-theme", ImGuiWindowFlags.NoSavedSettings);
+                var id = ImGui.GetID("retained-owner-id");
+                MaterialButton.FilledButton("retained-button", "Action");
+                Assert.Equal(id, ImGui.GetID("retained-owner-id"));
+                ImGui.End();
+            }
+            Assert.Same(savedPalette, theme.Colors);
+            Assert.True(theme.IsLcars);
+            Assert.False(theme.IsNative);
+            for (var index = 0; index < colors.Length; index++) Assert.Equal(colors[index], style.Colors[index]);
+            Assert.Equal(padding, style.WindowPadding);
+            Assert.Equal(rounding, style.WindowRounding);
+            var windowHost = new MaterialWindowHost { StyleMode = MaterialStyleMode.Native };
+            using (var scope = windowHost.BeginFrame(applyMetrics: false)) Assert.True(MaterialTheme.Current.IsNative);
+        });
+    }
+
     private sealed class AppearanceProbeWindow(string name) : Window(name)
     {
         public override void Draw() { }

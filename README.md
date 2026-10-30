@@ -85,6 +85,14 @@ click; its consumer-localized tooltip reads the current On/Off state when hovere
 Consumers retain their masking rules; arbitrary strings are not automatically
 redacted. The original four-action overload remains a compatibility path.
 
+`MaterialAppearanceTitleBar.RegisterWindowControls` optionally appends styling and movement/resize lock callbacks without changing existing registration signatures or defaults. Consumers own the saved choices, localized tooltips and slash commands. `MaterialStyleMode.Native` keeps native host colors/styles while retaining component context; `MaterialWindowLock.Apply` runs last in PreDraw and `Restore` first in PostDraw, preserving original flags and pin preferences. The appearance preview demonstrates all seven actions.
+
+The approved FrenRider glass implementation is shared through the optional adapter's `MaterialGlassRenderer`. It uses Xeldar's actual Glasswork renderer for game and detached desktop backdrops. The consumer owns the renderer, per-frame image configuration, BeginFrame/EndFrame, resize-resource release and disposal. Keep `MaterialSkin.PushBackgroundRenderer` around native Begin/End, use `BackdropStyle` around Begin and call `Backdrop` before content or table splits. Explicit Background surfaces use glass; foreground controls retain their fills. Ordinary background paint remains until the backend is ready. `BackgroundFill` and `StructuralBackgroundStyle` reveal structural child/table backgrounds only after that root rendered successfully.
+
+The shared Colour editor can expose saved **Waves**, **Lights** and **Image** modes with translated optional labels. Lights provides ambient glows, sweeping beams and mouse-following glow, with separate colours and the existing motion controls. The Browse overload invokes the consumer's native file picker; the consumer loads/saves the selected path and preserves it on cancel. An image supplies the glass backdrop with centered cover cropping; **Blur (%)** blurs the selected image. Image mode needs no desktop capture. The showcase uses the same editor and an actual file picker in its Dalamud host.
+
+Blur defaults on only for Glassmorphism, with **75% Frost**; the other styles default off. Whole-window opacity remains separate. **Pause backdrop for screenshots defaults off** and is a temporary renderer choice, exposed in Colour and Transparency. Live detached capture excludes its own windows from OS capture to avoid feedback; explicitly pausing freezes the clean backdrop, verifies screenshot visibility and keeps Glasswork/UI drawing. Image-backed windows remain capturable independently. Resume requires a fresh clean capture. Keep all three Glasswork DLLs and the MIT notice with the adapter. `MaterialWindowBlur` remains a separate legacy native-host helper; it does not reproduce this renderer.
+
 Register once after existing title actions, supplying translated labels and
 existing editor/save callbacks. Compact also toggles directly; Language,
 Transparency and Colour open manual popups. Pass existing main-window visibility
@@ -288,6 +296,10 @@ for later selected plugin integrations. See [known limitations](docs/KNOWN_LIMIT
 and the [smoke-test guide](docs/PROTOTYPE_SMOKE_TEST.md).
 
 ## Evolution and provenance
+
+2026-10-30: promote the user-approved FrenRider Glasswork implementation into the optional adapter, with a host-independent scoped Background contract in core. Add Waves/Lights/Image settings, native-picker integration, structural-background coverage and default-off screenshot pause; retain foreground rendering, native scopes and legacy editor behavior. Update the showcase and both usage skills. Library version remains 0.3.0; consumer publication is separate.
+
+2026-10-29: add opt-in native/plain styling and movement/resize controls, preserve native scope colors and flags, and introduce optional native blur support with per-style choices. FrenRider is the pilot; viewport/GPU acceptance and wider consumer wiring remain pending. Version remains 0.3.0.
 
 2026-10-18: make Krangle the fifth standard titlebar action for new and adopted
 UIs, visible by default on main, mini and auxiliary windows. Reuse consumer-owned

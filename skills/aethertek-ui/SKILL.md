@@ -17,7 +17,8 @@ AutoParty is skipped in the foundation delivery.
   cached dark themes and OKLCH palettes; namespace `AethertekUI`. Existing
   component names remain `MaterialTheme`, `MaterialButton`, etc.
 - `src/AethertekUI.Dalamud/AethertekUI.Dalamud.csproj`: optional
-  `MaterialWindowHost` and host scaling; namespace `AethertekUI.Dalamud`.
+  `MaterialWindowHost`, host scaling and consumer-owned `MaterialGlassRenderer`;
+  namespace `AethertekUI.Dalamud`.
 - `src/AethertekUI.Demo/`: AethertekUI Showcase, command `/aethertekui`;
   eight native-rendered mock-data pages, including the sizing lab.
 - `samples/ConsumerContract/ConsumerUi.cs`: compiled independent example of
@@ -306,10 +307,28 @@ Use the `DrawColors` overload accepting consumer `defaults` and
 `defaultAccent` before optional minimum width. Supply translated `Reset` and
 `ResetColors` labels for per-role/current-palette resets, retaining other
 styles. Auto reset uses the supplied existing seed, not the library seed.
-Glass exposes `Animation`, `AnimationSpeed`, `WaveColors`,
-`GlassWave1`–`GlassWave3` and `ResetWaveColors` labels. Animation defaults
-on, speed is bounded to 0.1–10x/default 1x, and all three independent wave
-colours remain editable with motion off. Palette resets retain wave choices.
+Glass saves `GlassBackground` as `MaterialGlassBackground.Waves`, `Lights` or
+`Image`, `GlassLights` as `MaterialGlassLights.AmbientGlows`, `SweepingBeams` or
+`PointerGlow`, and the selected `GlassImagePath`. Retain the independent
+`GlassWave1Rgb`–`GlassWave3Rgb` and `GlassLight1Rgb`–`GlassLight3Rgb` values when
+switching modes; Background/Controls/Text palette resets retain these choices.
+Supply `BackgroundMode`, `Waves`, `Lights` and `Image` labels to expose the shared
+background selector, then `LightEffect`, `AmbientGlows`, `SweepingBeams` and
+`PointerGlow` for all three light effects. Wave editors use `WaveColors`,
+`GlassWave1`–`GlassWave3` and `ResetWaveColors`; light editors use `LightColors`,
+`GlassLight1`–`GlassLight3` and `ResetLightColors`. `Animation` and `AnimationSpeed`
+apply to Waves and Lights: animation defaults on, speed is bounded to
+0.1–10x/default 1x, and all three colours remain editable with motion off.
+
+Image editing uses `ImageFile`, `BrowseImage`, `LoadImage` and `ImageHelp` labels.
+Use the `DrawColors` overload with consumer `defaults`, `defaultAccent`, then
+`Action browseImage` before optional minimum width to invoke the consumer's
+existing file picker. Browse alone neither loads nor requests persistence. Draw
+the picker independently of the appearance popup; commit its selected path
+through the consumer's existing save path. Load commits the edited path, while
+the renderer's per-frame `ConfigureImage` owns texture readiness. Translate these
+labels, image status and screenshot controls through the consumer's existing
+catalogs; preserve its native picker lifecycle and localization boundaries.
 Keep drafts outside Draw; save completed edits via the existing configuration,
 then rebuild the cached theme at the next frame boundary.
 
@@ -320,8 +339,9 @@ BeginPopup, disposing before content so nested native pickers retain their
 backgrounds. The optional titlebar adapter handles its appearance popups.
 Call Backdrop before tables or draw-channel splits; an existing splitter is
 rejected before mutation so the owner's native channels remain intact.
-This replaces one native background without stacking SurfaceOpacity. Auto,
-Picker and LCARS retain native backgrounds. Standard surfaces and controls adopt the
+This replaces one native background without stacking SurfaceOpacity. Without
+an adopted background renderer, Auto, Picker and LCARS retain native backgrounds.
+Standard surfaces and controls adopt the
 selected geometry: Glass ribbons/frosted panes/coloured glow, opaque raised and
 inset Spatial surfaces, or graphite Cyberpunk plates with cyan/ice tabs and
 relative magenta details. `Heading` and `PanelFrame` support retained layouts;
@@ -349,8 +369,9 @@ Push the same pixel `FrameRounding` after `NativeButtonStyle` when retaining
 native face/navigation geometry. The sizing lab demonstrates that pattern. Enter
 `NativeFieldStyle` immediately before one single-row native input, after its
 width/height scopes. Keep scopes lexical and complete-window opacity applied
-once after End. Glass uses bounded procedural ribbons and outlines, not a blur
-of the game framebuffer; theme reduced motion freezes the ribbons too.
+once after End. Glass retains bounded procedural Waves and Lights over a ready
+Glasswork backdrop, or as ordinary paint while glass is unavailable; theme
+reduced motion freezes their animation too.
 
 The showcase Settings and five-action titlebar popup demonstrate the same
 shared preferences. FrenRider is the accepted pilot; this library update does
@@ -360,6 +381,97 @@ diagnostic renders remain separate from game/GPU acceptance. See the
 [API contract](../../docs/COMPONENT_API.md#shared-colour-modes-and-material-rendering)
 for labels and lifecycle.
 
+For selected actual glass, use the shared `MaterialGlassRenderer` in the Dalamud
+adapter. It implements core `IMaterialBackgroundRenderer`; core receives only
+ImGui/value types and never acquires Dalamud services, textures or a device.
+Consumers retain configuration, subscriptions and renderer disposal. The legacy
+`MaterialWindowBlur.Configure` helper only enables host-native blur; it does not
+provide the approved Glasswork rendering path. Keep native blur disabled on
+windows using Glasswork so two implementations do not stack.
+
+Own one renderer for the selected UI owner, constructed from
+`IDalamudPluginInterface` and `IPluginLog`. Each UI frame, call
+`ConfigureImage(textureProvider, imageEnabled, savedPath)`, then `BeginFrame()`
+before recording windows. Keep a lexical
+`MaterialSkin.PushBackgroundRenderer(renderer, blurEnabled, frost, opacity: 1)`
+around their complete themed Begin/End lifecycle. Enter `BackdropStyle` around
+Begin and call `Backdrop` first in visible content, before tables/channel splits.
+Pass `null` to the renderer scope when a nested owner must suspend the outer
+renderer. After all selected windows are recorded, call
+`EndFrame((blurEnabled || imageEnabled) && completed)` in `finally`; use false on
+disabled, no-window and failed-draw paths so capture and affinity are released.
+Complete the host's render callbacks before the next
+`BeginFrame`. Call `ReleaseResources` on the consumer's existing resource-release
+path and `Dispose` on unload; the renderer creates no event subscriptions.
+
+`DrawBackground(drawList, min, max, rounding, tint, frost, windowBackground)`
+reports readiness. For `windowBackground: true`, pass the current window draw
+list and full `GetWindowPos()` through position plus `GetWindowSize()`, including
+the title, before any channel split. It prepends native callbacks behind chrome.
+Custom skins call this shared renderer explicitly at their Background surface
+and retain ordinary paint when it returns false; an enabled toggle alone does
+not prove a fresh capture or image. Core `Backdrop` handles this readiness and
+retains normal fallback until glass succeeds. Preserve the selected Background
+RGB as glass tint; preserve native title/actions, IDs, clips and render state.
+
+Blur changes Background surfaces only. `PanelFrame` treats retained panels as
+structural backgrounds; normal control painters retain their foreground fills.
+After shared `Backdrop` succeeds for the current root/context/frame,
+`MaterialSkin.BackgroundFill(color)` can reveal an explicitly identified
+structural fill, and `MaterialSkin.StructuralBackgroundStyle()` can reveal
+retained child/table backgrounds. These helpers preserve ordinary fills until
+that root is ready. Keep their scope local to structure; never clear button,
+input, checkbox, slider, semantic/status or other foreground colours globally.
+Custom renderer callers retain the same successful-root guard in their own skin.
+
+Use `HasBackgroundBlur(mode)` and `WithBackgroundBlur(mode, enabled)` for each
+style's saved choice. Only Glassmorphism defaults on; Auto, Picker, LCARS, Spatial
+and Cyberpunk default off. `BackgroundBlurPercent` is continuous Glasswork Frost,
+clamped to 0–100 and initially 75%; pass it divided by 100. Frost is independent
+of whole-window opacity and does not change the host's native global strength.
+Keep the saved complete-window opacity/fade path applied once after End. Supply
+renderer opacity only when that existing path requires it for native callback
+output; do not multiply background/image alpha again as another transparency
+preference. Supply translated `BackgroundBlur` and `BlurPercent` labels to expose
+the per-style toggle and shared Frost control.
+
+Enable image mode only for the selected Glass Image background. Its
+`ConfigureImage` call every frame borrows the current
+`ITextureProvider.GetFromFile` wrap; never retain/dispose that borrowed wrap in
+consumer code. `ImageMode`, `ImageAvailable` and `ImageProblem` describe its state.
+`DrawPlainImage` supplies cover-cropped unblurred drawing; blurred images use the
+same material/callback path without desktop acquisition or capture exclusion.
+Switching image mode/path releases the prior owned source resources. Keep image
+loading and consumer file-picker ownership in the adapter/consumer, outside core.
+
+Live detached glass captures the desktop behind only the supplied owned platform
+windows and temporarily excludes those windows from OS screenshots/recordings.
+Screenshot pause starts OFF and requires an explicit user toggle in both Colour
+and Transparency controls, bound to the same renderer state. Read
+`ScreenshotsPaused`/`CanPauseForScreenshots` and use `TrySetScreenshotsPaused`;
+disable an unavailable pause request while allowing an active pause to resume.
+Requests commit at a frame boundary. A successful pause stops desktop acquisition,
+retains frozen monitor images and verifies screenshot-visible window affinity.
+Resume restores exclusion and waits for a fresh excluded capture before live
+glass returns. Image mode needs no desktop screenshot pause. Always restore
+capture affinity on disabled, closed-window, release and unload paths.
+
+Ship `AethertekUI.dll`, `AethertekUI.Dalamud.dll`, `Glasswork.dll`,
+`Glasswork.Glass.dll` and `Glasswork.Backend.dll`, retaining the Glasswork MIT
+notice supplied under the adapter's `Notices/Glasswork.MIT.txt`. The adapter owns
+the approved `Glasswork.Backend` package reference; keep its compile/runtime
+assets transitive. Reference the host's `TerraFX.Interop.Windows.dll` with
+`Private=false`; do not bundle a second host TerraFX DLL. CPU/native tests and
+source promotion do not establish current GPU, detached-window or screenshot
+acceptance; retain mcvaxius's separate host acceptance boundary.
+
+Optional titlebar `RegisterWindowControls` callbacks expose styled/native UI and
+movement/resize lock. Keep a valid `MaterialStyleMode.Native` theme scope for
+plain controls, suppress consumer material painting/chrome, and retain window
+visibility/actions/fonts. Apply each consumer-owned `MaterialWindowLock` last
+in PreDraw and Restore first in PostDraw, before motion restoration. Do not use
+IsPinned for this lock: native presets can overwrite it and pinning also changes
+Escape behavior. Consumers own independent saved choices and slash commands.
 ## Grouped settings and Appearance standard
 
 Use `MaterialText.SingleLine` for summary captions that must stay within one

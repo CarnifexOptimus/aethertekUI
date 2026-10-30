@@ -9,7 +9,8 @@ public static class MaterialWindowChrome
     public static MaterialStyleScope Push()
     {
         var scope = new MaterialStyleScope();
-        scope.Style(ImGuiStyleVar.WindowRounding, MaterialTheme.Metrics.OuterRadius);
+        if (!MaterialTheme.Current.IsNative)
+            scope.Style(ImGuiStyleVar.WindowRounding, MaterialTheme.Metrics.OuterRadius);
         return scope;
     }
 }

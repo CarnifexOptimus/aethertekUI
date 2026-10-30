@@ -3,6 +3,8 @@ using System.Numerics;
 namespace AethertekUI;
 
 public enum MaterialColorMode { Auto = 0, Picker = 1, Lcars = 2, Glassmorphism = 3, Spatial = 4, Cyberpunk = 5 }
+public enum MaterialGlassBackground { Waves, Lights, Image }
+public enum MaterialGlassLights { AmbientGlows, SweepingBeams, PointerGlow }
 
 /// <summary>Consumer-owned appearance choices. Auto retains the supplied automatic scheme unchanged.</summary>
 public sealed record MaterialColorSettings
@@ -33,6 +35,41 @@ public sealed record MaterialColorSettings
     public uint LcarsBar2Rgb { get; init; } = DefaultLcarsBar2Rgb;
     public uint LcarsBar3Rgb { get; init; } = DefaultLcarsBar3Rgb;
     public bool GlassAnimation { get; init; } = true;
+    public bool AutoBackgroundBlur { get; init; }
+    public bool PickerBackgroundBlur { get; init; }
+    public bool LcarsBackgroundBlur { get; init; }
+    public bool GlassBackgroundBlur { get; init; } = true;
+    public bool SpatialBackgroundBlur { get; init; }
+    public bool CyberpunkBackgroundBlur { get; init; }
+    private int backgroundBlurPercent = 75;
+    public int BackgroundBlurPercent
+    {
+        get => backgroundBlurPercent;
+        init => backgroundBlurPercent = Math.Clamp(value, 0, 100);
+    }
+
+    /// <summary>Each style retains its own explicit blur choice. Only Glassmorphism defaults on.</summary>
+    public bool HasBackgroundBlur(MaterialColorMode mode) => mode switch
+    {
+        MaterialColorMode.Auto => AutoBackgroundBlur,
+        MaterialColorMode.Picker => PickerBackgroundBlur,
+        MaterialColorMode.Lcars => LcarsBackgroundBlur,
+        MaterialColorMode.Glassmorphism => GlassBackgroundBlur,
+        MaterialColorMode.Spatial => SpatialBackgroundBlur,
+        MaterialColorMode.Cyberpunk => CyberpunkBackgroundBlur,
+        _ => false,
+    };
+
+    public MaterialColorSettings WithBackgroundBlur(MaterialColorMode mode, bool enabled) => mode switch
+    {
+        MaterialColorMode.Auto => this with { AutoBackgroundBlur = enabled },
+        MaterialColorMode.Picker => this with { PickerBackgroundBlur = enabled },
+        MaterialColorMode.Lcars => this with { LcarsBackgroundBlur = enabled },
+        MaterialColorMode.Glassmorphism => this with { GlassBackgroundBlur = enabled },
+        MaterialColorMode.Spatial => this with { SpatialBackgroundBlur = enabled },
+        MaterialColorMode.Cyberpunk => this with { CyberpunkBackgroundBlur = enabled },
+        _ => throw new ArgumentOutOfRangeException(nameof(mode)),
+    };
     private float glassAnimationSpeed = 1;
     public float GlassAnimationSpeed
     {
@@ -42,6 +79,22 @@ public sealed record MaterialColorSettings
     public uint GlassWave1Rgb { get; init; } = DefaultGlassWave1Rgb;
     public uint GlassWave2Rgb { get; init; } = DefaultGlassWave2Rgb;
     public uint GlassWave3Rgb { get; init; } = DefaultGlassWave3Rgb;
+    private MaterialGlassBackground glassBackground;
+    public MaterialGlassBackground GlassBackground
+    {
+        get => glassBackground;
+        init => glassBackground = Enum.IsDefined(value) ? value : MaterialGlassBackground.Waves;
+    }
+    private MaterialGlassLights glassLights;
+    public MaterialGlassLights GlassLights
+    {
+        get => glassLights;
+        init => glassLights = Enum.IsDefined(value) ? value : MaterialGlassLights.AmbientGlows;
+    }
+    public string GlassImagePath { get; init; } = "";
+    public uint GlassLight1Rgb { get; init; } = DefaultGlassWave1Rgb;
+    public uint GlassLight2Rgb { get; init; } = DefaultGlassWave2Rgb;
+    public uint GlassLight3Rgb { get; init; } = DefaultGlassWave3Rgb;
 
     /// <summary>The independently saved three-colour palette. Auto and LCARS have different role contracts.</summary>
     public (uint BackgroundRgb, uint ControlsRgb, uint TextRgb) GetPalette(MaterialColorMode mode) => mode switch
@@ -102,6 +155,9 @@ public sealed record MaterialColorSettings
         ValidateRgb(GlassWave1Rgb, nameof(GlassWave1Rgb));
         ValidateRgb(GlassWave2Rgb, nameof(GlassWave2Rgb));
         ValidateRgb(GlassWave3Rgb, nameof(GlassWave3Rgb));
+        ValidateRgb(GlassLight1Rgb, nameof(GlassLight1Rgb));
+        ValidateRgb(GlassLight2Rgb, nameof(GlassLight2Rgb));
+        ValidateRgb(GlassLight3Rgb, nameof(GlassLight3Rgb));
     }
 
     public MaterialColorScheme Apply(MaterialColorScheme automatic)
